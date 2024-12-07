@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"sync"
 	"text/tabwriter"
 	"time"
 )
 
-func sensorOutput(sensorName string, interval time.Duration, seed int64) {
+func sensorOutput(wg *sync.WaitGroup, sensorName string, interval time.Duration, seed int64) {
+    defer wg.Done()
     ticker := time.NewTicker(interval)
     defer ticker.Stop()
 
@@ -25,6 +27,11 @@ func sensorOutput(sensorName string, interval time.Duration, seed int64) {
 }
 
 func main() {
-    sensorOutput("sensor1", 1 * time.Second, 99)
+    var wg sync.WaitGroup
+    
+    wg.Add(2)
+    go sensorOutput(&wg, "sensor1", 1 * time.Second, 99)
+    go sensorOutput(&wg, "sensor2", 2 * time.Second, 99)
+    wg.Wait()
 }
 
