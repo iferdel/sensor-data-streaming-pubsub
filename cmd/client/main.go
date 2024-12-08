@@ -15,23 +15,6 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-func sensorOutput(wg *sync.WaitGroup, sensorName string, interval time.Duration, seed int64) {
-	defer wg.Done() // signals the waitGroup that the goroutine finished its job, bringing the counter down a unit value
-	ticker := time.NewTicker(interval)
-	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
-
-	r := rand.New(rand.NewSource(seed))
-	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
-
-	show := func(name string, accX, accY, accZ any) {
-		fmt.Fprintf(w, "%s\t%v\t%v\t%v\n", name, accX, accY, accZ)
-	}
-	for range ticker.C {
-		show(sensorName, r.Float64(), r.Float64(), r.Float64())
-		w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
-	}
-}
-
 func main() {
 	fmt.Println("EQP ON")
 
@@ -49,6 +32,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("could not create publish channel: %v", err)
 	}
+
+	// subscribe to streaming
 
 	serialNumber := "001-ACC"
 	_ = sensorlogic.NewSensorState(serialNumber)
@@ -70,10 +55,27 @@ func main() {
 	wg.Wait() // it blocks the execution of whatever comes next until all goroutines it's waiting are finished
 }
 
+func sensorOutput(wg *sync.WaitGroup, sensorName string, interval time.Duration, seed int64) {
+	defer wg.Done() // signals the waitGroup that the goroutine finished its job, bringing the counter down a unit value
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
+
+	r := rand.New(rand.NewSource(seed))
+	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+
+	show := func(name string, accX, accY, accZ any) {
+		fmt.Fprintf(w, "%s\t%v\t%v\t%v\n", name, accX, accY, accZ)
+	}
+	for range ticker.C {
+		show(sensorName, r.Float64(), r.Float64(), r.Float64())
+		w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
+	}
+}
+
 func publishSensorLog(publishCh *amqp.Channel, sensorname, msg string) error {
 	return pubsub.PublishGob(
 		publishCh,
-		routing.ExchangePerilTopic,
+		routing.ExchangeSensorTransmissionTopic,
 		routing.SensorLogSlug+"."+sensorname,
 		routing.SensorLog{
 			SensorName:  sensorname,
