@@ -30,28 +30,27 @@ func sensorOutput(wg *sync.WaitGroup, sensorName string, interval time.Duration,
 	}
 }
 
-
 func main() {
-    fmt.Println("EQP ON")
+	fmt.Println("EQP ON")
 
-    const rabbitConnString = "amqp://guest:guest@localhost:5672/"
-    conn, err := amqp.Dial(rabbitConnString)
-    if err != nil {
-        log.Fatalf("could not connect to RabbitMQ: %v", err)
-    }
+	const rabbitConnString = "amqp://guest:guest@localhost:5672/"
+	conn, err := amqp.Dial(rabbitConnString)
+	if err != nil {
+		log.Fatalf("could not connect to RabbitMQ: %v", err)
+	}
 
-    defer conn.Close()
-    fmt.Println("connection to msg broker succeeded")
+	defer conn.Close()
+	fmt.Println("connection to msg broker succeeded")
 
-    _, err = conn.Channel()
-    if err != nil {
-        log.Fatalf("could not create publish channel: %v", err)
-    }
-    
-    brand := "SensorBrand"
-    _ = sensorlogic.NewSensorState(brand)
+	_, err = conn.Channel()
+	if err != nil {
+		log.Fatalf("could not create publish channel: %v", err)
+	}
 
-    fmt.Println("Starting Sensor Streaming...")
+	brand := "SensorBrand"
+	_ = sensorlogic.NewSensorState(brand)
+
+	fmt.Println("Starting Sensor Streaming...")
 	var wg sync.WaitGroup
 
 	wg.Add(2) // Increment the wait count by 2, since we will have 2 goroutines calling Done(). It counts at zero will trigger Wait() and unblock the program.

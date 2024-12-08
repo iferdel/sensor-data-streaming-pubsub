@@ -1,5 +1,5 @@
 package sensorlogic
 
 type Sensor struct {
-    Brand string
+	Brand string
 }
