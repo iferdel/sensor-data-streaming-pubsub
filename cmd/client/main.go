@@ -9,6 +9,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -46,6 +47,9 @@ func main() {
     if err != nil {
         log.Fatalf("could not create publish channel: %v", err)
     }
+    
+    brand := "SensorBrand"
+    _ = sensorlogic.NewSensorState(brand)
 
     fmt.Println("Starting Sensor Streaming...")
 	var wg sync.WaitGroup
