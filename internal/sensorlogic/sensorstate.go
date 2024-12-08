@@ -5,10 +5,10 @@ type SensorState struct {
 	Paused bool
 }
 
-func NewSensorState(brand string) *SensorState {
+func NewSensorState(serialNumber string) *SensorState {
 	return &SensorState{
 		Sensor: Sensor{
-			Brand: brand,
+			SerialNumber: serialNumber,
 		},
 		Paused: false,
 	}

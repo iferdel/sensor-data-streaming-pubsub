@@ -44,15 +44,24 @@ func main() {
 	defer conn.Close()
 	fmt.Println("connection to msg broker succeeded")
 
-	_, err = conn.Channel()
+    // create channel for further publish of sensor data/logs
+    publishCh, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("could not create publish channel: %v", err)
 	}
 
-	brand := "SensorBrand"
-	_ = sensorlogic.NewSensorState(brand)
+	serialNumber := "001-ACC"
+	_ = sensorlogic.NewSensorState(serialNumber)
 
-	fmt.Println("Starting Sensor Streaming...")
+    err = publishSensorLog(
+        publishCh,
+        serialNumber,
+        "Starting Sensor Streaming...",
+    )
+    if err != nil {
+        fmt.Println("invalid publish sensor log:", err)
+    }
+
 	var wg sync.WaitGroup
 
 	wg.Add(2) // Increment the wait count by 2, since we will have 2 goroutines calling Done(). It counts at zero will trigger Wait() and unblock the program.
