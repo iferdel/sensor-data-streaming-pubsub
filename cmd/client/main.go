@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"sync"
 	"text/tabwriter"
 	"time"
+
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func sensorOutput(wg *sync.WaitGroup, sensorName string, interval time.Duration, seed int64) {
@@ -26,7 +29,25 @@ func sensorOutput(wg *sync.WaitGroup, sensorName string, interval time.Duration,
 	}
 }
 
+
 func main() {
+    fmt.Println("EQP ON")
+
+    const rabbitConnString = "amqp://guest:guest@localhost:5672/"
+    conn, err := amqp.Dial(rabbitConnString)
+    if err != nil {
+        log.Fatalf("could not connect to RabbitMQ: %v", err)
+    }
+
+    defer conn.Close()
+    fmt.Println("connection to msg broker succeeded")
+
+    _, err = conn.Channel()
+    if err != nil {
+        log.Fatalf("could not create publish channel: %v", err)
+    }
+
+    fmt.Println("Starting Sensor Streaming...")
 	var wg sync.WaitGroup
 
 	wg.Add(2) // Increment the wait count by 2, since we will have 2 goroutines calling Done(). It counts at zero will trigger Wait() and unblock the program.
