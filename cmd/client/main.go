@@ -44,8 +44,8 @@ func main() {
 	defer conn.Close()
 	fmt.Println("connection to msg broker succeeded")
 
-    // create channel for further publish of sensor data/logs
-    publishCh, err := conn.Channel()
+	// create channel for further publish of sensor data/logs
+	publishCh, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("could not create publish channel: %v", err)
 	}
@@ -53,14 +53,14 @@ func main() {
 	serialNumber := "001-ACC"
 	_ = sensorlogic.NewSensorState(serialNumber)
 
-    err = publishSensorLog(
-        publishCh,
-        serialNumber,
-        "Starting Sensor Streaming...",
-    )
-    if err != nil {
-        fmt.Println("invalid publish sensor log:", err)
-    }
+	err = publishSensorLog(
+		publishCh,
+		serialNumber,
+		"Starting Sensor Streaming...",
+	)
+	if err != nil {
+		fmt.Println("invalid publish sensor log:", err)
+	}
 
 	var wg sync.WaitGroup
 
@@ -71,14 +71,14 @@ func main() {
 }
 
 func publishSensorLog(publishCh *amqp.Channel, sensorname, msg string) error {
-    return pubsub.PublishGob(
-        publishCh,
-        routing.ExchangePerilTopic,
-        routing.SensorLogSlug+"."+sensorname,
-        routing.SensorLog{
-            SensorName: sensorname,
-            CurrentTime: time.Now(),
-            Message: msg,
-        },
-    )
+	return pubsub.PublishGob(
+		publishCh,
+		routing.ExchangePerilTopic,
+		routing.SensorLogSlug+"."+sensorname,
+		routing.SensorLog{
+			SensorName:  sensorname,
+			CurrentTime: time.Now(),
+			Message:     msg,
+		},
+	)
 }
