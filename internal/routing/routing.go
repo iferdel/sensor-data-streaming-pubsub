@@ -5,12 +5,12 @@ const (
 
 	SensorSaturatedRecognitionPrefix = "sensor_saturated"
 
-	SensorOnPause = "sensor_on_pause"
+	PauseSensorPrefix = "pause_sensor"
 
 	SensorLogSlug = "sensor_logs"
 )
 
 const (
-	ExchangePerilDirect = "peril_direct"
-	ExchangePerilTopic  = "peril_topic"
+	ExchangeSensorTransmissionDirect = "sensor_transmission_direct"
+	ExchangeSensorTransmissionTopic  = "sensor_transmission_topic"
 )
