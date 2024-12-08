@@ -7,7 +7,7 @@ const (
 
 	SensorOnPause = "sensor_on_pause"
 
-	GameLogSlug = "game_logs"
+	SensorLogSlug = "sensor_logs"
 )
 
 const (

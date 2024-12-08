@@ -9,6 +9,8 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
+	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
 	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -57,4 +59,17 @@ func main() {
 	go sensorOutput(&wg, "sensor1", 1*time.Second, 99)
 	go sensorOutput(&wg, "sensor2", 2*time.Second, 99)
 	wg.Wait() // it blocks the execution of whatever comes next until all goroutines it's waiting are finished
+}
+
+func publishSensorLog(publishCh *amqp.Channel, sensorname, msg string) error {
+    return pubsub.PublishGob(
+        publishCh,
+        routing.ExchangePerilTopic,
+        routing.SensorLogSlug+"."+sensorname,
+        routing.SensorLog{
+            SensorName: sensorname,
+            CurrentTime: time.Now(),
+            Message: msg,
+        },
+    )
 }

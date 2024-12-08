@@ -6,8 +6,8 @@ type SensorState struct {
 	IsPaused bool
 }
 
-type GameLog struct {
+type SensorLog struct {
+	SensorName  string
 	CurrentTime time.Time
 	Message     string
-	SensorName  string
 }
