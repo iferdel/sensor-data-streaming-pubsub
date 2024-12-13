@@ -27,7 +27,7 @@ func main() {
 	pubsub.PublishGob(
 		publishCh,                               // amqp.Channel
 		routing.ExchangeSensorTransmissionTopic, // exchange
-		routing.PauseSensorPrefix+".*",          // routing key
+		routing.PauseKey+".*",                   // routing key
 		routing.SensorState{
 			IsPaused: true,
 		}, // value

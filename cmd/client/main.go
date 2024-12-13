@@ -50,13 +50,25 @@ func main() {
 	var wg sync.WaitGroup
 
 	wg.Add(2) // Increment the wait count by 2, since we will have 2 goroutines calling Done(). It counts at zero will trigger Wait() and unblock the program.
-	go sensorOutput(&wg, "sensor1", 1*time.Second, 99)
-	go sensorOutput(&wg, "sensor2", 2*time.Second, 99)
+	go sensorOutput(conn, &wg, "sensor1", 1*time.Second, 99)
+	go sensorOutput(conn, &wg, "sensor2", 2*time.Second, 99)
 	wg.Wait() // it blocks the execution of whatever comes next until all goroutines it's waiting are finished
 }
 
-func sensorOutput(wg *sync.WaitGroup, sensorName string, interval time.Duration, seed int64) {
+func sensorOutput(conn *amqp.Connection, wg *sync.WaitGroup, sensorName string, interval time.Duration, seed int64) {
 	defer wg.Done() // signals the waitGroup that the goroutine finished its job, bringing the counter down a unit value
+
+	_, _, err := pubsub.DeclareAndBind(
+		conn,
+		routing.ExchangeSensorTransmissionTopic, // exchange
+		routing.PauseKey+"."+sensorName,         // queue name
+		routing.PauseKey,                        // routing key
+		pubsub.SimpleQueueTranscient,
+	)
+	if err != nil {
+		log.Fatalf("error declaring and binding to %v: %v", routing.PauseKey, err)
+	}
+
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
 
