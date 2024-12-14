@@ -5,15 +5,31 @@
 (GIF showing GPS data from sensors)
 
 # Reason
-In 2019 I worked with vibrational analysis. I studied Mechanical Engineering and got into this place where they needed someone that would perform the measurements and then analyse them. I did measure mechanical equipment such as overhead cranes, climate equipment for the main airport in Chile (pumps, cooling towers, air handling units), aswell as civil structures. Everyting was thought on being measured in-situ. Which is one of the motivations of this project, since I think a more ambitious and profitable solution would involve remote monitoring. This would open up doors for new requests for clients. 
+Back in 2020 I worked with vibrational analysis. 
+I studied Mechanical Engineering and got into this place where they needed someone that would design for the installation of the sensors and perform the measurements, and then analyse them back at office. I did measure mechanical equipment such as overhead cranes in a mining plant, climate equipment for the main airport in Chile (pumps, cooling towers, air handling units), aswell as civil structures (protected buildings, commercial buildings, private buildings) subjected to nearby constructions or certain physical phenomenas. Everyting was thought on being measured in-situ. Which is one of the motivations for this project, since I think a more ambitious and profitable solution would involve remote monitoring. This would have open up interesting doors for new requests for clients.
 
 # Architecture
 
+sensor layer
+The whole solution is based on an event driven architecture, using PubSub pattern being powered up by a distributed system. This project is intended to be hosted in a kubernetes cluster which would allow high availability and horizontal pod scaling whenever needed (for example, with the increasing of sample rate of the sensors or a scale up process of plugging more sensors into the system)
+The data is transfered using protobuff, but the demo is being constructed over Gob serializer provided by the standard library encoding/gob
+I have been working on a (homelab)[https://github.com/iferdel/homelab]. This homelab is based on different environments and bare metal using talosOS to work on immutable cluster, with similitudes to what one may expect in a cloud based solution. This whole homelab kubernetes configurations is powered up by GitOps using FluxCD.
+For this repo my CI is being linked between this github repo (I ommited any intention to have a private git server for seamless demostration of this project), jenkins server running inside the homelab, and dockerhub for image storage.
+I am using Azure Secrets within the homelab for handling the database instance. In this case, I am using TimeScaleDB as the database to store sensor data. In a real scenario I would go all into the cloud based solution, but for this project I am using a storage from within the bare metal cluster using CloudNativePG and OpenEBS + Mayastor
+To visualize the information being retrieved from the sensors I am using Grafana, taking advantage of the querying options for near real-time monitoring.
+The data being saved in the database is thought to be expiring with expiring policies from timescaleDB, so I wont cope the entire disk with data. On the other hand I am using compression directly over the database.
+
 # Design
+
+I want sensors that sends information such as 
+timestamp, measurement (based on a variable sample frequency)
+gps location latitude and longitude
 
 # Database Schemas
 
 # Monitoring
+
+TimeScale allows me to query the database from within Grafana
 
 # Examples
 
