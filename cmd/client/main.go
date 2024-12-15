@@ -16,6 +16,15 @@ import (
 )
 
 func main() {
+	var wg sync.WaitGroup
+
+	wg.Add(2) // Increment the wait count by 2, since we will have 2 goroutines calling Done(). It counts at zero will trigger Wait() and unblock the program.
+	go sensorOutput(&wg, "AAD-1123", 1*time.Second, 99)
+	wg.Wait() // it blocks the execution of whatever comes next until all goroutines it's waiting are finished
+}
+
+func sensorOutput(wg *sync.WaitGroup, serialNumber string, interval time.Duration, seed int64) {
+	defer wg.Done() // signals the waitGroup that the goroutine finished its job, bringing the counter down a unit value
 	fmt.Println("EQP ON")
 
 	const rabbitConnString = "amqp://guest:guest@localhost:5672/"
@@ -33,9 +42,6 @@ func main() {
 		log.Fatalf("could not create publish channel: %v", err)
 	}
 
-	// subscribe to streaming
-
-	serialNumber := "001-ACC"
 	_ = sensorlogic.NewSensorState(serialNumber)
 
 	err = publishSensorLog(
@@ -47,26 +53,15 @@ func main() {
 		fmt.Println("invalid publish sensor log:", err)
 	}
 
-	var wg sync.WaitGroup
-
-	wg.Add(2) // Increment the wait count by 2, since we will have 2 goroutines calling Done(). It counts at zero will trigger Wait() and unblock the program.
-	go sensorOutput(conn, &wg, "sensor1", 1*time.Second, 99)
-	go sensorOutput(conn, &wg, "sensor2", 2*time.Second, 99)
-	wg.Wait() // it blocks the execution of whatever comes next until all goroutines it's waiting are finished
-}
-
-func sensorOutput(conn *amqp.Connection, wg *sync.WaitGroup, sensorName string, interval time.Duration, seed int64) {
-	defer wg.Done() // signals the waitGroup that the goroutine finished its job, bringing the counter down a unit value
-
-	_, _, err := pubsub.DeclareAndBind(
+	_, _, err = pubsub.DeclareAndBind(
 		conn,
-		routing.ExchangeSensorTransmissionTopic, // exchange
-		routing.PauseKey+"."+sensorName,         // queue name
-		routing.PauseKey,                        // routing key
-		pubsub.SimpleQueueTranscient,
+		routing.ExchangeTopicIoT, // exchange
+		fmt.Sprintf(routing.QueueSensorTelemetryFormat, serialNumber), // queue name
+		fmt.Sprintf(routing.KeySensorCommandFormat, serialNumber),     // routing key
+		pubsub.SimpleQueueDurable,                                     // queue type
 	)
 	if err != nil {
-		log.Fatalf("error declaring and binding to %v: %v", routing.PauseKey, err)
+		log.Fatalf("error declaring and binding to %v: %v", routing.KeySensorCommandFormat, err)
 	}
 
 	ticker := time.NewTicker(interval)
@@ -79,7 +74,7 @@ func sensorOutput(conn *amqp.Connection, wg *sync.WaitGroup, sensorName string, 
 		fmt.Fprintf(w, "%s\t%v\t%v\t%v\n", name, accX, accY, accZ)
 	}
 	for range ticker.C {
-		show(sensorName, r.Float64(), r.Float64(), r.Float64())
+		show(serialNumber, r.Float64(), r.Float64(), r.Float64())
 		w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
 	}
 }
@@ -87,7 +82,7 @@ func sensorOutput(conn *amqp.Connection, wg *sync.WaitGroup, sensorName string, 
 func publishSensorLog(publishCh *amqp.Channel, sensorname, msg string) error {
 	return pubsub.PublishGob(
 		publishCh,
-		routing.ExchangeSensorTransmissionTopic,
+		routing.ExchangeTopicIoT,
 		routing.SensorLogSlug+"."+sensorname,
 		routing.SensorLog{
 			SensorName:  sensorname,
