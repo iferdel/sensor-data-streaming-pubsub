@@ -53,15 +53,40 @@ func sensorOutput(wg *sync.WaitGroup, serialNumber string, interval time.Duratio
 		fmt.Println("invalid publish sensor log:", err)
 	}
 
+	// consumer of command queue
+	_, _, err = pubsub.DeclareAndBind(
+		conn,
+		routing.ExchangeTopicIoT, // exchange
+		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber), // queue name
+		fmt.Sprintf(routing.KeySensorCommandFormat, serialNumber),    // routing key
+		pubsub.SimpleQueueDurable,                                    // queue type
+	)
+	if err != nil {
+		log.Fatalf(
+			"error declaring and binding on exchange %v, queue %v, routing key %v: %v",
+			routing.ExchangeTopicIoT,                                     // exchange
+			fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber), // queue name
+			fmt.Sprintf(routing.KeySensorCommandFormat, serialNumber),    // routing key
+			err,
+		)
+	}
+
+	// publisher of data streaming queue
 	_, _, err = pubsub.DeclareAndBind(
 		conn,
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.QueueSensorTelemetryFormat, serialNumber), // queue name
-		fmt.Sprintf(routing.KeySensorCommandFormat, serialNumber),     // routing key
+		fmt.Sprintf(routing.KeySensorDataFormat, serialNumber),        // routing key
 		pubsub.SimpleQueueDurable,                                     // queue type
 	)
 	if err != nil {
-		log.Fatalf("error declaring and binding to %v: %v", routing.KeySensorCommandFormat, err)
+		log.Fatalf(
+			"error declaring and binding on exchange %v, queue %v, routing key %v: %v",
+			routing.ExchangeTopicIoT, // exchange
+			fmt.Sprintf(routing.QueueSensorTelemetryFormat, serialNumber), // queue name
+			fmt.Sprintf(routing.KeySensorDataFormat, serialNumber),        // routing key
+			err,
+		)
 	}
 
 	ticker := time.NewTicker(interval)
