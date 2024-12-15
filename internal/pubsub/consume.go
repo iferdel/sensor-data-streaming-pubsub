@@ -48,8 +48,11 @@ func DeclareAndBind(
 		queueDurability != QueueDurable, // delete when unused
 		queueDurability != QueueDurable, // exclusive
 		false,                           // noWait
-		nil,                             // args
+		amqp.Table{
+			"x-queue-type": "quorum",
+		}, // args
 	)
+
 	if err != nil {
 		return nil, amqp.Queue{}, fmt.Errorf("could not declare queue: %v", err)
 	}
