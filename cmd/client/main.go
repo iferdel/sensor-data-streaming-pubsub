@@ -43,7 +43,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, interval time.Dura
 	//		log.Fatalf("could not create publish channel: %v", err)
 	//	}
 	//
-	//    _ = sensorlogic.NewSensorState(serialNumber)
+	_ = sensorlogic.NewSensorState(serialNumber)
 	//
 	//	err = publishSensorLog(
 	//		publishCh,
