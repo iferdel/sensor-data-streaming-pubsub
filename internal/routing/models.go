@@ -1,5 +1,7 @@
 package routing
 
+// DTOs (Data Transfer Objects) for messaging system
+
 import "time"
 
 type SensorStatus struct {

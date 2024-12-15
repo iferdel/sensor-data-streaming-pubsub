@@ -24,5 +24,5 @@ const (
 )
 
 const (
-	SensorLogsSlug = "sensor_logs"
+	SensorLogSlug = "sensor_logs"
 )
