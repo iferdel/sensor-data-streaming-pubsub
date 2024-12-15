@@ -11,16 +11,11 @@ const (
 	QueueSensorCommandsFormat  = "sensor.%s.commands.state_handler" // subjected to sensor id
 )
 
-// Routing Keys follow pattern: entity.id.type
+// Routing Bind Keys follow pattern: entity.id.type
 // Even if noun.verb is prefered, due to the domain of IoT, an exception is proposed
 const (
-	// Sensor data
-	KeySensorDataTemplate = "sensor.*.telemetry"
-	KeySensorDataFormat   = "sensor.%s.telemetry"
-
-	// Sensor command
-	KeySensorCommandTemplate = "sensor.*.commands"
-	KeySensorCommandFormat   = "sensor.%s.commands"
+	BindKeySensorDataFormat    = "sensor.%s.telemetry.#"
+	BindKeySensorCommandFormat = "sensor.%s.commands.#"
 )
 
 const (
