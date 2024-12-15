@@ -6,11 +6,19 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-type SimpleQueueType int
+type QueueDurability int
+
+type QueueType int
 
 const (
-	SimpleQueueDurable SimpleQueueType = iota
-	SimpleQueueTranscient
+	QueueDurable QueueDurability = iota
+	QueueTranscient
+)
+
+const (
+	QueueClassic QueueType = iota
+	QueueQuorum
+	QueueStream
 )
 
 type AckType int
@@ -26,7 +34,7 @@ func DeclareAndBind(
 	exchange,
 	queueName,
 	key string,
-	simpleQueueType SimpleQueueType,
+	queueDurability QueueDurability,
 ) (*amqp.Channel, amqp.Queue, error) {
 
 	ch, err := conn.Channel()
@@ -35,12 +43,12 @@ func DeclareAndBind(
 	}
 
 	queue, err := ch.QueueDeclare(
-		queueName,                             // name
-		simpleQueueType == SimpleQueueDurable, // durable
-		simpleQueueType != SimpleQueueDurable, // delete when unused
-		simpleQueueType != SimpleQueueDurable, // exclusive
-		false,                                 // noWait
-		nil,                                   // args
+		queueName,                       // name
+		queueDurability == QueueDurable, // durable
+		queueDurability != QueueDurable, // delete when unused
+		queueDurability != QueueDurable, // exclusive
+		false,                           // noWait
+		nil,                             // args
 	)
 	if err != nil {
 		return nil, amqp.Queue{}, fmt.Errorf("could not declare queue: %v", err)

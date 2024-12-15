@@ -59,7 +59,7 @@ func sensorOutput(wg *sync.WaitGroup, serialNumber string, interval time.Duratio
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber), // queue name
 		fmt.Sprintf(routing.KeySensorCommandFormat, serialNumber),    // routing key
-		pubsub.SimpleQueueDurable,                                    // queue type
+		pubsub.QueueDurable, // queue type
 	)
 	if err != nil {
 		log.Fatalf(
@@ -77,7 +77,7 @@ func sensorOutput(wg *sync.WaitGroup, serialNumber string, interval time.Duratio
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.QueueSensorTelemetryFormat, serialNumber), // queue name
 		fmt.Sprintf(routing.KeySensorDataFormat, serialNumber),        // routing key
-		pubsub.SimpleQueueDurable,                                     // queue type
+		pubsub.QueueDurable, // queue type
 	)
 	if err != nil {
 		log.Fatalf(
