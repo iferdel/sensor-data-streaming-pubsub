@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
@@ -24,12 +25,17 @@ func main() {
 		log.Fatalf("could not create channel: %v", err)
 	}
 
+	sensorSerialNumber := "AAD-1123"
+
 	pubsub.PublishGob(
-		publishCh,                               // amqp.Channel
-		routing.ExchangeSensorTransmissionTopic, // exchange
-		routing.PauseKey+".*",                   // routing key
-		routing.SensorState{
-			IsPaused: true,
+		publishCh,                // amqp.Channel
+		routing.ExchangeTopicIoT, // exchange
+		fmt.Sprintf(routing.BindKeySensorCommandFormat, sensorSerialNumber), // routing key
+		routing.CommandMessage{
+			SensorName: sensorSerialNumber,
+			Timestamp:  time.Now(),
+			Command:    "sleep",
+			Params:     nil,
 		}, // value
 	)
 }
