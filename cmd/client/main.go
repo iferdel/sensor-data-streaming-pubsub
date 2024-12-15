@@ -19,11 +19,12 @@ func main() {
 	var wg sync.WaitGroup
 
 	wg.Add(2) // Increment the wait count by 2, since we will have 2 goroutines calling Done(). It counts at zero will trigger Wait() and unblock the program.
-	go sensorOutput(&wg, "AAD-1123", 1*time.Second, 99)
+	go sensorOperation(&wg, "AAD-1123", 1*time.Second, 99)
 	wg.Wait() // it blocks the execution of whatever comes next until all goroutines it's waiting are finished
 }
 
-func sensorOutput(wg *sync.WaitGroup, serialNumber string, interval time.Duration, seed int64) {
+// each sensor as a client that would run in a different process or all sensors as a client (for simplicity)
+func sensorOperation(wg *sync.WaitGroup, serialNumber string, interval time.Duration, seed int64) {
 	defer wg.Done() // signals the waitGroup that the goroutine finished its job, bringing the counter down a unit value
 	fmt.Println("EQP ON")
 
@@ -36,22 +37,22 @@ func sensorOutput(wg *sync.WaitGroup, serialNumber string, interval time.Duratio
 	defer conn.Close()
 	fmt.Println("connection to msg broker succeeded")
 
-	// create channel for further publish of sensor data/logs
-	publishCh, err := conn.Channel()
-	if err != nil {
-		log.Fatalf("could not create publish channel: %v", err)
-	}
-
-	_ = sensorlogic.NewSensorState(serialNumber)
-
-	err = publishSensorLog(
-		publishCh,
-		serialNumber,
-		"Starting Sensor Streaming...",
-	)
-	if err != nil {
-		fmt.Println("invalid publish sensor log:", err)
-	}
+	//	// create channel for further publish of sensor data/logs
+	//	publishCh, err := conn.Channel()
+	//	if err != nil {
+	//		log.Fatalf("could not create publish channel: %v", err)
+	//	}
+	//
+	//    _ = sensorlogic.NewSensorState(serialNumber)
+	//
+	//	err = publishSensorLog(
+	//		publishCh,
+	//		serialNumber,
+	//		"Starting Sensor Streaming...",
+	//	)
+	//	if err != nil {
+	//		fmt.Println("invalid publish sensor log:", err)
+	//	}
 
 	// consumer of command queue
 	_, _, err = pubsub.DeclareAndBind(
@@ -67,24 +68,6 @@ func sensorOutput(wg *sync.WaitGroup, serialNumber string, interval time.Duratio
 			routing.ExchangeTopicIoT,                                     // exchange
 			fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber), // queue name
 			fmt.Sprintf(routing.KeySensorCommandFormat, serialNumber),    // routing key
-			err,
-		)
-	}
-
-	// publisher of data streaming queue
-	_, _, err = pubsub.DeclareAndBind(
-		conn,
-		routing.ExchangeTopicIoT, // exchange
-		fmt.Sprintf(routing.QueueSensorTelemetryFormat, serialNumber), // queue name
-		fmt.Sprintf(routing.KeySensorDataFormat, serialNumber),        // routing key
-		pubsub.QueueDurable, // queue type
-	)
-	if err != nil {
-		log.Fatalf(
-			"error declaring and binding on exchange %v, queue %v, routing key %v: %v",
-			routing.ExchangeTopicIoT, // exchange
-			fmt.Sprintf(routing.QueueSensorTelemetryFormat, serialNumber), // queue name
-			fmt.Sprintf(routing.KeySensorDataFormat, serialNumber),        // routing key
 			err,
 		)
 	}
