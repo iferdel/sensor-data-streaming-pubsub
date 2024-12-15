@@ -1,16 +1,23 @@
 package routing
 
+// Exchange
 const (
-	SensorStreamingPrefix = "sensor_data"
-
-	SensorSaturatedRecognitionPrefix = "sensor_saturated"
-
-	PauseKey = "pause"
-
-	SensorLogSlug = "sensor_logs"
+	ExchangeSensorsTopic = "sensors"
 )
 
+// Queue Names
 const (
-	ExchangeSensorTransmissionDirect = "sensor_transmission_direct"
-	ExchangeSensorTransmissionTopic  = "sensor_transmission"
+	QueueSensorData     = "sensor.data_stream"
+	QueueSensorCommands = "sensor.commands"
+)
+
+// Routing Keys
+const (
+	// Sensor data
+	SensorDataTemplate = "sensor.*.data"
+	SensorDataFormat   = "sensor.%s.data"
+
+	// Sensor command
+	SensorCommandTemplate = "sensor.*.command"
+	SensorCommandFormat   = "sensor.%s.command"
 )
