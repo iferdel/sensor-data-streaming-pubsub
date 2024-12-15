@@ -18,7 +18,7 @@ With that in mind, my goal for this project is to build a full **end-to-end**, r
 This solution is based on an **event-driven** architecture using a **pub/sub** pattern, powered by a **distributed system**. The project is intended to be hosted on a **Kubernetes cluster** to ensure high availability and horizontal scaling as needed—for example, if sensor sampling rates increase or if we add more sensors.
 
 ### Key architectural points:
-- **Data Transfer**: The solution is intended to use Protobuf as a data serialization format. However, for the initial setup (POC), the Go encoding/gob serializer will be used.
+- **Data Transfer**: The solution is intended to use Protobuf as a data serialization format to match real scenarios with embedded C or C++. However, for the initial setup (POC), the Go encoding/gob serializer will be used.
 - **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD.
 - **CI/CD and Images**: For CI/CD, I’m using Jenkins inside the homelab and Docker Hub for image storage, while the GitHub repository hosts the source code (pulling the latest image by means of FluxCD source controllers).
 - **Secrets**: I’m using Azure Secrets in the homelab for secure database credentials. 
@@ -31,56 +31,61 @@ This solution is based on an **event-driven** architecture using a **pub/sub** p
 
 ## Design
 
-I want sensors that sends information such as 
-timestamp, measurement (based on a variable sample frequency)
-gps location latitude and longitude
+Sensors will send:
+    - timestamp (with nanosecond precision)
+    - measurement (at a variable sample frequency)
+    - GPS location (latitude and longitude)
+This approach allows flexible scaling of the number of sensors and their data rates.
 
 ## Database Schemas
 
+(image of ERD)
+
 ## Monitoring
 
-TimeScale allows me to query the database from within Grafana
+TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and visualization of sensor data. This enables quick insights into sensor performance, trends, and anomalies.
 
 ## Examples
 
+(tmux showing up logs and cmd applying behavioural changes over the sensors.)
+(...)
+
 ## Thoughts on the Process...
-* using gob as serializer for enconding and decoding messages fits only for the demo, but lather on I'd expect to have protobuff to match a real scenario with sensors working along with embedded C or C++.
-* as a matter of choice, the database that will handle the sensor data is going to be postgreSQL with the time-series extension TimeScaleDB. This facilitates a lot along with other postgres extensions for monitoring real time data and statistics such as from pg_stat_statements and pg_stats_kcache. Also, I see a motivation on using a relational database since each sensor would have certain pattern for entities that would match pretty well in this scenario.
-* I'm using rabbitMQ as the message broker since its flexibility fits well enough to treat the streaming of data from the sensors using streaming queues along with MQTT, and by the same token, allowing other microservices to work with the same instance of rabbitMQ but with AMQP and standard queues.
-* One exchange is in use, one durable queue per sensor since we are expecting data rates on between 1.000 to 25.000 Hz.
-* I'm thinking of simulating tens, hundreds and why not, thousands of sensors sending data.
-* Each sensor will publish their location and measurements with a timestamp sensible to nanoseconds as our maximum sample frequency is aroung 25.000 Hz (1/25.000 = 4 "mu"s)
-* Besides the sensor layer, there are three microservices in mind.
-1) sensor control panel: CMD that interacts with each sensor on their operational behaviour. Like sleep, changes on their sample frequency, etc.
-2) sensor data capture: Horizontal Pod Autoscaled service which will consume the sensor data and insert it into the database.
-3) sensor data processing alarms: Service that triggers behaviour of certain sensors based on patterns such as getting into a threshold (saturation) multiple times over a controlled period of time.
 
-The pattern for exchanges, queues and routing keys are as follow:
-exchange: sensor_streaming
-queues: sensor_{i} where i is the serial number of the sensor
-routing keys: 
-    sensor_{i}.commands.sleep
-    sensor_{i}.commands.change_sample_frequency
-    sensor_{i}.data
-    sensor_{i}.alarms.trigger
+### Simulation
 
-pubsub pattern per element (microservice):
-    sensor: 
-        - publisher: 
-            - of their captured data
-            - of return behaviour after commands/triggers were received
-        - subscriber: 
-            - to commands and triggers from alarms
-    sensor control plane:
-        - publisher: 
-            - of their commands with arguments
-        - subscriber: 
-            - to sensor state based on return values from commands
-    sensor data capture:
-        - subscriber:
-            - to data streaming from sensors
-    sensor data processing alarms:
-        - publisher:
-            - of their triggers based on processed data
+I'm thinking of simulating tens, hundreds and why not, thousands of sensors sending data.
 
+### Microservices Considered
+
+In addition to the sensor layer, three key microservices will form the core of this architecture:
+    Sensor Control Panel: A service (or CLI tool) that interacts with each sensor to adjust operational parameters, such as putting a sensor to sleep or changing its sampling frequency.
+    Sensor Data Capture: A horizontally scalable service (utilizing Kubernetes Horizontal Pod Autoscaling) that consumes sensor data and writes it to the database.
+    Sensor Data Processing & Alarms: A service that analyzes incoming data to detect patterns or threshold violations and then triggers commands or alarms as needed.
+
+### Pub Sub Compontents to be Used
+
+Exchange, Queues, and Routing Keys:
+
+    Exchange: sensor_streaming
+    Queues: sensor_{i} for each sensor i
+    Routing Keys:
+        sensor_{i}.commands.sleep
+        sensor_{i}.commands.change_sample_frequency
+        sensor_{i}.data
+        sensor_{i}.alarms.trigger
+
+### Pub/Sub Pattern for Each Microservice:
+
+1) Sensor:
+    Publisher: Sensor data and acknowledgments after commands or triggers are processed
+    Subscriber: Commands and alarms sent from other services
+2) Sensor Control Panel:
+    Publisher: Commands (with necessary arguments) sent to sensors
+    Subscriber: Sensor status updates and command acknowledgments
+3) Sensor Data Capture:
+    Subscriber: Consumes continuous sensor data streams for persistence in the database
+    Sensor Data Processing & Alarms:
+        Publisher: Triggers or alerts based on analyzed sensor data
+        Subscriber: Receives raw sensor data for processing
 
