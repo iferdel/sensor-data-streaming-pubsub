@@ -2,22 +2,27 @@ package routing
 
 // Exchange
 const (
-	ExchangeSensorsTopic = "sensors"
+	ExchangeTopicIoT = "iot" // would be great to test as a direct exchange since it should be faster
 )
 
-// Queue Names
+// Queues follow pattern: entity.id.type.consumer
 const (
-	QueueSensorData     = "sensor.data_stream"
-	QueueSensorCommands = "sensor.commands"
+	QueueSensorTelemetryFormat = "sensor.%s.telemetry.db_writer"    // subjected to sensor id
+	QueueSensorCommandsFormat  = "sensor.%s.commands.state_handler" // subjected to sensor id
 )
 
-// Routing Keys
+// Routing Keys follow pattern: entity.id.type
+// Even if noun.verb is prefered, due to the domain of IoT, an exception is proposed
 const (
 	// Sensor data
-	SensorDataTemplate = "sensor.*.data"
-	SensorDataFormat   = "sensor.%s.data"
+	KeySensorDataTemplate = "sensor.*.telemetry"
+	KeySensorDataFormat   = "sensor.%s.telemetry"
 
 	// Sensor command
-	SensorCommandTemplate = "sensor.*.command"
-	SensorCommandFormat   = "sensor.%s.command"
+	KeySensorCommandTemplate = "sensor.*.commands"
+	KeySensorCommandFormat   = "sensor.%s.commands"
+)
+
+const (
+	SensorLogsSlug = "sensor_logs"
 )
