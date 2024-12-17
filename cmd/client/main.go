@@ -55,21 +55,16 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, interval time.Dura
 	//	}
 
 	// consumer of command queue
-	_, _, err = pubsub.DeclareAndBind(
+	err = pubsub.SubscribeGob(
 		conn,
 		routing.ExchangeTopicIoT, // exchange
-		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber), // queue name
-		fmt.Sprintf(routing.KeySensorCommandFormat, serialNumber),    // routing key
+		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber),  // queue name
+		fmt.Sprintf(routing.BindKeySensorCommandFormat, serialNumber), // routing key
 		pubsub.QueueDurable, // queue type
+		handlerSleep(),
 	)
 	if err != nil {
-		log.Fatalf(
-			"error declaring and binding on exchange %v, queue %v, routing key %v: %v",
-			routing.ExchangeTopicIoT,                                     // exchange
-			fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber), // queue name
-			fmt.Sprintf(routing.KeySensorCommandFormat, serialNumber),    // routing key
-			err,
-		)
+		log.Fatalf("could not subscribe to sleep: %v", err)
 	}
 
 	ticker := time.NewTicker(interval)

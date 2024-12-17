@@ -38,4 +38,5 @@ func main() {
 			Params:     nil,
 		}, // value
 	)
+	fmt.Println("sending sleep command to sensor", sensorSerialNumber)
 }
