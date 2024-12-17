@@ -55,6 +55,9 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, interval time.Dura
 	//	}
 
 	// consumer of command queue
+    // i'll need a wrapper or more generalized handler to handle different commands
+    // i dont expect many msgs going through this queue, so I'd keep it one queue with all commands
+    // but for that i will need the handle their distint options and args
 	err = pubsub.SubscribeGob(
 		conn,
 		routing.ExchangeTopicIoT, // exchange
