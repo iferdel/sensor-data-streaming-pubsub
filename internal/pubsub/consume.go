@@ -37,7 +37,7 @@ func SubscribeGob[T any](
 	queueName,
 	key string,
 	queueDurability QueueDurability,
-	handler func(T),
+	handler func(T) AckType,
 ) error {
 	ch, queue, err := DeclareAndBind(
 		conn,

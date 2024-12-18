@@ -37,34 +37,15 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, interval time.Dura
 	defer conn.Close()
 	fmt.Println("connection to msg broker succeeded")
 
-	//	// create channel for further publish of sensor data/logs
-	//	publishCh, err := conn.Channel()
-	//	if err != nil {
-	//		log.Fatalf("could not create publish channel: %v", err)
-	//	}
-	//
-	_ = sensorlogic.NewSensorState(serialNumber)
-	//
-	//	err = publishSensorLog(
-	//		publishCh,
-	//		serialNumber,
-	//		"Starting Sensor Streaming...",
-	//	)
-	//	if err != nil {
-	//		fmt.Println("invalid publish sensor log:", err)
-	//	}
+	sensorState := sensorlogic.NewSensorState(serialNumber)
 
-	// consumer of command queue
-    // i'll need a wrapper or more generalized handler to handle different commands
-    // i dont expect many msgs going through this queue, so I'd keep it one queue with all commands
-    // but for that i will need the handle their distint options and args
 	err = pubsub.SubscribeGob(
 		conn,
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber),  // queue name
 		fmt.Sprintf(routing.BindKeySensorCommandFormat, serialNumber), // routing key
 		pubsub.QueueDurable, // queue type
-		handlerSleep(),
+		handlerCommand(sensorState),
 	)
 	if err != nil {
 		log.Fatalf("could not subscribe to sleep: %v", err)

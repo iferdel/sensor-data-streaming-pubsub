@@ -1,13 +1,8 @@
 package routing
 
-// DTOs (Data Transfer Objects) for messaging system
-
 import "time"
 
-type SensorStatus struct {
-	SensorName string
-	Status     string
-}
+// DTOs (Data Transfer Objects) for messaging system
 
 type SensorMeasurement struct {
 	SensorName string

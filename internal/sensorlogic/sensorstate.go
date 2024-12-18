@@ -1,8 +1,8 @@
 package sensorlogic
 
 type SensorState struct {
-	Sensor Sensor
-	Paused bool
+	Sensor  Sensor
+	IsSleep bool
 }
 
 func NewSensorState(serialNumber string) *SensorState {
@@ -10,6 +10,6 @@ func NewSensorState(serialNumber string) *SensorState {
 		Sensor: Sensor{
 			SerialNumber: serialNumber,
 		},
-		Paused: false,
+		IsSleep: false,
 	}
 }
