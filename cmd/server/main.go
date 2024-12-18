@@ -53,8 +53,8 @@ func main() {
 			if err != nil {
 				log.Printf("could not publish sleep command: %v", err)
 			}
-		case "resume":
-			fmt.Println("sending resume command to sensor", sensorSerialNumber)
+		case "awake":
+			fmt.Println("sending awake command to sensor", sensorSerialNumber)
 			err = pubsub.PublishGob(
 				publishCh,                // amqp.Channel
 				routing.ExchangeTopicIoT, // exchange
@@ -62,12 +62,12 @@ func main() {
 				routing.CommandMessage{
 					SensorName: sensorSerialNumber,
 					Timestamp:  time.Now(),
-					Command:    "resume",
+					Command:    "awake",
 					Params:     nil,
 				}, // value
 			)
 			if err != nil {
-				log.Printf("could not publish resume command: %v", err)
+				log.Printf("could not publish awake command: %v", err)
 			}
 		case "changeSampleFrequency":
 			if commandInput[1] == "" {

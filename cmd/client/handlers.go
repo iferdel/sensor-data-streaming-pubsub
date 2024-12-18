@@ -13,8 +13,8 @@ func handlerCommand(sensorState *sensorlogic.SensorState) func(cm routing.Comman
 		switch cm.Command {
 		case "sleep": // convert to constants command strings
 			sensorState.HandleSleep()
-		case "resume":
-			sensorState.HandleResume()
+		case "awake":
+			sensorState.HandleAwake()
 		default:
 			fmt.Println("not a valid command")
 			return pubsub.NackDiscard

@@ -2,7 +2,7 @@ package sensorlogic
 
 import "fmt"
 
-func (sensorState *SensorState) HandleResume() {
+func (sensorState *SensorState) HandleAwake() {
 	if sensorState.IsSleep {
 		sensorState.IsSleep = false
 		fmt.Println("sensor is awake from sleep")
