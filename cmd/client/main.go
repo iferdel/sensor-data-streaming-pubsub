@@ -48,7 +48,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, interval time.Dura
 		handlerCommand(sensorState),
 	)
 	if err != nil {
-		log.Fatalf("could not subscribe to sleep: %v", err)
+		log.Fatalf("could not subscribe to command: %v", err)
 	}
 
 	ticker := time.NewTicker(interval)
