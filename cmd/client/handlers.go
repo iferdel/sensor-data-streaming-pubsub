@@ -15,6 +15,8 @@ func handlerCommand(sensorState *sensorlogic.SensorState) func(cm routing.Comman
 			sensorState.HandleSleep()
 		case "awake":
 			sensorState.HandleAwake()
+		case "changeSampleFrequency":
+			sensorState.HandleChangeSampleFrequency(cm.Params)
 		default:
 			fmt.Println("not a valid command")
 			return pubsub.NackDiscard

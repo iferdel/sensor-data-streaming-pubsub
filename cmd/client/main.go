@@ -19,12 +19,12 @@ func main() {
 	var wg sync.WaitGroup
 
 	wg.Add(2) // Increment the wait count by 2, since we will have 2 goroutines calling Done(). It counts at zero will trigger Wait() and unblock the program.
-	go sensorOperation(&wg, "AAD-1123", 1*time.Second, 99)
+	go sensorOperation(&wg, "AAD-1123", 1, 99)
 	wg.Wait() // it blocks the execution of whatever comes next until all goroutines it's waiting are finished
 }
 
 // each sensor as a client that would run in a different process or all sensors as a client (for simplicity)
-func sensorOperation(wg *sync.WaitGroup, serialNumber string, interval time.Duration, seed int64) {
+func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency int, seed int64) {
 	defer wg.Done() // signals the waitGroup that the goroutine finished its job, bringing the counter down a unit value
 	fmt.Println("EQP ON")
 
@@ -37,7 +37,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, interval time.Dura
 	defer conn.Close()
 	fmt.Println("connection to msg broker succeeded")
 
-	sensorState := sensorlogic.NewSensorState(serialNumber)
+	sensorState := sensorlogic.NewSensorState(serialNumber, sampleFrequency)
 
 	err = pubsub.SubscribeGob(
 		conn,
@@ -51,7 +51,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, interval time.Dura
 		log.Fatalf("could not subscribe to command: %v", err)
 	}
 
-	ticker := time.NewTicker(interval)
+	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
 
 	r := rand.New(rand.NewSource(seed))
@@ -60,9 +60,16 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, interval time.Dura
 	show := func(name string, accX, accY, accZ any) {
 		fmt.Fprintf(w, "%s\t%v\t%v\t%v\n", name, accX, accY, accZ)
 	}
-	for range ticker.C {
-		show(serialNumber, r.Float64(), r.Float64(), r.Float64())
-		w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
+	for {
+		select {
+		case <-ticker.C:
+			show(serialNumber, r.Float64(), r.Float64(), r.Float64())
+			w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
+		case newFreq := <-sensorState.SampleFrequencyChangeChan:
+			ticker.Stop()
+			ticker = time.NewTicker(time.Second / time.Duration(newFreq))
+			fmt.Println("Ticker frequency updated to:", newFreq)
+		}
 	}
 }
 
