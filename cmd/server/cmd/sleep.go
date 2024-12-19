@@ -14,13 +14,17 @@ var sleepCmd = &cobra.Command{
 	Use:   "sleep",
 	Short: "Stop sensor from generating/sending more data",
 	Run: func(cmd *cobra.Command, args []string) {
-		defer conn.Close()
 
-		sensorSerialNumber, err := cmd.Flags().GetString("sensorid")
+		if conn != nil {
+			defer conn.Close()
+		}
+
+		sensorSerialNumber, err := cmd.Flags().GetString("sensor")
 		if err != nil {
 			log.Printf("error retrieving sensorid flag: %v", err)
 			return
 		}
+
 		fmt.Println("sending sleep command to sensor", sensorSerialNumber)
 		err = pubsub.PublishGob(
 			publishCh,                // amqp.Channel
@@ -41,5 +45,5 @@ var sleepCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(sleepCmd)
-	sleepCmd.Flags().StringP("sensorid", "s", "", "sensorid")
+	sleepCmd.Flags().StringP("sensor", "s", "", "sensorid")
 }
