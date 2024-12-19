@@ -79,9 +79,9 @@ func publishSensorLog(publishCh *amqp.Channel, sensorname, msg string) error {
 		routing.ExchangeTopicIoT,
 		routing.SensorLogSlug+"."+sensorname,
 		routing.SensorLog{
-			SensorName:  sensorname,
-			CurrentTime: time.Now(),
-			Message:     msg,
+			SensorName: sensorname,
+			TimeStamp:  time.Now(),
+			Message:    msg,
 		},
 	)
 }

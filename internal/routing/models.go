@@ -13,13 +13,13 @@ type SensorMeasurement struct {
 type CommandMessage struct {
 	SensorName string
 	Timestamp  time.Time
-	Command    string                 // intended for 'sleep' 'awake' 'changeSampleFreq'
-	Params     map[string]interface{} // command specific parameters e.g. {"frequency": 1000}
+	Command    string                 // intended for 'sleep' 'awake' 'changeSampleFrequency'
+	Params     map[string]interface{} // command specific parameters e.g. {"sampleFrequency": 1000}
 }
 
 type SensorLog struct {
-	SensorName  string
-	CurrentTime time.Time
-	Level       string
-	Message     string
+	SensorName string
+	TimeStamp  time.Time
+	Level      string
+	Message    string
 }
