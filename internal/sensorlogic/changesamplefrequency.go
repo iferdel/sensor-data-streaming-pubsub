@@ -15,6 +15,6 @@ func (sensorState *SensorState) HandleChangeSampleFrequency(params map[string]in
 		}
 		fmt.Println("changes of sample frequency applied")
 	} else {
-		fmt.Println("SampleFrequency is not of type time.Duration")
+		fmt.Println("SampleFrequency is not an integer")
 	}
 }

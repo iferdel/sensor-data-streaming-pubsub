@@ -39,6 +39,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 
 	sensorState := sensorlogic.NewSensorState(serialNumber, sampleFrequency)
 
+	// subscribe to sensor command queue
 	err = pubsub.SubscribeGob(
 		conn,
 		routing.ExchangeTopicIoT, // exchange
