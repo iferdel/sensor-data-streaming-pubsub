@@ -25,6 +25,17 @@ var awakeCmd = &cobra.Command{
 			return
 		}
 
+		all, err := cmd.Flags().GetBool("all")
+		if err != nil {
+			log.Printf("error retrieving all flag: %v", err)
+			return
+		}
+
+		if all {
+			fmt.Println("sending awake command to all sensors -- not yet implemented")
+			return
+		}
+
 		fmt.Println("sending awake command to sensor", sensorSerialNumber)
 		err = pubsub.PublishGob(
 			publishCh,                // amqp.Channel
@@ -46,4 +57,5 @@ var awakeCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(awakeCmd)
 	awakeCmd.Flags().StringP("sensor", "s", "", "sensorid")
+	awakeCmd.Flags().BoolP("all", "a", false, "awake all sensors")
 }
