@@ -6,6 +6,38 @@
 *(GIF of grafana dashboard showing up scaling up the system with more or less sensors)*
 *(GIF showing GPS data from sensors)*
 
+## Directory Tree
+.
+├── Dockerfile
+├── README.md
+├── cmd
+│   ├── client
+│   │   ├── handlers.go
+│   │   └── main.go
+│   └── server
+│       ├── cmd
+│       │   ├── awake.go
+│       │   ├── changesamplefrequency.go
+│       │   ├── root.go
+│       │   └── sleep.go
+│       └── main.go
+├── compose.yaml
+├── go.mod
+├── go.sum
+└── internal
+    ├── pubsub
+    │   ├── consume.go
+    │   └── publish.go
+    ├── routing
+    │   ├── models.go
+    │   └── routing.go
+    └── sensorlogic
+        ├── awake.go
+        ├── changesamplefrequency.go
+        ├── sensordata.go
+        ├── sensorstate.go
+        └── sleep.go
+
 ## Reason
 
 Back in 2020, I worked on **vibration analysis**. My main background back then was in **Mechanical Engineering**, and I took on a role that involved designing sensor installations, performing measurements in the field, and then analyzing them back at the office. I measured various types of mechanical equipment, such as overhead cranes in a mining plant and climate control systems (pumps, cooling towers, air handling units) in Chile’s main airport, as well as civil structures (protected, commercial, and private buildings) subjected to nearby construction or certain physical phenomena.
