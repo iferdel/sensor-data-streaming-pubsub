@@ -9,6 +9,7 @@ const (
 const (
 	QueueSensorTelemetryFormat = "sensor.%s.telemetry.db_writer"    // subjected to sensor id
 	QueueSensorCommandsFormat  = "sensor.%s.commands.state_handler" // subjected to sensor id
+	QueueSensorLogs            = "sensor_logs"
 )
 
 // Routing Bind Keys follow pattern: entity.id.type
@@ -16,8 +17,5 @@ const (
 const (
 	BindKeySensorDataFormat    = "sensor.%s.telemetry.#"
 	BindKeySensorCommandFormat = "sensor.%s.commands.#"
-)
-
-const (
-	SensorLogSlug = "sensor_logs"
+	BindKeySensorLogs          = "sensor_logs.%s"
 )

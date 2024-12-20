@@ -26,16 +26,22 @@ func main() {
 // each sensor as a client that would run in a different process or all sensors as a client (for simplicity)
 func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency int, seed int64) {
 	defer wg.Done() // signals the waitGroup that the goroutine finished its job, bringing the counter down a unit value
-	fmt.Println("EQP ON")
+
+	bootLogs := []string{}
+
+	bootLogs = append(bootLogs, "EQP ON")
 
 	const rabbitConnString = "amqp://guest:guest@localhost:5672/"
 	conn, err := amqp.Dial(rabbitConnString)
 	if err != nil {
-		log.Fatalf("could not connect to RabbitMQ: %v", err)
+		msg := fmt.Sprintf("could not connect to RabbitMQ: %v", err)
+		bootLogs = append(bootLogs, msg)
+		log.Fatalf(msg)
 	}
 
 	defer conn.Close()
-	fmt.Println("connection to msg broker succeeded")
+
+	bootLogs = append(bootLogs, "connection to msg broker succeeded")
 
 	sensorState := sensorlogic.NewSensorState(serialNumber, sampleFrequency)
 
@@ -49,7 +55,28 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 		handlerCommand(sensorState),
 	)
 	if err != nil {
-		log.Fatalf("could not subscribe to command: %v", err)
+		msg := fmt.Sprintf("could not subscribe to command: %v", err)
+		bootLogs = append(bootLogs, msg)
+		log.Fatalf(msg)
+	}
+
+	publishCh, err := conn.Channel()
+	if err != nil {
+		msg := fmt.Sprintf("could not create channel: %v", err)
+		bootLogs = append(bootLogs, msg)
+		log.Fatalf(msg)
+	}
+
+	// no guarda la hora del comando, sólo de cuando se envían todos los boot logs
+	for _, bootLog := range bootLogs {
+		err = publishSensorLog(
+			publishCh,
+			sensorState.Sensor.SerialNumber,
+			bootLog,
+		)
+		if err != nil {
+			fmt.Printf("error publishing log: %s\n", err)
+		}
 	}
 
 	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
@@ -76,9 +103,9 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 
 func publishSensorLog(publishCh *amqp.Channel, sensorname, msg string) error {
 	return pubsub.PublishGob(
-		publishCh,
-		routing.ExchangeTopicIoT,
-		routing.SensorLogSlug+"."+sensorname,
+		publishCh,                // channel
+		routing.ExchangeTopicIoT, // exchange
+		fmt.Sprintf(routing.BindKeySensorLogs, sensorname), // key
 		routing.SensorLog{
 			SensorName: sensorname,
 			TimeStamp:  time.Now(),

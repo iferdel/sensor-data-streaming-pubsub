@@ -9,6 +9,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+// publishers do not create queues since they work directly with exhances withot knowing even about queues
 func PublishGob[T any](ch *amqp.Channel, exchange, key string, val T) error {
 	var buffer bytes.Buffer
 	enc := gob.NewEncoder(&buffer)
