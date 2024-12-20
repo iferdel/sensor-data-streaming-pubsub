@@ -7,6 +7,7 @@
 *(GIF showing GPS data from sensors)*
 
 ## Directory Tree
+```
 .
 ├── Dockerfile
 ├── README.md
@@ -37,7 +38,7 @@
         ├── sensordata.go
         ├── sensorstate.go
         └── sleep.go
-
+```
 ## Reason
 
 Back in 2020, I worked on **vibration analysis**. My main background back then was in **Mechanical Engineering**, and I took on a role that involved designing sensor installations, performing measurements in the field, and then analyzing them back at the office. I measured various types of mechanical equipment, such as overhead cranes in a mining plant and climate control systems (pumps, cooling towers, air handling units) in Chile’s main airport, as well as civil structures (protected, commercial, and private buildings) subjected to nearby construction or certain physical phenomena.
