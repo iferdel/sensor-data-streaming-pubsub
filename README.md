@@ -51,24 +51,31 @@ With that in mind, my goal for this project is to build a full **end-to-end**, r
 This solution is based on an **event-driven** architecture using a **pub/sub** pattern, powered by a **distributed system**. The project is intended to be hosted on a **Kubernetes cluster** to ensure high availability and horizontal scaling as needed—for example, if sensor sampling rates increase or if we add more sensors.
 
 ### Key architectural points:
+*Disclaimer: Here we are considering an entire PubSub architecture, but one could conclude that a hybrid architecture for critical low-latency control would also be quite handy. In that case, one would expect using gRPC as the way to communicate between a service that would send direct commands to change behaviour (in a reactive way) not the sensor but to the machine or whatever is behind.*
 - **Data Transfer**: The solution is intended to use Protobuf as a data serialization format to match real scenarios with embedded C or C++. However, for the initial setup (POC), the Go encoding/gob serializer will be used.
 - **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD.
-- **CI/CD and Images**: For CI/CD, I’m using Jenkins inside the homelab and Docker Hub for image storage, while the GitHub repository hosts the source code (pulling the latest image by means of FluxCD source controllers).
-- **Secrets**: I’m using Azure Secrets in the homelab for secure database credentials. 
-- **Database**: PostgreSQL is used with TimeScaleDB, an extension optimized for time-series data. In a real scenario, this would be fully cloud-based, but for this project, I’m running it on bare metal, integrated with CloudNativePG and OpenEBS + Mayastor for storage.
+- **CI/CD**: For CI/CD, I’m using a private Jenkins server and Docker Hub for image storage, while the GitHub repository hosts the source code. The whole CD would be handled with FluxCD.
+- **Secrets**: I’m using Azure Key Vault for secrets in the homelab. 
+- **Database**: The solution uses PostgreSQL with [TimeScaleDB](https://www.timescale.com/), an extension optimized for time-series data. In a real scenario, the paid cloud tier would be in use, but for this project I’m storaging everything on bare metal, integrated with CloudNativePG and OpenEBS + Mayastor for storage.
 - **Data Management**: TimeScaleDB’s policies handle data expiration and compression, preventing storage overflow and improving performance.
-- **Visualization**: Grafana is used for near real-time dashboards, leveraging its querying capabilities to visualize time-series data stored in TimeScaleDB as well as stats from the database itself by means of wrapping the stats from pg_stat_statements and pg_stat_kcache with postgres CTEs and procedures.
+- **Visualization**: Grafana is used for near real-time dashboards, leveraging its querying capabilities to visualize time-series data stored as well as stats from the database itself by means of wrapping the stats from pg_stat_statements and pg_stat_kcache with postgres CTEs and procedures.
+- **Alarms**: *...*  
 - **Communication Protocols**:
     - *Sensor communication uses MQTT with streaming queues.*
-    - *Inter-service communication uses AMQP with RabbitMQ, employing both durable and transient queues.*
+    - *Inter-service communication uses AMQP with RabbitMQ, employing quorum queues.*
+    - *Alarm service communication uses gRPC for low-latency communication with the machine where the sensor to affect behaviour*
 
 ## Design
 
 Sensors will send:
+    - id (serial number)
     - timestamp (with nanosecond precision)
     - measurement (at a variable sample frequency)
     - GPS location (latitude and longitude)
 This approach allows flexible scaling of the number of sensors and their data rates.
+
+Sensor will receive (mapped through its id):
+    - commands that would affect the sensor behaviour such as sleep, awake and change sample frequency.
 
 ## Database Schemas
 
@@ -88,10 +95,11 @@ TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and 
 ### Simulation
 
 I'm thinking of simulating tens, hundreds and why not, thousands of sensors sending data.
+So not only the pubsub is being tested with this high throughput of data, but the database.
 
 ### Microservices Considered
 
-In addition to the sensor layer, three key microservices will form the core of this architecture:
+In addition to the sensor layer (client), three key microservices will form the core of this architecture:
     Sensor Control Panel: A service (or CLI tool) that interacts with each sensor to adjust operational parameters, such as putting a sensor to sleep or changing its sampling frequency.
     Sensor Data Capture: A horizontally scalable service (utilizing Kubernetes Horizontal Pod Autoscaling) that consumes sensor data and writes it to the database.
     Sensor Data Processing & Alarms: A service that analyzes incoming data to detect patterns or threshold violations and then triggers commands or alarms as needed.
