@@ -7,3 +7,13 @@ services:
       - "15672:15672" # Management UI port
     restart: unless-stopped
 
+  timescaledb:
+    image: timescale/timescaledb-ha:pg17
+    container_name: timescaledb-1
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres 
+    restart: unless-stopped
+     
+
