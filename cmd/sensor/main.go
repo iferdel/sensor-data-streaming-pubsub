@@ -96,11 +96,10 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 		return
 	}
 
-	// no guarda la hora del comando, sólo de cuando se envían todos los boot logs
+	// publish sensor boot logs
 	for _, bootLog := range bootLogs {
 		err = publishSensorLog(
 			publishCh,
-			sensorState.Sensor.SerialNumber,
 			bootLog,
 		)
 		if err != nil {
@@ -130,11 +129,11 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 	}
 }
 
-func publishSensorLog(publishCh *amqp.Channel, sensorname string, sensorLog routing.SensorLog) error {
+func publishSensorLog(publishCh *amqp.Channel, sensorLog routing.SensorLog) error {
 	return pubsub.PublishGob(
 		publishCh,                // channel
 		routing.ExchangeTopicIoT, // exchange
-		fmt.Sprintf(routing.BindKeySensorLogs, sensorname), // key
-		sensorLog, // sensor log
+		routing.BindKeyIoTLogs,   // key
+		sensorLog,                // sensor log
 	)
 }
