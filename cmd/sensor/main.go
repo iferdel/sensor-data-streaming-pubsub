@@ -32,18 +32,25 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 		routing.SensorLog{
 			SensorName: serialNumber,
 			TimeStamp:  time.Now(),
-			Level:      "info",
-			Message:    "EQP ON",
+			Level:      "INFO",
+			Message:    "System powering on...",
+		})
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Bootloader version: v1.0.0",
 		})
 
 	conn, err := amqp.Dial(routing.RabbitConnString)
 	if err != nil {
-		msg := fmt.Sprintf("could not connect to RabbitMQ: %v", err)
+		msg := fmt.Sprintf("Could not connect to RabbitMQ: %v", err)
 		bootLogs = append(bootLogs,
 			routing.SensorLog{
 				SensorName: serialNumber,
 				TimeStamp:  time.Now(),
-				Level:      "error",
+				Level:      "ERROR",
 				Message:    msg,
 			})
 		return
@@ -55,11 +62,27 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 		routing.SensorLog{
 			SensorName: serialNumber,
 			TimeStamp:  time.Now(),
-			Level:      "info",
-			Message:    "connection to msg broker succeeded",
+			Level:      "INFO",
+			Message:    "Connection to msg broker succeeded",
+		})
+
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Loading configuration...",
 		})
 
 	sensorState := sensorlogic.NewSensorState(serialNumber, sampleFrequency)
+
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Configuration loaded successfully",
+		})
 
 	// subscribe to sensor command queue
 	err = pubsub.SubscribeGob(
@@ -71,29 +94,70 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 		handlerCommand(sensorState),
 	)
 	if err != nil {
-		msg := fmt.Sprintf("could not subscribe to command: %v", err)
+		msg := fmt.Sprintf("Could not subscribe to command: %v", err)
 		bootLogs = append(bootLogs,
 			routing.SensorLog{
 				SensorName: serialNumber,
 				TimeStamp:  time.Now(),
-				Level:      "error",
+				Level:      "ERROR",
 				Message:    msg,
 			})
 		return
 	}
 
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Successful subscription to iotctl messaging queue",
+		})
+
 	publishCh, err := conn.Channel()
 	if err != nil {
-		msg := fmt.Sprintf("could not create channel: %v", err)
+		msg := fmt.Sprintf("Could not create channel: %v", err)
 		bootLogs = append(bootLogs,
 			routing.SensorLog{
 				SensorName: serialNumber,
 				TimeStamp:  time.Now(),
-				Level:      "error",
+				Level:      "ERROR",
 				Message:    msg,
 			})
 		return
 	}
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Successful subscription to log messaging queue",
+		})
+	time.Sleep(100 * time.Millisecond)
+
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Performing sensor self-test",
+		})
+	time.Sleep(500 * time.Millisecond)
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Self-test result: PASSED",
+		})
+	time.Sleep(100 * time.Millisecond)
+
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Booting completed, performing measurements...",
+		})
 
 	// publish sensor boot logs
 	for _, bootLog := range bootLogs {
@@ -102,7 +166,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 			bootLog,
 		)
 		if err != nil {
-			fmt.Printf("error publishing log: %s\n", err)
+			fmt.Printf("Error publishing log: %s\n", err)
 		}
 	}
 
