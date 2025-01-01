@@ -1,5 +1,9 @@
 package routing
 
+const (
+	RabbitConnString = "amqp://guest:guest@localhost:5672/"
+)
+
 // Exchange
 const (
 	ExchangeTopicIoT = "iot" // would be great to test as a direct exchange since it should be faster

@@ -13,7 +13,7 @@ import (
 )
 
 func main() {
-	conn, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	conn, err := amqp.Dial(routing.RabbitConnString)
 	if err != nil {
 		msg := fmt.Sprintf("could not connect to RabbitMQ: %v", err)
 		fmt.Println(msg)

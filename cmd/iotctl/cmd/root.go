@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/spf13/cobra"
 )
@@ -35,8 +36,7 @@ func initConfig() {
 }
 
 func initRabbitMQ() (*amqp.Connection, *amqp.Channel, error) {
-	const rabbitConnString = "amqp://guest:guest@localhost:5672/"
-	conn, err = amqp.Dial(rabbitConnString)
+	conn, err = amqp.Dial(routing.RabbitConnString)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not connect to RabbitMQ: %v", err)
 	}

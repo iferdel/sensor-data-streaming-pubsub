@@ -36,8 +36,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 			Message:    "EQP ON",
 		})
 
-	const rabbitConnString = "amqp://guest:guest@localhost:5672/"
-	conn, err := amqp.Dial(rabbitConnString)
+	conn, err := amqp.Dial(routing.RabbitConnString)
 	if err != nil {
 		msg := fmt.Sprintf("could not connect to RabbitMQ: %v", err)
 		bootLogs = append(bootLogs,
