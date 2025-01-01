@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"os"
 	"sync"
@@ -27,21 +26,39 @@ func main() {
 func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency int, seed int64) {
 	defer wg.Done() // signals the waitGroup that the goroutine finished its job, bringing the counter down a unit value
 
-	bootLogs := []string{}
+	bootLogs := []routing.SensorLog{}
 
-	bootLogs = append(bootLogs, "EQP ON")
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "info",
+			Message:    "EQP ON",
+		})
 
 	const rabbitConnString = "amqp://guest:guest@localhost:5672/"
 	conn, err := amqp.Dial(rabbitConnString)
 	if err != nil {
 		msg := fmt.Sprintf("could not connect to RabbitMQ: %v", err)
-		bootLogs = append(bootLogs, msg)
-		log.Fatalf(msg)
+		bootLogs = append(bootLogs,
+			routing.SensorLog{
+				SensorName: serialNumber,
+				TimeStamp:  time.Now(),
+				Level:      "error",
+				Message:    msg,
+			})
+		return
 	}
 
 	defer conn.Close()
 
-	bootLogs = append(bootLogs, "connection to msg broker succeeded")
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "info",
+			Message:    "connection to msg broker succeeded",
+		})
 
 	sensorState := sensorlogic.NewSensorState(serialNumber, sampleFrequency)
 
@@ -56,15 +73,27 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 	)
 	if err != nil {
 		msg := fmt.Sprintf("could not subscribe to command: %v", err)
-		bootLogs = append(bootLogs, msg)
-		log.Fatalf(msg)
+		bootLogs = append(bootLogs,
+			routing.SensorLog{
+				SensorName: serialNumber,
+				TimeStamp:  time.Now(),
+				Level:      "error",
+				Message:    msg,
+			})
+		return
 	}
 
 	publishCh, err := conn.Channel()
 	if err != nil {
 		msg := fmt.Sprintf("could not create channel: %v", err)
-		bootLogs = append(bootLogs, msg)
-		log.Fatalf(msg)
+		bootLogs = append(bootLogs,
+			routing.SensorLog{
+				SensorName: serialNumber,
+				TimeStamp:  time.Now(),
+				Level:      "error",
+				Message:    msg,
+			})
+		return
 	}
 
 	// no guarda la hora del comando, sólo de cuando se envían todos los boot logs
@@ -101,15 +130,11 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency in
 	}
 }
 
-func publishSensorLog(publishCh *amqp.Channel, sensorname, msg string) error {
+func publishSensorLog(publishCh *amqp.Channel, sensorname string, sensorLog routing.SensorLog) error {
 	return pubsub.PublishGob(
 		publishCh,                // channel
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.BindKeySensorLogs, sensorname), // key
-		routing.SensorLog{
-			SensorName: sensorname,
-			TimeStamp:  time.Now(),
-			Message:    msg,
-		},
+		sensorLog, // sensor log
 	)
 }
