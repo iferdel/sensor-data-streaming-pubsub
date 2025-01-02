@@ -6,7 +6,7 @@ import (
 
 func (sensorState *SensorState) HandleChangeSampleFrequency(params map[string]interface{}) {
 	if sampleFrequency, ok := params["sampleFrequency"]; ok {
-		sensorState.SampleFrequency = sampleFrequency.(int)
+		sensorState.SampleFrequency = sampleFrequency.(float64)
 		// signal the channel of the change of sample frequency
 		sensorState.SampleFrequencyChangeChan <- sampleFrequency.(int)
 		if sensorState.IsSleep {
@@ -15,6 +15,6 @@ func (sensorState *SensorState) HandleChangeSampleFrequency(params map[string]in
 		}
 		fmt.Println("changes of sample frequency applied")
 	} else {
-		fmt.Println("SampleFrequency is not an integer")
+		fmt.Println("SampleFrequency is not a number")
 	}
 }

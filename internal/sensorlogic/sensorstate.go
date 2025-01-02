@@ -3,11 +3,11 @@ package sensorlogic
 type SensorState struct {
 	Sensor                    Sensor
 	IsSleep                   bool
-	SampleFrequency           int
+	SampleFrequency           float64
 	SampleFrequencyChangeChan chan int
 }
 
-func NewSensorState(serialNumber string, SampleFrequency int) *SensorState {
+func NewSensorState(serialNumber string, SampleFrequency float64) *SensorState {
 	return &SensorState{
 		Sensor: Sensor{
 			SerialNumber: serialNumber,
