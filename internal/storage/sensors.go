@@ -37,13 +37,12 @@ func CreateTableSensor() {
 	fmt.Println("Successfully created relational table `sensor`")
 }
 
-func WriteSensor(serialNumber string) {
+func WriteSensor(serialNumber string) error {
 
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Unable to connect to database: %v\n", err)
 	}
 	defer dbpool.Close()
 
@@ -51,12 +50,15 @@ func WriteSensor(serialNumber string) {
 	/* INSERT into relational table             */
 	/********************************************/
 
+	// if sensor exists, return log message with kind of 'sensor already registered'
+
 	queryInsertMetadata := `INSERT INTO sensor (serial_number) VALUES ($1);`
 
 	_, err = dbpool.Exec(ctx, queryInsertMetadata, serialNumber)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to insert sensor metadata into database: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Unable to insert sensor metadata into database: %v\n", err)
 	}
 	fmt.Printf("Inserted sensor (%s) into database \n", serialNumber)
+
+	return nil
 }

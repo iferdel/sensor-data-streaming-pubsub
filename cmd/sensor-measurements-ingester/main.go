@@ -23,11 +23,8 @@ func main() {
 	}
 	defer conn.Close()
 
-	// create tables (omitted if they exist)
-	storage.CreateTableSensor()
+	// create sensor table (ignored if already created)
 	storage.CreateTableMeasurement()
-
-	// how to add new sensors to sensor table? subscribe to a queue for new sensors?
 
 	// subscribe to Measurement queue
 	err = pubsub.SubscribeGob(

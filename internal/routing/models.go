@@ -4,6 +4,10 @@ import "time"
 
 // DTOs (Data Transfer Objects) for messaging system
 
+type Sensor struct {
+	SensorName string
+}
+
 type SensorMeasurement struct {
 	SensorName string
 	Timestamp  time.Time
