@@ -56,7 +56,6 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 			})
 		return
 	}
-
 	defer conn.Close()
 
 	bootLogs = append(bootLogs,
@@ -85,6 +84,57 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 			Message:    "Configuration loaded successfully",
 		})
 
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Performing sensor self-test",
+		})
+	time.Sleep(500 * time.Millisecond)
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Self-test result: PASSED",
+		})
+	time.Sleep(100 * time.Millisecond)
+
+	// publish logic
+	publishCh, err := conn.Channel()
+	if err != nil {
+		msg := fmt.Sprintf("Could not create publish channel: %v", err)
+		bootLogs = append(bootLogs,
+			routing.SensorLog{
+				SensorName: serialNumber,
+				TimeStamp:  time.Now(),
+				Level:      "ERROR",
+				Message:    msg,
+			})
+		return
+	}
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Publisher channel created",
+		})
+
+	// publish sensor for registration if not already
+	//	err = publishSensor()
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Sensor Auth...",
+		})
+
+	// consume sensor register/auth event
+	// err = pubsub.SubscribeGob()
+
 	// subscribe to sensor command queue
 	err = pubsub.SubscribeGob(
 		conn,
@@ -106,58 +156,13 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 		return
 	}
 
+	time.Sleep(100 * time.Millisecond)
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SensorName: serialNumber,
 			TimeStamp:  time.Now(),
 			Level:      "INFO",
 			Message:    "Successful subscription to iotctl messaging queue",
-		})
-
-	publishCh, err := conn.Channel()
-	if err != nil {
-		msg := fmt.Sprintf("Could not create channel: %v", err)
-		bootLogs = append(bootLogs,
-			routing.SensorLog{
-				SensorName: serialNumber,
-				TimeStamp:  time.Now(),
-				Level:      "ERROR",
-				Message:    msg,
-			})
-		return
-	}
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Successful subscription to log messaging queue",
-		})
-	time.Sleep(100 * time.Millisecond)
-
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Performing sensor self-test",
-		})
-	time.Sleep(500 * time.Millisecond)
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Self-test result: PASSED",
-		})
-	time.Sleep(100 * time.Millisecond)
-
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Booting completed, performing measurements...",
 		})
 
 	// publish sensor boot logs
@@ -170,6 +175,14 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 			fmt.Printf("Error publishing log: %s\n", err)
 		}
 	}
+
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Booting completed, performing measurements...",
+		})
 
 	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
