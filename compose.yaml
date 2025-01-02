@@ -1,6 +1,6 @@
 services:
   rabbitmq:
-    image: rabbitmq:3.13-management
+    build: .
     container_name: rabbitmq
     ports:
       - "5672:5672"   # RabbitMQ main port
@@ -15,5 +15,15 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres 
     restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_USER=admin
      
+
 
