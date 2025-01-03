@@ -25,7 +25,7 @@ func CreateTableSensor() {
 
 	queryCreateTable := `CREATE TABLE sensor (
 		id SERIAL PRIMARY KEY, 
-		serial_number VARCHAR(50),
+		serial_number VARCHAR(50)
 	);`
 
 	_, err = dbpool.Exec(ctx, queryCreateTable)

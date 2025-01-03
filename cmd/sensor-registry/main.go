@@ -8,7 +8,7 @@ import (
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
-	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
+	// "github.com/iferdel/sensor-data-streaming-server/internal/storage"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -24,7 +24,7 @@ func main() {
 	defer conn.Close()
 
 	// create sensor table (ignored if already created)
-	storage.CreateTableSensor()
+	// storage.CreateTableSensor()
 
 	// consume sensor registration
 	err = pubsub.SubscribeGob(
@@ -33,7 +33,7 @@ func main() {
 		routing.QueueSensorTelemetryFormat,
 		routing.BindKeySensorDataFormat,
 		pubsub.QueueDurable,
-		handlerSensorRegistry(),
+		handlerSensorRegistry(), // consumption
 	)
 	if err != nil {
 		fmt.Println("Could not subscribe to registry:", err)

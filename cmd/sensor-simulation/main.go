@@ -123,7 +123,6 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 		})
 
 	// publish sensor for registration if not already
-	//	err = publishSensor()
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SensorName: serialNumber,
@@ -131,6 +130,14 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 			Level:      "INFO",
 			Message:    "Sensor Auth...",
 		})
+	pubsub.PublishGob(
+		publishCh,                       // channel
+		routing.ExchangeTopicIoT,        // exchange
+		routing.BindKeySensorDataFormat, // key
+		routing.Sensor{
+			SensorName: serialNumber,
+		}, // based on Data Transfer Object
+	)
 
 	// consume sensor register/auth event
 	// err = pubsub.SubscribeGob()
@@ -165,6 +172,14 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 			Message:    "Successful subscription to iotctl messaging queue",
 		})
 
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SensorName: serialNumber,
+			TimeStamp:  time.Now(),
+			Level:      "INFO",
+			Message:    "Booting completed, performing measurements...",
+		})
+
 	// publish sensor boot logs
 	for _, bootLog := range bootLogs {
 		err = publishSensorLog(
@@ -175,14 +190,6 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 			fmt.Printf("Error publishing log: %s\n", err)
 		}
 	}
-
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Booting completed, performing measurements...",
-		})
 
 	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
