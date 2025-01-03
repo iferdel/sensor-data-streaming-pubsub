@@ -131,23 +131,22 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 			Message:    "Sensor Auth...",
 		})
 	pubsub.PublishGob(
-		publishCh,                       // channel
-		routing.ExchangeTopicIoT,        // exchange
-		routing.BindKeySensorDataFormat, // key
+		publishCh,                // channel
+		routing.ExchangeTopicIoT, // exchange
+		"sensor"+"."+serialNumber+"."+routing.KeyTelemetry, // routing key
 		routing.Sensor{
 			SensorName: serialNumber,
 		}, // based on Data Transfer Object
 	)
-
-	// consume sensor register/auth event
-	// err = pubsub.SubscribeGob()
+	// get back acknowledgment of publish sensor
 
 	// subscribe to sensor command queue
 	err = pubsub.SubscribeGob(
 		conn,
 		routing.ExchangeTopicIoT, // exchange
-		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber),  // queue name
-		fmt.Sprintf(routing.BindKeySensorCommandFormat, serialNumber), // routing key
+		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber), // queue name
+		// fmt.Sprintf(routing.BindKeySensorCommandFormat, serialNumber), // binding key
+		fmt.Sprintf(routing.KeySensorCommandsFormat, serialNumber)+"."+"#", // binding key
 		pubsub.QueueDurable, // queue type
 		handlerCommand(sensorState),
 	)
@@ -235,9 +234,9 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 
 func publishSensorLog(publishCh *amqp.Channel, sensorLog routing.SensorLog) error {
 	return pubsub.PublishGob(
-		publishCh,                // channel
-		routing.ExchangeTopicIoT, // exchange
-		routing.BindKeyIoTLogs,   // key
-		sensorLog,                // sensor log
+		publishCh,                  // channel
+		routing.ExchangeTopicIoT,   // exchange
+		routing.KeyLogs+"."+"boot", // routing key
+		sensorLog,                  // sensor log
 	)
 }

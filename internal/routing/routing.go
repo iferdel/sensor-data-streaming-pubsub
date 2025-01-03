@@ -17,15 +17,15 @@ const (
 
 // Queues follow pattern: entity.id.type.consumer
 const (
-	QueueSensorTelemetryFormat = "telemetry.db_writer"              // subjected to sensor id
-	QueueSensorCommandsFormat  = "sensor.%s.commands.state_handler" // subjected to sensor id
+	QueueSensorCommandsFormat  = "sensor.%s.commands"            // subjected to sensor id
+	QueueSensorRegistryFormat  = "sensor.%s.registry"            // subjected to sensor id
+	QueueSensorTelemetryFormat = "sensor.%s.telemetry.db_writer" // subjected to sensor id
 	QueueIoTLogs               = "logs"
 )
 
-// Routing Bind Keys follow pattern: entity.id.type
-// Even if noun.verb is prefered, due to the domain of IoT, an exception is proposed
 const (
-	BindKeySensorDataFormat    = "telemetry.#"
-	BindKeySensorCommandFormat = "sensor.%s.commands.#"
-	BindKeyIoTLogs             = "logs"
+	KeySensorCommandsFormat = "sensor.%s.commands"
+	KeySensorRegistry       = "sensor.%s.registry"
+	KeyTelemetry            = "telemetry"
+	KeyLogs                 = "logs"
 )

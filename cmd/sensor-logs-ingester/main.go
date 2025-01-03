@@ -26,7 +26,7 @@ func main() {
 		conn,
 		routing.ExchangeTopicIoT,
 		routing.QueueIoTLogs,
-		routing.BindKeyIoTLogs,
+		routing.KeyLogs+"."+"#", // binding key
 		pubsub.QueueDurable,
 		handlerLogs(),
 	)

@@ -8,7 +8,7 @@ func (sensorState *SensorState) HandleChangeSampleFrequency(params map[string]in
 	if sampleFrequency, ok := params["sampleFrequency"]; ok {
 		sensorState.SampleFrequency = sampleFrequency.(float64)
 		// signal the channel of the change of sample frequency
-		sensorState.SampleFrequencyChangeChan <- sampleFrequency.(int)
+		sensorState.SampleFrequencyChangeChan <- sampleFrequency.(float64)
 		if sensorState.IsSleep {
 			fmt.Println("changes of sample frequency applied, but sensor is currently in a sleep state")
 			return

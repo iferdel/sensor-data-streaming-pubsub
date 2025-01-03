@@ -4,7 +4,7 @@ type SensorState struct {
 	Sensor                    Sensor
 	IsSleep                   bool
 	SampleFrequency           float64
-	SampleFrequencyChangeChan chan int
+	SampleFrequencyChangeChan chan float64
 }
 
 func NewSensorState(serialNumber string, SampleFrequency float64) *SensorState {
@@ -14,6 +14,6 @@ func NewSensorState(serialNumber string, SampleFrequency float64) *SensorState {
 		},
 		IsSleep:                   false,
 		SampleFrequency:           SampleFrequency,
-		SampleFrequencyChangeChan: make(chan int, 1),
+		SampleFrequencyChangeChan: make(chan float64, 1),
 	}
 }

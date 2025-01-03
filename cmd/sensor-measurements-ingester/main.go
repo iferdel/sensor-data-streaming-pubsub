@@ -31,7 +31,7 @@ func main() {
 		conn,
 		routing.ExchangeTopicIoT,
 		routing.QueueSensorTelemetryFormat,
-		routing.BindKeySensorDataFormat,
+		"sensor.*."+routing.KeyTelemetry, // binding key
 		pubsub.QueueDurable,
 		handlerMeasurements(),
 	)

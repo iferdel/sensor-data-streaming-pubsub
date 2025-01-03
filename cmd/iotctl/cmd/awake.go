@@ -40,7 +40,7 @@ var awakeCmd = &cobra.Command{
 		err = pubsub.PublishGob(
 			publishCh,                // amqp.Channel
 			routing.ExchangeTopicIoT, // exchange
-			fmt.Sprintf(routing.BindKeySensorCommandFormat, sensorSerialNumber), // routing key
+			fmt.Sprintf(routing.KeySensorCommandsFormat, sensorSerialNumber)+"."+"awake", // routing key
 			routing.CommandMessage{
 				SensorName: sensorSerialNumber,
 				Timestamp:  time.Now(),
