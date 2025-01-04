@@ -18,7 +18,7 @@ const (
 // Queues follow pattern: entity.id.type.consumer
 const (
 	QueueSensorCommandsFormat  = "sensor.%s.commands"            // subjected to sensor id
-	QueueSensorRegistryFormat  = "sensor.%s.registry"            // subjected to sensor id
+	QueueSensorRegistry        = "sensor.registry"               // subjected to sensor id
 	QueueSensorTelemetryFormat = "sensor.%s.telemetry.db_writer" // subjected to sensor id
 	QueueIoTLogs               = "logs"
 )

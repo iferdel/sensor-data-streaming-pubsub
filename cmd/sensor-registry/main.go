@@ -30,7 +30,7 @@ func main() {
 	err = pubsub.SubscribeGob(
 		conn,
 		routing.ExchangeTopicIoT,
-		routing.QueueSensorTelemetryFormat,
+		routing.QueueSensorRegistry,
 		"sensor"+"."+"*"+"."+routing.KeySensorRegistry, // subscribeGob creates and bind a queue to an exchange in case it is not yet there. Thats why here we have binding key (and not just queue name)
 		pubsub.QueueDurable,
 		handlerSensorRegistry(), // consumption
