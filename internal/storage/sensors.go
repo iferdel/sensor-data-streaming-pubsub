@@ -54,6 +54,37 @@ func CreateTableSensor() error {
 	return nil
 }
 
+func GetSensor() error {
+	ctx := context.Background()
+	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
+	if err != nil {
+		return fmt.Errorf("Unable to connect to database: %v\n", err)
+	}
+	defer dbpool.Close()
+
+	/********************************************/
+	/* SELECT from relational table             */
+	/********************************************/
+
+	queryGetMetadata := `SELECT serial_number FROM sensor;`
+
+	rows, err := dbpool.Query(ctx, queryGetMetadata)
+	if err != nil {
+		return fmt.Errorf("Unable to get sensors: %v\n", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var serialNumber string
+		err = rows.Scan(&serialNumber)
+		if err != nil {
+			return err
+		}
+		fmt.Println(serialNumber)
+	}
+	return nil
+}
+
 func WriteSensor(serialNumber string) error {
 
 	ctx := context.Background()
@@ -79,7 +110,7 @@ func WriteSensor(serialNumber string) error {
 	}
 
 	if rowExists {
-		fmt.Printf("Entry for sensor `%v` already exists. Skipping...\n", serialNumber)
+		fmt.Printf("Entry for sensor `%s` already exists. Skipping...\n", serialNumber)
 		return nil
 	}
 
@@ -89,7 +120,46 @@ func WriteSensor(serialNumber string) error {
 	if err != nil {
 		return fmt.Errorf("Unable to insert sensor metadata into database: %v\n", err)
 	}
-	fmt.Printf("Inserted sensor (%s) into database \n", serialNumber)
+	fmt.Printf("Inserted sensor (%s) into `sensor` table\n", serialNumber)
 
+	return nil
+}
+
+func DeleteSensor(serialNumber string) error {
+
+	ctx := context.Background()
+	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
+	if err != nil {
+		return fmt.Errorf("Unable to connect to database: %v\n", err)
+	}
+	defer dbpool.Close()
+
+	/********************************************/
+	/* DELETE relational table             			*/
+	/********************************************/
+
+	// if sensor does not exist, return log message with kind of 'sensor not registered'
+	queryCheckIfExists := `SELECT EXISTS (
+		SELECT 1 FROM sensor WHERE serial_number = ($1)
+	);`
+
+	var rowExists bool
+	err = dbpool.QueryRow(ctx, queryCheckIfExists, serialNumber).Scan(&rowExists)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !rowExists {
+		fmt.Printf("Entry for sensor `%s` does not exist. Skipping...\n", serialNumber)
+		return nil
+	}
+
+	queryDeleteMetadata := `DELETE FROM sensor WHERE serial_number = ($1);`
+
+	_, err = dbpool.Exec(ctx, queryDeleteMetadata, serialNumber)
+	if err != nil {
+		return fmt.Errorf("Unable to delete sensor metadata from database: %v\n", err)
+	}
+	fmt.Printf("Deleted sensor (%s) from `sensor` table (and all its measurements)\n", serialNumber)
 	return nil
 }
