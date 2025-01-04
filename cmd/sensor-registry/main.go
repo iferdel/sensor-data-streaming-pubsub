@@ -24,7 +24,11 @@ func main() {
 	defer conn.Close()
 
 	// create sensor table (ignored if already created)
-	storage.CreateTableSensor()
+	err = storage.CreateTableSensor()
+	if err != nil {
+		fmt.Printf("Error while creating/cheking sensor table: %v\n", err)
+		return
+	}
 
 	// consume sensor registration
 	err = pubsub.SubscribeGob(

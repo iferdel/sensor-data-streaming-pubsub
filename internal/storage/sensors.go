@@ -10,13 +10,15 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func CreateTableSensor() {
+func CreateTableSensor() error {
+
+	// placeholder
+	fmt.Println("==========================================")
 
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Unable to connect to database: %v\n", err)
 	}
 	defer dbpool.Close()
 
@@ -33,12 +35,12 @@ func CreateTableSensor() {
 	var tableExists bool
 	err = dbpool.QueryRow(ctx, queryCheckIfExists).Scan(&tableExists)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("Error checking existency of `sensor` table: %v", err)
 	}
 
 	if tableExists {
 		fmt.Println("Table `sensor` already exists. Skipping...")
-		return
+		return nil
 	}
 
 	queryCreateTable := `CREATE TABLE sensor (
@@ -49,10 +51,11 @@ func CreateTableSensor() {
 	_, err = dbpool.Exec(ctx, queryCreateTable)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to create `sensor` table: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Unable to create `sensor` table: %v\n", err)
 	}
 	fmt.Println("Successfully created relational table `sensor`")
+
+	return nil
 }
 
 func WriteSensor(serialNumber string) error {
