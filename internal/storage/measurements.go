@@ -47,8 +47,9 @@ func CreateTableMeasurement() {
 		measurement DOUBLE PRECISION,
 		UNIQUE (time, sensor_id),
 		CONSTRAINT fk_sensor 
-	FOREIGN KEY (sensor_id)
-		REFERENCES sensor(id)
+			FOREIGN KEY (sensor_id) 
+				REFERENCES sensor(id) 
+					ON DELETE CASCADE
 	);`
 
 	queryCreateHyperTable := `SELECT create_hypertable('sensor_measurement', by_range(time));`
