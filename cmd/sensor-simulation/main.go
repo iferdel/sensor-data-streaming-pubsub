@@ -135,7 +135,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	pubsub.PublishGob(
 		publishCh,                // channel
 		routing.ExchangeTopicIoT, // exchange
-		"sensor"+"."+serialNumber+"."+routing.KeyTelemetry, // routing key
+		"sensor"+"."+serialNumber+"."+routing.KeySensorRegistry, // routing key
 		routing.Sensor{
 			SensorName: serialNumber,
 		}, // based on Data Transfer Object

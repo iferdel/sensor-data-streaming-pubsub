@@ -25,7 +25,7 @@ const (
 
 const (
 	KeySensorCommandsFormat = "sensor.%s.commands"
-	KeySensorRegistry       = "sensor.%s.registry"
+	KeySensorRegistry       = "registry"
 	KeyTelemetry            = "telemetry"
 	KeyLogs                 = "logs"
 )

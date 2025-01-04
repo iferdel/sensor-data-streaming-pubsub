@@ -8,7 +8,7 @@ import (
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
-	// "github.com/iferdel/sensor-data-streaming-server/internal/storage"
+	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -24,14 +24,14 @@ func main() {
 	defer conn.Close()
 
 	// create sensor table (ignored if already created)
-	// storage.CreateTableSensor()
+	storage.CreateTableSensor()
 
 	// consume sensor registration
 	err = pubsub.SubscribeGob(
 		conn,
 		routing.ExchangeTopicIoT,
 		routing.QueueSensorTelemetryFormat,
-		routing.BindKeySensorDataFormat, // subscribeGob creates and bind a queue to an exchange in case it is not yet there. Thats why here we have binding key (and not just queue name)
+		"sensor"+"."+"*"+"."+routing.KeySensorRegistry, // subscribeGob creates and bind a queue to an exchange in case it is not yet there. Thats why here we have binding key (and not just queue name)
 		pubsub.QueueDurable,
 		handlerSensorRegistry(), // consumption
 	)

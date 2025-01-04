@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
@@ -23,9 +24,26 @@ func CreateTableSensor() {
 	/* Create ordinary relational table         */
 	/********************************************/
 
+	queryCheckIfExists := `SELECT EXISTS (
+		SELECT FROM pg_tables
+		WHERE schemaname = 'public'
+		AND tablename = 'sensor'
+	);`
+
+	var tableExists bool
+	err = dbpool.QueryRow(ctx, queryCheckIfExists).Scan(&tableExists)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if tableExists {
+		fmt.Println("Table `sensor` already exists. Skipping...")
+		return
+	}
+
 	queryCreateTable := `CREATE TABLE sensor (
 		id SERIAL PRIMARY KEY, 
-		serial_number VARCHAR(50)
+		serial_number VARCHAR(50) UNIQUE NOT NULL
 	);`
 
 	_, err = dbpool.Exec(ctx, queryCreateTable)
@@ -51,6 +69,20 @@ func WriteSensor(serialNumber string) error {
 	/********************************************/
 
 	// if sensor exists, return log message with kind of 'sensor already registered'
+	queryCheckIfExists := `SELECT EXISTS (
+		SELECT 1 FROM sensor WHERE serial_number = ($1)
+	);`
+
+	var rowExists bool
+	err = dbpool.QueryRow(ctx, queryCheckIfExists, serialNumber).Scan(&rowExists)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if rowExists {
+		fmt.Printf("Entry for sensor `%v` already exists. Skipping...", serialNumber)
+		return nil
+	}
 
 	queryInsertMetadata := `INSERT INTO sensor (serial_number) VALUES ($1);`
 

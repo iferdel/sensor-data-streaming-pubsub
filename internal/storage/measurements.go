@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -23,10 +24,28 @@ func CreateTableMeasurement() {
 	/* Create hypertable table                  */
 	/********************************************/
 
+	queryCheckIfExists := `SELECT EXISTS (
+		SELECT FROM pg_tables
+		WHERE schemaname = 'public'
+		AND tablename = 'sensor_measurement'
+	);`
+
+	var tableExists bool
+	err = dbpool.QueryRow(ctx, queryCheckIfExists).Scan(&tableExists)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if tableExists {
+		fmt.Println("Table `sensor_measurement` already exists.")
+		return
+	}
+
 	queryCreateTable := `CREATE TABLE sensor_measurement (
 		time TIMESTAMPZ NOT NULL,
 		sensor_id INTEGER,
 		measurement DOUBLE PRECISION,
+		UNIQUE (time, sensor_id),
 		CONSTRAINT fk_sensor 
 	FOREIGN KEY (sensor_id)
 		REFERENCES sensor(id)
