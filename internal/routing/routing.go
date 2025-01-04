@@ -15,17 +15,17 @@ const (
 	ExchangeTopicIoT = "iot" // would be great to test as a direct exchange since it should be faster
 )
 
-// Queues follow pattern: entity.id.type.consumer
+// Queues follow pattern: entity.id.consumer.type
 const (
-	QueueSensorCommandsFormat  = "sensor.%s.commands"            // subjected to sensor id
-	QueueSensorRegistry        = "sensor.registry"               // subjected to sensor id
-	QueueSensorTelemetryFormat = "sensor.%s.telemetry.db_writer" // subjected to sensor id
-	QueueIoTLogs               = "logs"
+	QueueSensorTelemetry      = "sensor.all.telemetry.db_writer" // could be subjected to a sensor id though
+	QueueSensorCommandsFormat = "sensor.%s.commands"             // subjected to sensor id
+	QueueSensorRegistry       = "sensor.all.registry.created"    // could scale up to sensor.all.registry.notifier ??
+	QueueSensorLogs           = "sensor.all.logs"
 )
 
 const (
+	KeySensorTelemetry      = "sensor.%s.telemetry"
 	KeySensorCommandsFormat = "sensor.%s.commands"
-	KeySensorRegistry       = "registry"
-	KeyTelemetry            = "telemetry"
-	KeyLogs                 = "logs"
+	KeySensorRegistryFormat = "sensor.%s.registry"
+	KeySensorLogsFormat     = "sensor.%s.logs"
 )

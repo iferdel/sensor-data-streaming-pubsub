@@ -10,6 +10,8 @@ import (
 
 func handlerSensorRegistry() func(s routing.Sensor) pubsub.AckType {
 	return func(s routing.Sensor) pubsub.AckType {
+		// placeholder
+		fmt.Println("==========================================")
 
 		err := storage.WriteSensor(s.SensorName)
 		if err != nil {

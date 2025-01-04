@@ -35,7 +35,7 @@ func main() {
 		conn,
 		routing.ExchangeTopicIoT,
 		routing.QueueSensorRegistry,
-		"sensor"+"."+"*"+"."+routing.KeySensorRegistry, // subscribeGob creates and bind a queue to an exchange in case it is not yet there. Thats why here we have binding key (and not just queue name)
+		fmt.Sprintf(routing.KeySensorRegistryFormat, "*")+"."+"#", // subscribeGob creates and bind a queue to an exchange in case it is not yet there. Thats why here we have binding key (and not just queue name)
 		pubsub.QueueDurable,
 		handlerSensorRegistry(), // consumption
 	)

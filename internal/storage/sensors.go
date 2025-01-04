@@ -4,16 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func CreateTableSensor() error {
-
-	// placeholder
-	fmt.Println("==========================================")
 
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
@@ -83,7 +79,7 @@ func WriteSensor(serialNumber string) error {
 	}
 
 	if rowExists {
-		fmt.Printf("Entry for sensor `%v` already exists. Skipping...", serialNumber)
+		fmt.Printf("Entry for sensor `%v` already exists. Skipping...\n", serialNumber)
 		return nil
 	}
 

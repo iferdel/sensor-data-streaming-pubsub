@@ -135,7 +135,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	pubsub.PublishGob(
 		publishCh,                // channel
 		routing.ExchangeTopicIoT, // exchange
-		"sensor"+"."+serialNumber+"."+routing.KeySensorRegistry, // routing key
+		fmt.Sprintf(routing.KeySensorRegistryFormat, serialNumber)+"."+"created", // routing key
 		routing.Sensor{
 			SensorName: serialNumber,
 		}, // based on Data Transfer Object
@@ -236,9 +236,9 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 
 func publishSensorLog(publishCh *amqp.Channel, sensorLog routing.SensorLog) error {
 	return pubsub.PublishGob(
-		publishCh,                  // channel
-		routing.ExchangeTopicIoT,   // exchange
-		routing.KeyLogs+"."+"boot", // routing key
-		sensorLog,                  // sensor log
+		publishCh,                // channel
+		routing.ExchangeTopicIoT, // exchange
+		fmt.Sprintf(routing.KeySensorLogsFormat, sensorLog.SensorName)+"."+"boot", // routing key
+		sensorLog, // sensor log
 	)
 }
