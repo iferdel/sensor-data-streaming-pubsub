@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -78,16 +79,13 @@ func WriteMeasurement(measurement routing.SensorMeasurement) error {
 				$1, 
 				(SELECT id FROM sensor WHERE serial_number = $2),
 				$3
-			);
-	`
+		);`
 
-	// for measurement := range measurements {
 	_, err = dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SensorName, measurement.Value)
 	if err != nil {
 		return fmt.Errorf("Unable to insert sample into Timescale %v\n", err)
 	}
-	fmt.Println("Successfully inserted sample into `measurement` hypertable")
-	// }
+	fmt.Printf("%v - Successfully inserted sample into `measurement` hypertable", time.Now())
 	// TODO: as many inserts as rows of data, the idea is to deploy it with this pattern, measure the way the whole system behaves (broker, backend, db) and then optmize with batch processing
 
 	return nil
