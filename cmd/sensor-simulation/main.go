@@ -140,14 +140,13 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 			SensorName: serialNumber,
 		}, // based on Data Transfer Object
 	)
-	// get back acknowledgment of publish sensor
+	// TODO: get back acknowledgment of publish sensor
 
 	// subscribe to sensor command queue
 	err = pubsub.SubscribeGob(
 		conn,
 		routing.ExchangeTopicIoT, // exchange
-		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber), // queue name
-		// fmt.Sprintf(routing.BindKeySensorCommandFormat, serialNumber), // binding key
+		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber),       // queue name
 		fmt.Sprintf(routing.KeySensorCommandsFormat, serialNumber)+"."+"#", // binding key
 		pubsub.QueueDurable, // queue type
 		handlerCommand(sensorState),
@@ -226,6 +225,19 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 			accZ := simulateSignal()
 			show(serialNumber, accX, accY, accZ)
 			w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
+
+			// publish measurement
+			pubsub.PublishGob(
+				publishCh,
+				routing.ExchangeTopicIoT,
+				fmt.Sprintf(routing.KeySensorTelemetry, serialNumber),
+				routing.SensorMeasurement{
+					SensorName: serialNumber,
+					Timestamp:  time.Now(), // should it be when the measurement was conceived
+					Value:      accX,
+				},
+			)
+
 		case newFreq := <-sensorState.SampleFrequencyChangeChan:
 			ticker.Stop()
 			ticker = time.NewTicker(time.Second / time.Duration(newFreq))

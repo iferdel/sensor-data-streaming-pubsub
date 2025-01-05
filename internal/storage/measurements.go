@@ -3,7 +3,6 @@ package storage
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -61,7 +60,7 @@ func CreateTableMeasurement() error {
 	return nil
 }
 
-func WriteMeasurement(measurements []measurement) error {
+func WriteMeasurement(measurement routing.SensorMeasurement) error {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
 	if err != nil {
@@ -77,15 +76,13 @@ func WriteMeasurement(measurements []measurement) error {
 		INSERT INTO measurements (time, sensor_id, measurement) values ($1, $2, $3);
 	`
 
-	for i := range measurements {
-		var m measurement
-		m = measurements[i]
-		_, err := dbpool.Exec(ctx, queryInsertTimeseriesData, m.Time, m.SensorId, m.Measurement)
-		if err != nil {
-			fmt.Errorf("Unable to insert sample into Timescale %v\n", err)
-		}
-		fmt.Println("Successfully inserted samples into `measurement` hypertable")
+	// for measurement := range measurements {
+	_, err = dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SensorName, measurement.Value)
+	if err != nil {
+		fmt.Errorf("Unable to insert sample into Timescale %v\n", err)
 	}
+	fmt.Println("Successfully inserted sample into `measurement` hypertable")
+	// }
 	// TODO: as many inserts as rows of data, the idea is to deploy it with this pattern, measure the way the whole system behaves (broker, backend, db) and then optmize with batch processing
 
 	return nil
