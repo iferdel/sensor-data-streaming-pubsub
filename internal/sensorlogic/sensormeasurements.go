@@ -24,5 +24,6 @@ func HandleMeasurement(dto routing.SensorMeasurement) error {
 	if err := storage.WriteMeasurement(record); err != nil {
 		return fmt.Errorf("failed to write measurement: %v", err)
 	}
+
 	return nil
 }
