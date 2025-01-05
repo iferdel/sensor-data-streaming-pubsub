@@ -1,10 +1,5 @@
 package routing
 
-// Relational Database
-const (
-	PostgresConnString = "postgres://postgres:postgres@localhost:5432/iot"
-)
-
 // PubSub Broker
 const (
 	RabbitConnString = "amqp://guest:guest@localhost:5672/"

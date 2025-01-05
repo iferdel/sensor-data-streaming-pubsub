@@ -16,7 +16,7 @@ import (
 
 func CreateTableMeasurement() error {
 	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
+	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
 		return fmt.Errorf("Unable to connect to database: %v\n", err)
 	}
@@ -68,7 +68,7 @@ func CreateTableMeasurement() error {
 
 func WriteMeasurement(measurement routing.SensorMeasurement) error {
 	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
+	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
 		return fmt.Errorf("Unable to connect to database: %v\n", err)
 	}

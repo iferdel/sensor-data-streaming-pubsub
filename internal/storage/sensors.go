@@ -8,14 +8,13 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func CreateTableSensor() error {
 
 	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
+	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
 		return fmt.Errorf("Unable to connect to database: %v\n", err)
 	}
@@ -59,7 +58,7 @@ func CreateTableSensor() error {
 
 func GetSensor() error {
 	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
+	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
 		return fmt.Errorf("Unable to connect to database: %v\n", err)
 	}
@@ -92,7 +91,7 @@ func WriteSensor(serialNumber string) error {
 	// TODO: Implement Mutex RW
 
 	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
+	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
 		return fmt.Errorf("Unable to connect to database: %v\n", err)
 	}
@@ -132,7 +131,7 @@ func WriteSensor(serialNumber string) error {
 func DeleteSensor(serialNumber string) error {
 
 	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
+	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
 		return fmt.Errorf("Unable to connect to database: %v\n", err)
 	}
