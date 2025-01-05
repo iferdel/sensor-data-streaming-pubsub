@@ -34,14 +34,14 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "System powering on...",
 		})
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "Bootloader version: v1.0.0",
 		})
@@ -52,7 +52,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 		bootLogs = append(bootLogs,
 			routing.SensorLog{
 				SerialNumber: serialNumber,
-				TimeStamp:    time.Now(),
+				Timestamp:    time.Now(),
 				Level:        "ERROR",
 				Message:      msg,
 			})
@@ -63,7 +63,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "Connection to msg broker succeeded",
 		})
@@ -71,7 +71,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "Loading configuration...",
 		})
@@ -81,7 +81,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "Configuration loaded successfully",
 		})
@@ -89,7 +89,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "Performing sensor self-test",
 		})
@@ -97,7 +97,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "Self-test result: PASSED",
 		})
@@ -110,7 +110,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 		bootLogs = append(bootLogs,
 			routing.SensorLog{
 				SerialNumber: serialNumber,
-				TimeStamp:    time.Now(),
+				Timestamp:    time.Now(),
 				Level:        "ERROR",
 				Message:      msg,
 			})
@@ -119,7 +119,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "Publisher channel created",
 		})
@@ -128,7 +128,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "Sensor Auth...",
 		})
@@ -156,7 +156,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 		bootLogs = append(bootLogs,
 			routing.SensorLog{
 				SerialNumber: serialNumber,
-				TimeStamp:    time.Now(),
+				Timestamp:    time.Now(),
 				Level:        "ERROR",
 				Message:      msg,
 			})
@@ -167,7 +167,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "Successful subscription to iotctl messaging queue",
 		})
@@ -175,7 +175,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,
-			TimeStamp:    time.Now(),
+			Timestamp:    time.Now(),
 			Level:        "INFO",
 			Message:      "Booting completed, performing measurements...",
 		})

@@ -27,7 +27,7 @@ type SensorCommandMessage struct {
 // logs-ingester service
 type SensorLog struct {
 	SerialNumber string
-	TimeStamp    time.Time
+	Timestamp    time.Time
 	Level        string
 	Message      string
 }
