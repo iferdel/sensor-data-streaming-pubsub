@@ -86,6 +86,7 @@ func GetSensor() error {
 }
 
 func WriteSensor(serialNumber string) error {
+	// TODO: Implement Mutex RW
 
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)

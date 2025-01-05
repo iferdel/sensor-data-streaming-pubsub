@@ -38,7 +38,7 @@ func CreateTableMeasurement() error {
 	}
 
 	queryCreateTable := `CREATE TABLE sensor_measurement (
-		time TIMESTAMPZ NOT NULL,
+		time TIMESTAMPTZ NOT NULL,
 		sensor_id INTEGER,
 		measurement DOUBLE PRECISION,
 		UNIQUE (time, sensor_id),
@@ -48,7 +48,7 @@ func CreateTableMeasurement() error {
 					ON DELETE CASCADE
 	);`
 
-	queryCreateHyperTable := `SELECT create_hypertable('sensor_measurement', by_range(time));`
+	queryCreateHyperTable := `SELECT create_hypertable('sensor_measurement', by_range('time'));`
 
 	_, err = dbpool.Exec(ctx, queryCreateTable+queryCreateHyperTable)
 
@@ -73,13 +73,18 @@ func WriteMeasurement(measurement routing.SensorMeasurement) error {
 	/********************************************/
 
 	queryInsertTimeseriesData := `
-		INSERT INTO measurements (time, sensor_id, measurement) values ($1, $2, $3);
+		INSERT INTO sensor_measurement (time, sensor_id, measurement) 
+			VALUES (
+				$1, 
+				(SELECT id FROM sensor WHERE serial_number = $2),
+				$3
+			);
 	`
 
 	// for measurement := range measurements {
 	_, err = dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SensorName, measurement.Value)
 	if err != nil {
-		fmt.Errorf("Unable to insert sample into Timescale %v\n", err)
+		return fmt.Errorf("Unable to insert sample into Timescale %v\n", err)
 	}
 	fmt.Println("Successfully inserted sample into `measurement` hypertable")
 	// }

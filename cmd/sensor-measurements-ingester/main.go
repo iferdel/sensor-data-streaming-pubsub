@@ -24,7 +24,11 @@ func main() {
 	defer conn.Close()
 
 	// create sensor table (ignored if already created)
-	storage.CreateTableMeasurement()
+	err = storage.CreateTableMeasurement()
+	if err != nil {
+		fmt.Printf("Error while creating/cheking `sensor_measurement` table: %v\n", err)
+		return
+	}
 
 	// subscribe to Measurement queue
 	err = pubsub.SubscribeGob(
