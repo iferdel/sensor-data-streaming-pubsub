@@ -3,20 +3,17 @@ package storage
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
 	"time"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func CreateTableMeasurement() {
+func CreateTableMeasurement() error {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Unable to connect to database: %v\n", err)
 	}
 	defer dbpool.Close()
 
@@ -33,12 +30,12 @@ func CreateTableMeasurement() {
 	var tableExists bool
 	err = dbpool.QueryRow(ctx, queryCheckIfExists).Scan(&tableExists)
 	if err != nil {
-		log.Fatal(err)
+		return fmt.Errorf("Error checking existency of `sensor_measurement` table: %v", err)
 	}
 
 	if tableExists {
 		fmt.Println("Table `sensor_measurement` already exists.")
-		return
+		return nil
 	}
 
 	queryCreateTable := `CREATE TABLE sensor_measurement (
@@ -57,24 +54,18 @@ func CreateTableMeasurement() {
 	_, err = dbpool.Exec(ctx, queryCreateTable+queryCreateHyperTable)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to create `sensor_measurement` hypertable: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Unable to create `sensor_measurement` hypertable: %v\n", err)
+
 	}
 	fmt.Println("Successfully created hypertable `sensor_measurement`")
+	return nil
 }
 
-type measurement struct {
-	Time        time.Time
-	SensorId    int
-	Measurement float64
-}
-
-func WriteMeasurement(measurements []measurement) {
+func WriteMeasurement(measurements []measurement) error {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, routing.PostgresConnString)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		return fmt.Errorf("Unable to connect to database: %v\n", err)
 	}
 	defer dbpool.Close()
 
@@ -91,10 +82,11 @@ func WriteMeasurement(measurements []measurement) {
 		m = measurements[i]
 		_, err := dbpool.Exec(ctx, queryInsertTimeseriesData, m.Time, m.SensorId, m.Measurement)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Unable to insert sample into Timescale %v\n", err)
-			os.Exit(1)
+			fmt.Errorf("Unable to insert sample into Timescale %v\n", err)
 		}
 		fmt.Println("Successfully inserted samples into `measurement` hypertable")
 	}
 	// TODO: as many inserts as rows of data, the idea is to deploy it with this pattern, measure the way the whole system behaves (broker, backend, db) and then optmize with batch processing
+
+	return nil
 }
