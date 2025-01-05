@@ -7,6 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
+	// "strconv"
 	"text/tabwriter"
 	"time"
 
@@ -17,10 +18,30 @@ import (
 )
 
 func main() {
-	sensorOperation("AAD-1123", 1, 99)
+
+	// // environment variables
+	// serialNumber := os.Getenv("SENSOR_SERIAL_NUMBER")
+	// if serialNumber == "" {
+	// 	fmt.Println("non valid serial number: it is empty")
+	// 	return
+	// }
+	//
+	// sampleFrequencyStr := os.Getenv("SENSOR_SAMPLE_FREQUENCY")
+	// sampleFrequency, err := strconv.ParseFloat(sampleFrequencyStr, 64)
+	// if err != nil {
+	// 	fmt.Println("non valid sample frequency: it is empty")
+	// 	return
+	// }
+	//
+	// const seed int64 = 99
+	//
+	// sensorOperation(serialNumber, sampleFrequency, seed)
+	// // Block forever so container stays alive
+	// for {
+	// }
+	sensorOperation("AAD-1123", 1.0, 99)
 }
 
-// each sensor as a client that would run in a different process or all sensors as a client (for simplicity)
 func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 
 	bootLogs := []routing.SensorLog{}

@@ -25,6 +25,14 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
-     
 
+  sensor-simulation:
+    build:
+      context: .          
+      dockerfile: ./cmd/sensor-simulation/Dockerfile
+    container_name: sensor-simulation-1
+    environment:
+      - SENSOR_SERIAL_NUMBER=AAD-1123
+      - SENSOR_SAMPLE_FREQUENCY=1.0
+      - SENSOR_SEED=99
 
