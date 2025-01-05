@@ -34,8 +34,8 @@ func main() {
 	err = pubsub.SubscribeGob(
 		conn,
 		routing.ExchangeTopicIoT,
-		routing.QueueSensorTelemetry,
-		fmt.Sprintf(routing.KeySensorTelemetry, "*")+".#", // binding key
+		routing.QueueSensorMeasurements,
+		fmt.Sprintf(routing.KeySensorMeasurements, "*")+".#", // binding key
 		pubsub.QueueDurable,
 		handlerMeasurements(),
 	)

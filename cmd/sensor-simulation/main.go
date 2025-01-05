@@ -230,7 +230,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 			pubsub.PublishGob(
 				publishCh,
 				routing.ExchangeTopicIoT,
-				fmt.Sprintf(routing.KeySensorTelemetry, serialNumber),
+				fmt.Sprintf(routing.KeySensorMeasurements, serialNumber),
 				routing.SensorMeasurement{
 					SerialNumber: serialNumber,
 					Timestamp:    time.Now(), // should it be when the measurement was conceived
