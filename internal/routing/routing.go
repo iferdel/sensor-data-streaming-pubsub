@@ -18,6 +18,7 @@ const (
 	QueueSensorLogs           = "sensor.all.logs"
 )
 
+// keys are used in consumers with wildcards and in publishers with the specific value
 const (
 	KeySensorMeasurements   = "sensor.%s.measurements"
 	KeySensorCommandsFormat = "sensor.%s.commands"

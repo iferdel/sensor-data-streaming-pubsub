@@ -47,8 +47,7 @@ func initRabbitMQ() (*amqp.Connection, *amqp.Channel, error) {
 		return nil, nil, fmt.Errorf("could not create channel: %v", err)
 	}
 
-	// ADD DB POOL CONNECTION
-
 	return conn, publishCh, nil
-
 }
+
+// ADD DB POOL CONNECTION

@@ -8,8 +8,15 @@ type SensorRecord struct {
 }
 
 // timescaleDB hypertable -- Does not support primary keys
-type MeasurementRecord struct {
+type SensorMeasurementRecord struct {
 	Time        time.Time
 	SensorID    int
 	Measurement float64
+}
+
+type SensorLogRecord struct {
+	Timestamp    time.Time
+	SerialNumber string
+	Level        string
+	Message      string
 }
