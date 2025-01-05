@@ -11,7 +11,7 @@ import (
 const logsFile = "iot.log"
 
 func WriteLog(sensorLog routing.SensorLog) error {
-	fmt.Printf("received logs from %v...\n", sensorLog.SensorName)
+	fmt.Printf("received logs from %v...\n", sensorLog.SerialNumber)
 
 	f, err := os.OpenFile(logsFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -22,14 +22,14 @@ func WriteLog(sensorLog routing.SensorLog) error {
 
 	str := fmt.Sprintf("%s %v (%v): %v\n",
 		formattedTime,
-		sensorLog.SensorName,
+		sensorLog.SerialNumber,
 		sensorLog.Level,
 		sensorLog.Message,
 	)
 
 	_, err = f.WriteString(str)
 	if err != nil {
-		return fmt.Errorf("could not write to logs file from sensor %v: %v", sensorLog.SensorName, err)
+		return fmt.Errorf("could not write to logs file from sensor %v: %v", sensorLog.SerialNumber, err)
 	}
 
 	return nil

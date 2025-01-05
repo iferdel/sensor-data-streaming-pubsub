@@ -41,11 +41,11 @@ var sleepCmd = &cobra.Command{
 			publishCh,                // amqp.Channel
 			routing.ExchangeTopicIoT, // exchange
 			fmt.Sprintf(routing.KeySensorCommandsFormat, sensorSerialNumber)+"."+"sleep", // routing key
-			routing.CommandMessage{
-				SensorName: sensorSerialNumber,
-				Timestamp:  time.Now(),
-				Command:    "sleep",
-				Params:     nil,
+			routing.SensorCommandMessage{
+				SerialNumber: sensorSerialNumber,
+				Timestamp:    time.Now(),
+				Command:      "sleep",
+				Params:       nil,
 			}, // value
 		)
 		if err != nil {

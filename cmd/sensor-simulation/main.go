@@ -33,17 +33,17 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "System powering on...",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "System powering on...",
 		})
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Bootloader version: v1.0.0",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Bootloader version: v1.0.0",
 		})
 
 	conn, err := amqp.Dial(routing.RabbitConnString)
@@ -51,10 +51,10 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 		msg := fmt.Sprintf("Could not connect to RabbitMQ: %v", err)
 		bootLogs = append(bootLogs,
 			routing.SensorLog{
-				SensorName: serialNumber,
-				TimeStamp:  time.Now(),
-				Level:      "ERROR",
-				Message:    msg,
+				SerialNumber: serialNumber,
+				TimeStamp:    time.Now(),
+				Level:        "ERROR",
+				Message:      msg,
 			})
 		return
 	}
@@ -62,44 +62,44 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Connection to msg broker succeeded",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Connection to msg broker succeeded",
 		})
 
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Loading configuration...",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Loading configuration...",
 		})
 
 	sensorState := sensorlogic.NewSensorState(serialNumber, sampleFrequency)
 
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Configuration loaded successfully",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Configuration loaded successfully",
 		})
 
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Performing sensor self-test",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Performing sensor self-test",
 		})
 	time.Sleep(500 * time.Millisecond)
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Self-test result: PASSED",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Self-test result: PASSED",
 		})
 	time.Sleep(100 * time.Millisecond)
 
@@ -109,35 +109,35 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 		msg := fmt.Sprintf("Could not create publish channel: %v", err)
 		bootLogs = append(bootLogs,
 			routing.SensorLog{
-				SensorName: serialNumber,
-				TimeStamp:  time.Now(),
-				Level:      "ERROR",
-				Message:    msg,
+				SerialNumber: serialNumber,
+				TimeStamp:    time.Now(),
+				Level:        "ERROR",
+				Message:      msg,
 			})
 		return
 	}
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Publisher channel created",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Publisher channel created",
 		})
 
 	// publish sensor for registration if not already
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Sensor Auth...",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Sensor Auth...",
 		})
 	pubsub.PublishGob(
 		publishCh,                // channel
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.KeySensorRegistryFormat, serialNumber)+"."+"created", // routing key
 		routing.Sensor{
-			SensorName: serialNumber,
+			SerialNumber: serialNumber,
 		}, // based on Data Transfer Object
 	)
 	// TODO: get back acknowledgment of publish sensor
@@ -155,10 +155,10 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 		msg := fmt.Sprintf("Could not subscribe to command: %v", err)
 		bootLogs = append(bootLogs,
 			routing.SensorLog{
-				SensorName: serialNumber,
-				TimeStamp:  time.Now(),
-				Level:      "ERROR",
-				Message:    msg,
+				SerialNumber: serialNumber,
+				TimeStamp:    time.Now(),
+				Level:        "ERROR",
+				Message:      msg,
 			})
 		return
 	}
@@ -166,18 +166,18 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 	time.Sleep(100 * time.Millisecond)
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Successful subscription to iotctl messaging queue",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Successful subscription to iotctl messaging queue",
 		})
 
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
-			SensorName: serialNumber,
-			TimeStamp:  time.Now(),
-			Level:      "INFO",
-			Message:    "Booting completed, performing measurements...",
+			SerialNumber: serialNumber,
+			TimeStamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Booting completed, performing measurements...",
 		})
 
 	// publish sensor boot logs
@@ -232,9 +232,9 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 				routing.ExchangeTopicIoT,
 				fmt.Sprintf(routing.KeySensorTelemetry, serialNumber),
 				routing.SensorMeasurement{
-					SensorName: serialNumber,
-					Timestamp:  time.Now(), // should it be when the measurement was conceived
-					Value:      accX,
+					SerialNumber: serialNumber,
+					Timestamp:    time.Now(), // should it be when the measurement was conceived
+					Value:        accX,
 				},
 			)
 
@@ -250,7 +250,7 @@ func publishSensorLog(publishCh *amqp.Channel, sensorLog routing.SensorLog) erro
 	return pubsub.PublishGob(
 		publishCh,                // channel
 		routing.ExchangeTopicIoT, // exchange
-		fmt.Sprintf(routing.KeySensorLogsFormat, sensorLog.SensorName)+"."+"boot", // routing key
+		fmt.Sprintf(routing.KeySensorLogsFormat, sensorLog.SerialNumber)+"."+"boot", // routing key
 		sensorLog, // sensor log
 	)
 }

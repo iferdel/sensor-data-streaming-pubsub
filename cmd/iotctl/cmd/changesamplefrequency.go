@@ -38,10 +38,10 @@ var changeSampleFrequencyCmd = &cobra.Command{
 			publishCh,                // amqp.Channel
 			routing.ExchangeTopicIoT, // exchange
 			fmt.Sprintf(routing.KeySensorCommandsFormat, sensorSerialNumber)+"."+"change_sample_frequency", // routing key
-			routing.CommandMessage{
-				SensorName: sensorSerialNumber,
-				Timestamp:  time.Now(),
-				Command:    "changeSampleFrequency",
+			routing.SensorCommandMessage{
+				SerialNumber: sensorSerialNumber,
+				Timestamp:    time.Now(),
+				Command:      "changeSampleFrequency",
 				Params: map[string]interface{}{
 					"sampleFrequency": newSampleFrequency,
 				},

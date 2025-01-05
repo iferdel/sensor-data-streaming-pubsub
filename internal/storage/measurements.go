@@ -81,7 +81,7 @@ func WriteMeasurement(measurement routing.SensorMeasurement) error {
 				$3
 		);`
 
-	_, err = dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SensorName, measurement.Value)
+	_, err = dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SerialNumber, measurement.Value)
 	if err != nil {
 		return fmt.Errorf("Unable to insert sample into Timescale %v\n", err)
 	}

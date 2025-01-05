@@ -13,7 +13,7 @@ func handlerSensorRegistry() func(s routing.Sensor) pubsub.AckType {
 		// placeholder
 		fmt.Println("==========================================")
 
-		err := storage.WriteSensor(s.SensorName)
+		err := storage.WriteSensor(s.SerialNumber)
 		if err != nil {
 			fmt.Printf("error writing sensor instance: %v\n", err)
 			return pubsub.NackRequeue
