@@ -9,14 +9,14 @@ type SensorRecord struct {
 
 // timescaleDB hypertable -- Does not support primary keys
 type SensorMeasurementRecord struct {
-	Time        time.Time
+	Timestamp   time.Time
 	SensorID    int
 	Measurement float64
 }
 
 type SensorLogRecord struct {
-	Timestamp    time.Time
-	SerialNumber string
-	Level        string
-	Message      string
+	Timestamp    time.Time `json:"timestamp"`
+	SerialNumber string    `json:"serialNumber"`
+	Level        string    `json:"level"`
+	Message      string    `json:"message"`
 }

@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -66,7 +65,7 @@ func CreateTableMeasurement() error {
 	return nil
 }
 
-func WriteMeasurement(measurement routing.SensorMeasurement) error {
+func WriteMeasurement(measurement SensorMeasurementRecord) error {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
@@ -78,15 +77,9 @@ func WriteMeasurement(measurement routing.SensorMeasurement) error {
 	/* INSERT into hypertable                   */
 	/********************************************/
 
-	queryInsertTimeseriesData := `
-		INSERT INTO sensor_measurement (time, sensor_id, measurement) 
-			VALUES (
-				$1, 
-				(SELECT id FROM sensor WHERE serial_number = $2),
-				$3
-		);`
+	queryInsertTimeseriesData := `INSERT INTO sensor_measurement (time, sensor_id, measurement) VALUES ($1, $2, $3);`
 
-	_, err = dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SerialNumber, measurement.Value)
+	_, err = dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SensorID, measurement.Measurement)
 	if err != nil {
 		return fmt.Errorf("Unable to insert sample into Timescale %v\n", err)
 	}

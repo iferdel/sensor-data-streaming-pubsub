@@ -56,6 +56,28 @@ func CreateTableSensor() error {
 	return nil
 }
 
+func GetSensorIDBySerialNumber(serialNumber string) (sensorID int, err error) {
+	ctx := context.Background()
+	dbpool, err := pgxpool.New(ctx, PostgresConnString)
+	if err != nil {
+		return 0, fmt.Errorf("Unable to connect to database: %v\n", err)
+	}
+	defer dbpool.Close()
+
+	queryGetSensor := `
+		SELECT id 
+		FROM sensor
+		WHERE serial_number = ($1)
+	;`
+
+	err = dbpool.QueryRow(ctx, queryGetSensor, serialNumber).Scan(&sensorID)
+	if err != nil {
+		return 0, fmt.Errorf("unable to query sensor ID: %v", err)
+	}
+
+	return sensorID, nil
+}
+
 func GetSensor() error {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
