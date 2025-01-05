@@ -8,8 +8,8 @@ import (
 	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
 )
 
-func handlerCommand(sensorState *sensorlogic.SensorState) func(cm routing.CommandMessage) pubsub.AckType {
-	return func(cm routing.CommandMessage) pubsub.AckType {
+func handlerCommand(sensorState *sensorlogic.SensorState) func(cm routing.SensorCommandMessage) pubsub.AckType {
+	return func(cm routing.SensorCommandMessage) pubsub.AckType {
 		switch cm.Command {
 		case "sleep": // convert to constants command strings
 			sensorState.HandleSleep()

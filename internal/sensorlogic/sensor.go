@@ -1,5 +1,9 @@
 package sensorlogic
 
+type Sensor struct {
+	SerialNumber string
+}
+
 type SensorState struct {
 	Sensor                    Sensor
 	IsSleep                   bool
