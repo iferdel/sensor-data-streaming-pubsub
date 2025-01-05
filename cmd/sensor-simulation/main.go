@@ -7,7 +7,7 @@ import (
 	"math"
 	"math/rand"
 	"os"
-	// "strconv"
+	"strconv"
 	"text/tabwriter"
 	"time"
 
@@ -19,27 +19,24 @@ import (
 
 func main() {
 
-	// // environment variables
-	// serialNumber := os.Getenv("SENSOR_SERIAL_NUMBER")
-	// if serialNumber == "" {
-	// 	fmt.Println("non valid serial number: it is empty")
-	// 	return
-	// }
-	//
-	// sampleFrequencyStr := os.Getenv("SENSOR_SAMPLE_FREQUENCY")
-	// sampleFrequency, err := strconv.ParseFloat(sampleFrequencyStr, 64)
-	// if err != nil {
-	// 	fmt.Println("non valid sample frequency: it is empty")
-	// 	return
-	// }
-	//
-	// const seed int64 = 99
-	//
-	// sensorOperation(serialNumber, sampleFrequency, seed)
-	// // Block forever so container stays alive
-	// for {
-	// }
-	sensorOperation("AAD-1123", 1.0, 99)
+	// environment variables
+	serialNumber := os.Getenv("SENSOR_SERIAL_NUMBER")
+	if serialNumber == "" {
+		fmt.Println("non valid serial number: it is empty")
+		return
+	}
+
+	sampleFrequencyStr := os.Getenv("SENSOR_SAMPLE_FREQUENCY")
+	sampleFrequency, err := strconv.ParseFloat(sampleFrequencyStr, 64)
+	if err != nil {
+		fmt.Println("non valid sample frequency: it is empty")
+		return
+	}
+
+	const seed int64 = 99
+
+	sensorOperation(serialNumber, sampleFrequency, seed)
+	// sensorOperation("AAD-1123", 1.0, 99)
 }
 
 func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
@@ -138,6 +135,21 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 			Level:        "INFO",
 			Message:      "Publisher channel created",
 		})
+
+	// Declare an exchange
+	err = publishCh.ExchangeDeclare(
+		"iot",   // name
+		"topic", // type
+		true,    // durable
+		false,   // auto-deleted
+		false,   // internal
+		false,   // no-wait
+		nil,     // arguments
+	)
+	if err != nil {
+		fmt.Println("Failed to declare an exchange:", err)
+		return
+	}
 
 	// publish sensor for registration if not already
 	bootLogs = append(bootLogs,

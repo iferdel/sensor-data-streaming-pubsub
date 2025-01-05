@@ -27,6 +27,9 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
 
   sensor-simulation:
+    depends_on:
+      - rabbitmq
+      - timescaledb
     build:
       context: .          
       dockerfile: ./cmd/sensor-simulation/Dockerfile
@@ -34,5 +37,4 @@ services:
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
       - SENSOR_SAMPLE_FREQUENCY=1.0
-      - SENSOR_SEED=99
 
