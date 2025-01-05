@@ -7,7 +7,6 @@ import (
 	"math"
 	"math/rand"
 	"os"
-	"sync"
 	"text/tabwriter"
 	"time"
 
@@ -18,16 +17,11 @@ import (
 )
 
 func main() {
-	var wg sync.WaitGroup
-
-	wg.Add(2) // Increment the wait count by 2, since we will have 2 goroutines calling Done(). It counts at zero will trigger Wait() and unblock the program.
-	go sensorOperation(&wg, "AAD-1123", 1, 99)
-	wg.Wait() // it blocks the execution of whatever comes next until all goroutines it's waiting are finished
+	sensorOperation("AAD-1123", 1, 99)
 }
 
 // each sensor as a client that would run in a different process or all sensors as a client (for simplicity)
-func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency float64, seed int64) {
-	defer wg.Done() // signals the waitGroup that the goroutine finished its job, bringing the counter down a unit value
+func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 
 	bootLogs := []routing.SensorLog{}
 
@@ -214,16 +208,14 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 		return amplitude * math.Sin(w*t)
 	}
 
-	show := func(name string, accX, accY, accZ any) {
-		fmt.Fprintf(w, "%s\t%v\t%v\t%v\n", name, accX, accY, accZ)
+	show := func(name string, accX any) {
+		fmt.Fprintf(w, "%s\t%v\n", name, accX)
 	}
 	for {
 		select {
 		case <-ticker.C:
 			accX := simulateSignal()
-			accY := simulateSignal()
-			accZ := simulateSignal()
-			show(serialNumber, accX, accY, accZ)
+			show(serialNumber, accX)
 			w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
 
 			// publish measurement
@@ -233,7 +225,7 @@ func sensorOperation(wg *sync.WaitGroup, serialNumber string, sampleFrequency fl
 				fmt.Sprintf(routing.KeySensorMeasurements, serialNumber),
 				routing.SensorMeasurement{
 					SerialNumber: serialNumber,
-					Timestamp:    time.Now(), // should it be when the measurement was conceived
+					Timestamp:    time.Now(), // TODO: should it be when the measurement was conceived
 					Value:        accX,
 				},
 			)
