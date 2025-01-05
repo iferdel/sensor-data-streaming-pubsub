@@ -1,3 +1,8 @@
+/*
+- Uses TimescaleDB for storing measurements in hypertables.
+- TimescaleDB tables do not support primary keys.
+- Contains CRUD operations for sensor_measurement table.
+*/
 package storage
 
 import (

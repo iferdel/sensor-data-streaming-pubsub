@@ -1,3 +1,6 @@
+/*
+- Contains CRUD operations for sensor table.
+*/
 package storage
 
 import (

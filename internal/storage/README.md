@@ -1,3 +1,5 @@
+TODO: remove coupling from routing models
+
 
 iot=# SELECT EXISTS (
 SELECT FROM pg_tables
