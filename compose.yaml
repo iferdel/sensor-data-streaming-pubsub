@@ -5,7 +5,6 @@ services:
     ports:
       - "5672:5672"   # RabbitMQ main port
       - "15672:15672" # Management UI port
-    restart: unless-stopped
 
   timescaledb:
     image: timescale/timescaledb-ha:pg17
@@ -17,7 +16,6 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres 
       - POSTGRES_DB=iot
-    restart: unless-stopped
   
   grafana:
     image: grafana/grafana:latest
@@ -29,7 +27,6 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
-    restart: unless-stopped
   
   sensor-simulation:
     depends_on:
@@ -45,7 +42,6 @@ services:
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
       - SENSOR_SAMPLE_FREQUENCY=1.0
-    restart: unless-stopped
   
   iotctl:
     depends_on:
@@ -65,7 +61,6 @@ services:
       context: .          
       dockerfile: ./cmd/sensor-logs-ingester/Dockerfile
     container_name: iot-sensor-logs-ingester
-    restart: unless-stopped
   
   sensor-measurements-ingester:
     depends_on:
@@ -85,4 +80,3 @@ services:
       context: .          
       dockerfile: ./cmd/sensor-registry/Dockerfile
     container_name: iot-sensor-registry
-    restart: unless-stopped
