@@ -128,21 +128,6 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 		return
 	}
 
-	// Declare an exchange
-	err = publishCh.ExchangeDeclare(
-		"iot",   // name
-		"topic", // type
-		true,    // durable
-		false,   // auto-deleted
-		false,   // internal
-		false,   // no-wait
-		nil,     // arguments
-	)
-	if err != nil {
-		fmt.Println("Failed to declare an exchange:", err)
-		return
-	}
-
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
 			SerialNumber: serialNumber,

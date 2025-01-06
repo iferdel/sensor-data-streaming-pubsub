@@ -1,6 +1,6 @@
 services:
   rabbitmq:
-    build: .
+    build: dependencies/rabbitmq/
     container_name: iot-rabbitmq
     ports:
       - "5672:5672"   # RabbitMQ main port
@@ -10,27 +10,34 @@ services:
   timescaledb:
     image: timescale/timescaledb-ha:pg17
     container_name: iot-timescaledb-1
+    depends_on:
+      - rabbitmq
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=postgres 
       - POSTGRES_DB=iot
     restart: unless-stopped
-
+  
   grafana:
     image: grafana/grafana:latest
     container_name: iot-grafana
+    depends_on:
+      - timescaledb
     ports:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
     restart: unless-stopped
-
+  
   sensor-simulation:
     depends_on:
       - rabbitmq
       - timescaledb
+      - sensor-registry
+      - sensor-logs-ingester
+      - sensor-measurements-ingester
     build:
       context: .          
       dockerfile: ./cmd/sensor-simulation/Dockerfile
@@ -39,7 +46,7 @@ services:
       - SENSOR_SERIAL_NUMBER=AAD-1123
       - SENSOR_SAMPLE_FREQUENCY=1.0
     restart: unless-stopped
-
+  
   iotctl:
     depends_on:
       - rabbitmq
@@ -49,36 +56,31 @@ services:
       context: .          
       dockerfile: ./cmd/iotctl/Dockerfile
     container_name: iot-iotctl
-
+  
   sensor-logs-ingester:
     depends_on:
       - rabbitmq
       - timescaledb
-      - sensor-simulation
-      - sensor-registry
     build:
       context: .          
       dockerfile: ./cmd/sensor-logs-ingester/Dockerfile
     container_name: iot-sensor-logs-ingester
     restart: unless-stopped
-
+  
   sensor-measurements-ingester:
     depends_on:
       - rabbitmq
       - timescaledb
-      - sensor-simulation
-      - sensor-registry
     build:
       context: .          
       dockerfile: ./cmd/sensor-measurements-ingester/Dockerfile
     container_name: iot-sensor-measurements-ingester
     restart: unless-stopped
-
+  
   sensor-registry:
     depends_on:
       - rabbitmq
       - timescaledb
-      - sensor-simulation
     build:
       context: .          
       dockerfile: ./cmd/sensor-registry/Dockerfile

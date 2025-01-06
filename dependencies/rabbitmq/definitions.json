@@ -1,0 +1,54 @@
+{
+  "product_name": "RabbitMQ",
+  "users": [
+    {
+      "name": "iferdel",
+      "password_hash": "JQ6+ZVMAIIpmGS/pXb9Q6elneY94TrchYGYJAKE9wtRiIpRt",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator",
+      "limits": {}
+    },
+    {
+      "name": "guest",
+      "password_hash": "X5L0vwDQq2g8bu2Rr3oGc+uJiU+tRSFqSOj14w6zYqRK/lDU",
+      "hashing_algorithm": "rabbit_password_hashing_sha256",
+      "tags": "administrator",
+      "limits": {}
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "guest",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "iferdel",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "topic_permissions": [],
+  "parameters": [],
+  "policies": [],
+  "exchanges": [
+    {
+      "name": "iot",
+      "vhost": "/",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ]
+}
