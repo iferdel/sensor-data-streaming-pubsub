@@ -1,7 +1,6 @@
 services:
   rabbitmq:
-    # build: .
-    image: iot-rabbitmq
+    build: .
     container_name: iot-rabbitmq
     ports:
       - "5672:5672"   # RabbitMQ main port

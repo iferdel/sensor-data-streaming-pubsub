@@ -22,6 +22,6 @@ WORKDIR /app
 # Copy the compiled binary from the builder stage
 COPY --from=build /app/sensor-simulation /app/sensor-simulation
 
-COPY cmd/sensor-simulation/wait-for-rabbitmq.sh /app/
-CMD ["/bin/sh", "/app/wait-for-rabbitmq.sh", "/app/sensor-simulation"]
+COPY cmd/sensor-simulation/wait-for-rabbitmq-postgresql.sh /app/
+CMD ["/bin/sh", "/app/wait-for-rabbitmq-postgresql.sh", "/app/sensor-simulation"]
 
