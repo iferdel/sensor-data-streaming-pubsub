@@ -36,7 +36,6 @@ func main() {
 	const seed int64 = 99
 
 	sensorOperation(serialNumber, sampleFrequency, seed)
-	// sensorOperation("AAD-1123", 1.0, 99)
 }
 
 func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
@@ -128,13 +127,6 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 			})
 		return
 	}
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Publisher channel created",
-		})
 
 	// Declare an exchange
 	err = publishCh.ExchangeDeclare(
@@ -150,6 +142,14 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 		fmt.Println("Failed to declare an exchange:", err)
 		return
 	}
+
+	bootLogs = append(bootLogs,
+		routing.SensorLog{
+			SerialNumber: serialNumber,
+			Timestamp:    time.Now(),
+			Level:        "INFO",
+			Message:      "Publisher channel created",
+		})
 
 	// publish sensor for registration if not already
 	bootLogs = append(bootLogs,

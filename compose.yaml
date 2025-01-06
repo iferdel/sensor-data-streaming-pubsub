@@ -1,7 +1,8 @@
 services:
   rabbitmq:
-    build: .
-    container_name: rabbitmq
+    # build: .
+    image: iot-rabbitmq
+    container_name: iot-rabbitmq
     ports:
       - "5672:5672"   # RabbitMQ main port
       - "15672:15672" # Management UI port
@@ -9,7 +10,7 @@ services:
 
   timescaledb:
     image: timescale/timescaledb-ha:pg17
-    container_name: timescaledb-1
+    container_name: iot-timescaledb-1
     ports:
       - "5432:5432"
     environment:
@@ -20,6 +21,7 @@ services:
   grafana:
     image: grafana/grafana:latest
     restart: unless-stopped
+    container_name: iot-grafana
     ports:
       - "3000:3000"
     environment:
@@ -33,7 +35,7 @@ services:
     build:
       context: .          
       dockerfile: ./cmd/sensor-simulation/Dockerfile
-    container_name: sensor-simulation-1
+    container_name: iot-sensor-simulation-1
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
       - SENSOR_SAMPLE_FREQUENCY=1.0

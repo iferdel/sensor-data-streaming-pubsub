@@ -9,7 +9,7 @@ import (
 
 // Relational Database
 const (
-	PostgresConnString = "postgres://postgres:postgres@localhost:5432/iot"
+	PostgresConnString = "postgres://postgres:postgres@iot-timescaledb-1:5432/iot"
 )
 
 // TODO: Single Pool instead of one per function

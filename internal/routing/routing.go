@@ -2,7 +2,7 @@ package routing
 
 // PubSub Broker
 const (
-	RabbitConnString = "amqp://guest:guest@localhost:5672/"
+	RabbitConnString = "amqp://guest:guest@iot-rabbitmq:5672/"
 )
 
 // Exchange
