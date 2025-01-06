@@ -19,13 +19,13 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    restart: unless-stopped
     container_name: iot-grafana
     ports:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
+    restart: unless-stopped
 
   sensor-simulation:
     depends_on:
@@ -38,4 +38,49 @@ services:
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
       - SENSOR_SAMPLE_FREQUENCY=1.0
+    restart: unless-stopped
 
+  iotctl:
+    depends_on:
+      - rabbitmq
+      - timescaledb
+      - sensor-simulation
+    build:
+      context: .          
+      dockerfile: ./cmd/iotctl/Dockerfile
+    container_name: iot-iotctl
+
+  sensor-logs-ingester:
+    depends_on:
+      - rabbitmq
+      - timescaledb
+      - sensor-simulation
+      - sensor-registry
+    build:
+      context: .          
+      dockerfile: ./cmd/sensor-logs-ingester/Dockerfile
+    container_name: iot-sensor-logs-ingester
+    restart: unless-stopped
+
+  sensor-measurements-ingester:
+    depends_on:
+      - rabbitmq
+      - timescaledb
+      - sensor-simulation
+      - sensor-registry
+    build:
+      context: .          
+      dockerfile: ./cmd/sensor-measurements-ingester/Dockerfile
+    container_name: iot-sensor-measurements-ingester
+    restart: unless-stopped
+
+  sensor-registry:
+    depends_on:
+      - rabbitmq
+      - timescaledb
+      - sensor-simulation
+    build:
+      context: .          
+      dockerfile: ./cmd/sensor-registry/Dockerfile
+    container_name: iot-sensor-registry
+    restart: unless-stopped

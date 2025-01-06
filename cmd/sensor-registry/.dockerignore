@@ -1,0 +1,4 @@
+cmd/iotctl/
+cmd/sensor-logs-ingester/
+cmd/sensor-measurements-ingester/
+cmd/sensor-simulation/
