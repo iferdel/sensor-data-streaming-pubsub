@@ -1,6 +1,6 @@
 # Sensor Data Streaming PubSub
 
-## General Description
+## General Description :telescope:
 
 * (GIF with realtime sensor data being shown up in grafana)*
 * (GIF of grafana dashboard showing up scaling up the system with more or less sensors)*
@@ -10,7 +10,10 @@
 * General diagram
 * -- maybe(GIF showing GPS data from sensors)*
 
-## Directory Tree
+
+Being ambitious that a design like this is a good starting point to a larger project that would involve real and broader sensor monitoring spectrum with GPS (either with wifi or GSM), in either mobile vehicles or static machinery and why not, maybe in civil infraestructure. 
+
+## Directory Tree :deciduous_tree:
 ```
 .
 ├── Dockerfile
@@ -58,13 +61,13 @@
         └── sensors.go
 
 ```
-## Reason
+## Reason :seedling:
 
 Back in 2020, I worked on **vibration analysis**. My main background back then was in **Mechanical Engineering**, and I took on a role that involved designing sensor installations, performing measurements in the field, and then analyzing them back at the office. I measured various types of mechanical equipment, such as overhead cranes in a mining plant and climate control systems (pumps, cooling towers, air handling units) in Chile’s main airport, as well as civil structures (protected, commercial, and private buildings) subjected to nearby construction or certain physical phenomena.
 All of these tasks were performed **in-situ**, which motivated me to consider a more ambitious approach: **remote, real-time monitoring**. Such a system could open up new opportunities for clients, offering continuous insight without requiring on-site personnel.
 With that in mind, my goal for this project is to build a full **end-to-end**, real-time monitoring solution.
 
-## Architecture
+## Architecture :rabbit: :elephant: :tiger: :whale: :octopus:
 
 *(high-level system diagram to visualize the architecture)*
 This solution is based on an **event-driven** architecture using a **pub/sub** pattern at its core, powered by a **distributed system**. The project is intended to be hosted on a **Kubernetes cluster** to ensure high availability and horizontal scaling as needed—for example, if sensor sampling rates increase or if we add more sensors.
@@ -77,7 +80,7 @@ The services in question are:
 
 Besides this services, to a processing service that stores the data in a database, and finally to a dashboard for visualization.
 
-### Key architectural points:
+### Key architectural points :seven::seven::seven::
 *Disclaimer: Here we are considering an entire PubSub architecture, but one could conclude that a hybrid architecture for critical low-latency control would also be quite handy. In that case, one would expect using gRPC as the way to communicate between a service that would send direct commands to change behaviour (in a reactive way) not the sensor but to the machine or whatever is behind.*
 - **Data Transfer**: The solution is intended to use Protobuf as a data serialization format to match real scenarios with embedded C or C++. However, for the initial setup (POC), the Go encoding/gob serializer will be used.
 - **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD.
@@ -92,7 +95,8 @@ Besides this services, to a processing service that stores the data in a databas
     - *Inter-service communication uses AMQP with RabbitMQ, employing quorum queues.*
     - *Alarm service communication uses gRPC for low-latency communication with the machine where the sensor to affect behaviour*
 
-## Design
+## Design :art:
+'paint on a canvas' - kawhi leonard
 
 Sensors will send:
     - id (serial number)
@@ -104,15 +108,15 @@ This approach allows flexible scaling of the number of sensors and their data ra
 Sensor will receive (mapped through its id):
     - commands that would affect the sensor behaviour such as sleep, awake and change sample frequency.
 
-## Database Schemas
+## Database Schemas :floppy_disk:
 
 (image of ERD)
 
-## Monitoring
+## Monitoring :computer:
 
 TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and visualization of sensor data. This enables quick insights into sensor performance, trends, and anomalies.
 
-## Examples
+## Examples :cherries:
 
 (tmux showing up logs and cmd applying behavioural changes over the sensors.)
 (...)
