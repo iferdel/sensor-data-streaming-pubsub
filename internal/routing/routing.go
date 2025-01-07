@@ -1,8 +1,10 @@
 package routing
 
+import "os"
+
 // PubSub Broker
-const (
-	RabbitConnString = "amqp://guest:guest@iot-rabbitmq:5672/"
+var (
+	RabbitConnString = os.Getenv("RABBIT_CONN_STRING")
 )
 
 // Exchange
