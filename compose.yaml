@@ -1,38 +1,96 @@
 services:
   rabbitmq:
-    build: .
-    container_name: rabbitmq
+    build: dependencies/rabbitmq/
+    container_name: iot-rabbitmq
     ports:
       - "5672:5672"   # RabbitMQ main port
       - "15672:15672" # Management UI port
-    restart: unless-stopped
 
   timescaledb:
-    image: timescale/timescaledb-ha:pg17
-    container_name: timescaledb-1
+    build: dependencies/timescaledb/
+    container_name: iot-timescaledb-1
+    depends_on:
+      - rabbitmq
     ports:
       - "5432:5432"
     environment:
       - POSTGRES_PASSWORD=postgres 
-      - POSTGRES_DB=iot
-    restart: unless-stopped
-
+      - IOT_PASSWORD=iot
+      - IOT_REPLICATION_PASSWORD=iot_replication
+      - IOT_MONITORING_PASSWORD=iot_monitoring
+      - IOT_APP_PASSWORD=iot_app
+      - IOT_READONLY_PASSWORD=iot_readonly
+    volumes:
+      - ./dependencies/timescaledb/postgresql.conf:/etc/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql.conf
+  
   grafana:
     image: grafana/grafana:latest
-    restart: unless-stopped
+    container_name: iot-grafana
+    depends_on:
+      - timescaledb
     ports:
       - "3000:3000"
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
-
+  
   sensor-simulation:
+    depends_on:
+      - rabbitmq
+      - timescaledb
+      - sensor-registry
+      - sensor-logs-ingester
+      - sensor-measurements-ingester
     build:
       context: .          
       dockerfile: ./cmd/sensor-simulation/Dockerfile
-    container_name: sensor-simulation-1
+    container_name: iot-sensor-simulation-1
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
       - SENSOR_SAMPLE_FREQUENCY=1.0
-      - SENSOR_SEED=99
+      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
+  
+  sensor-logs-ingester:
+    depends_on:
+      - rabbitmq
+      - timescaledb
+    build:
+      context: .          
+      dockerfile: ./cmd/sensor-logs-ingester/Dockerfile
+    container_name: iot-sensor-logs-ingester
+    environment:
+      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
+    volumes:
+      - iot_log_volume:/app/iot.log  
 
+  sensor-measurements-ingester:
+    depends_on:
+      - rabbitmq
+      - timescaledb
+    build:
+      context: .          
+      dockerfile: ./cmd/sensor-measurements-ingester/Dockerfile
+    container_name: iot-sensor-measurements-ingester
+    restart: unless-stopped
+    environment:
+      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
+  
+  sensor-registry:
+    depends_on:
+      - rabbitmq
+      - timescaledb
+    build:
+      context: .          
+      dockerfile: ./cmd/sensor-registry/Dockerfile
+    container_name: iot-sensor-registry
+    environment:
+      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
+
+volumes:
+  iot_log_volume:
+    driver: local

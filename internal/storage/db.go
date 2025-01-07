@@ -3,13 +3,14 @@ package storage
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 // Relational Database
-const (
-	PostgresConnString = "postgres://postgres:postgres@localhost:5432/iot"
+var (
+	PostgresConnString = os.Getenv("POSTGRES_CONN_STRING")
 )
 
 // TODO: Single Pool instead of one per function
