@@ -8,7 +8,6 @@ import (
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
-	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -22,13 +21,6 @@ func main() {
 		return
 	}
 	defer conn.Close()
-
-	// create sensor table (ignored if already created)
-	err = storage.CreateTableSensor()
-	if err != nil {
-		fmt.Printf("Error while creating/cheking sensor table: %v\n", err)
-		return
-	}
 
 	// consume sensor registration
 	err = pubsub.SubscribeGob(

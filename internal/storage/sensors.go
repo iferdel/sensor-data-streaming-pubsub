@@ -11,51 +11,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func CreateTableSensor() error {
-
-	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, PostgresConnString)
-	if err != nil {
-		return fmt.Errorf("Unable to connect to database: %v\n", err)
-	}
-	defer dbpool.Close()
-
-	/********************************************/
-	/* Create ordinary relational table         */
-	/********************************************/
-
-	queryCheckIfExists := `SELECT EXISTS (
-		SELECT FROM pg_tables
-		WHERE schemaname = 'public'
-		AND tablename = 'sensor'
-	);`
-
-	var tableExists bool
-	err = dbpool.QueryRow(ctx, queryCheckIfExists).Scan(&tableExists)
-	if err != nil {
-		return fmt.Errorf("Error checking existency of `sensor` table: %v", err)
-	}
-
-	if tableExists {
-		fmt.Println("Table `sensor` already exists. Skipping...")
-		return nil
-	}
-
-	queryCreateTable := `CREATE TABLE sensor (
-		id SERIAL PRIMARY KEY, 
-		serial_number VARCHAR(50) UNIQUE NOT NULL
-	);`
-
-	_, err = dbpool.Exec(ctx, queryCreateTable)
-
-	if err != nil {
-		return fmt.Errorf("Unable to create `sensor` table: %v\n", err)
-	}
-	fmt.Println("Successfully created relational table `sensor`")
-
-	return nil
-}
-
 func GetSensorIDBySerialNumber(serialNumber string) (sensorID int, err error) {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
