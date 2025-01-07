@@ -86,7 +86,7 @@ Besides this services, to a processing service that stores the data in a databas
 - **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD.
 - **CI/CD**: For CI/CD, I’m using a private Jenkins server and Docker Hub for image storage, while the GitHub repository hosts the source code. The whole CD would be handled with FluxCD.
 - **Secrets**: I’m using Azure Key Vault for secrets in the homelab. 
-- **Database**: The solution uses PostgreSQL with [TimeScaleDB](https://www.timescale.com/), an extension optimized for time-series data. In a real scenario, the paid cloud tier would be in use, but for this project I’m storaging everything on bare metal, integrated with CloudNativePG and OpenEBS + Mayastor for storage.
+- **Database**: The solution uses PostgreSQL with [TimeScaleDB](https://www.timescale.com/), an extension optimized for time-series data. In a real scenario, the paid cloud tier would be in use, but for this project I’m storaging everything on bare metal, integrated with CloudNativePG and OpenEBS + Mayastor for storage. Ephemeral and with data retention policy.
 - **Data Management**: TimeScaleDB’s policies handle data expiration and compression, preventing storage overflow and improving performance.
 - **Visualization**: Grafana is used for near real-time dashboards, leveraging its querying capabilities to visualize time-series data stored as well as stats from the database itself by means of wrapping the stats from pg_stat_statements and pg_stat_kcache with postgres CTEs and procedures.
 - **Alarms**: *...*  

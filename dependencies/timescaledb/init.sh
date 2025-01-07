@@ -122,20 +122,23 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     RESET ROLE;
 
 EOSQL
-#
-# #--------------------------------------------------------------------------------
-# # EXTENSIONS
-# #--------------------------------------------------------------------------------
-# psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
-#     --------------------------------------------------------------------------------------------
-#     -- 1. Monitoring extensions
-#     --------------------------------------------------------------------------------------------
-#
-#     -- * Connect to the monitoring database
-#     \c monitoring
-#
-#     -- * Activate the pg_stat_statements extension
-#     CREATE EXTENSION pg_stat_statements;
-#
-#     -- ** auto_explain is loaded/enabled by default if used in shared_preload_libraries.
-# EOSQL
+
+#--------------------------------------------------------------------------------
+# EXTENSIONS
+#--------------------------------------------------------------------------------
+psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
+    --------------------------------------------------------------------------------------------
+    -- 1. Monitoring extensions
+    --------------------------------------------------------------------------------------------
+
+    -- * Connect to the monitoring database
+    \c monitoring
+
+    -- * Activate the pg_stat_statements extension
+    CREATE EXTENSION pg_stat_statements;
+
+    -- * Activate the pg_stat_kcache extension
+    CREATE EXTENSION pg_stat_kcache;
+
+    -- ** auto_explain is loaded/enabled by default if used in shared_preload_libraries.
+EOSQL
