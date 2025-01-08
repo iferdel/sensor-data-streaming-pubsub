@@ -34,8 +34,9 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
+      - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1s
     volumes:
-      -  ./dependencies/grafana/data:/var/lib/grafana
+      - ./dependencies/grafana/data:/var/lib/grafana
       - ./dependencies/grafana/provisioning:/etc/grafana/provisioning
   
   sensor-simulation:
