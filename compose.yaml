@@ -34,6 +34,9 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_SECURITY_ADMIN_USER=admin
+    volumes:
+      -  ./dependencies/grafana/data:/var/lib/grafana
+      - ./dependencies/grafana/provisioning:/etc/grafana/provisioning
   
   sensor-simulation:
     depends_on:
@@ -48,7 +51,9 @@ services:
     container_name: iot-sensor-simulation-1
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
-      - SENSOR_SAMPLE_FREQUENCY=1.0
+      - SENSOR_SAMPLE_FREQUENCY=80.0
+      - SENSOR_AMPLITUDE=1.0
+      - SENSOR_SINE_FREQUENCY=60.0
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
   

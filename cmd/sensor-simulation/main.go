@@ -40,6 +40,20 @@ func main() {
 
 func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 
+	amplitudeStr := os.Getenv("SENSOR_AMPLITUDE")
+	amplitude, err := strconv.ParseFloat(amplitudeStr, 64)
+	if err != nil {
+		fmt.Println("non valid amplitude: it is empty")
+		return
+	}
+
+	sineFrequencyStr := os.Getenv("SENSOR_SINE_FREQUENCY") // Frequency of the sine wave in Hz
+	sineFrequency, err := strconv.ParseFloat(sineFrequencyStr, 64)
+	if err != nil {
+		fmt.Println("non valid sineFrequency: it is empty")
+		return
+	}
+
 	bootLogs := []routing.SensorLog{}
 
 	bootLogs = append(bootLogs,
@@ -206,24 +220,17 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
 
-	var t float64 // will track time to ensure the running phase of the sine wave
 	_ = rand.New(rand.NewSource(seed))
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 
+	var dt float64 // Tracks the elapsed time in seconds
+
 	simulateSignal := func() float64 {
-		// vibration parameters
-		amplitude := 1.0
-		freq := sensorState.SampleFrequency
-		dt := 1.0 / freq // time between measurements
-
-		// increment time with each call (tracking running phase)
-		t += dt
-
-		// angular frequency (constant based on the sinewave frequency)
-		w := 2 * math.Pi * freq
-
-		// sine wave
-		return amplitude * math.Sin(w*t)
+		// Calculate the signal value using the sine function
+		value := amplitude * math.Sin(2*math.Pi*sineFrequency*dt)
+		// Increment the elapsed time based on the sample interval
+		dt += 1.0 / float64(sensorState.SampleFrequency)
+		return value
 	}
 
 	show := func(name string, accX any) {
