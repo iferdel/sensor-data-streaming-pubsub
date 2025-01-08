@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"sync"
 	"text/tabwriter"
 	"time"
 
@@ -16,6 +17,18 @@ import (
 	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
+
+// SineWave represents a single sine wave with its parameters.
+type SineWave struct {
+	Amplitude float64
+	Frequency float64
+	Phase     float64
+}
+
+// Generate returns the value of the sine wave at a given time.
+func (sw *SineWave) Generate(dt float64) float64 {
+	return sw.Amplitude * math.Sin(2*math.Pi*sw.Frequency*dt+sw.Phase)
+}
 
 func main() {
 
@@ -40,19 +53,19 @@ func main() {
 
 func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 
-	amplitudeStr := os.Getenv("SENSOR_AMPLITUDE")
-	amplitude, err := strconv.ParseFloat(amplitudeStr, 64)
-	if err != nil {
-		fmt.Println("non valid amplitude: it is empty")
-		return
-	}
-
-	sineFrequencyStr := os.Getenv("SENSOR_SINE_FREQUENCY") // Frequency of the sine wave in Hz
-	sineFrequency, err := strconv.ParseFloat(sineFrequencyStr, 64)
-	if err != nil {
-		fmt.Println("non valid sineFrequency: it is empty")
-		return
-	}
+	// amplitudeStr := os.Getenv("SENSOR_AMPLITUDE")
+	// amplitude, err := strconv.ParseFloat(amplitudeStr, 64)
+	// if err != nil {
+	// 	fmt.Println("non valid amplitude: it is empty")
+	// 	return
+	// }
+	//
+	// sineFrequencyStr := os.Getenv("SENSOR_SINE_FREQUENCY") // Frequency of the sine wave in Hz
+	// sineFrequency, err := strconv.ParseFloat(sineFrequencyStr, 64)
+	// if err != nil {
+	// 	fmt.Println("non valid sineFrequency: it is empty")
+	// 	return
+	// }
 
 	bootLogs := []routing.SensorLog{}
 
@@ -220,16 +233,41 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
 
+	// Example parameters
+	amplitude1 := 1.0
+	frequency1 := 5.0 // 5 Hz
+	amplitude2 := 0.6
+	frequency2 := 2.5 // 2.5 Hz
+
 	_ = rand.New(rand.NewSource(seed))
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
 
-	var dt float64 // Tracks the elapsed time in seconds
+	// Initialize sine waves
+	sine1 := SineWave{
+		Amplitude: amplitude1,
+		Frequency: frequency1,
+		Phase:     0.0,
+	}
+	sine2 := SineWave{
+		Amplitude: amplitude2,
+		Frequency: frequency2,
+		Phase:     0.0,
+	}
 
-	simulateSignal := func() float64 {
-		// Calculate the signal value using the sine function
-		value := amplitude * math.Sin(2*math.Pi*sineFrequency*dt)
-		// Increment the elapsed time based on the sample interval
-		dt += 1.0 / float64(sensorState.SampleFrequency)
+	var dt float64 = 0.0 // Tracks the elapsed time in seconds
+	dtIncrement := 1.0 / sensorState.SampleFrequency
+
+	// Mutex to protect dt in case of concurrent access
+	var mu sync.Mutex
+
+	// Function to simulate a single sample
+	simulateSample := func() float64 {
+		mu.Lock()
+		defer mu.Unlock()
+		// Generate the superimposed signal
+		value := sine1.Generate(dt) + sine2.Generate(dt)
+		// Increment time
+		dt += dtIncrement
 		return value
 	}
 
@@ -239,7 +277,7 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 	for {
 		select {
 		case <-ticker.C:
-			accX := simulateSignal()
+			accX := simulateSample()
 			show(serialNumber, accX)
 			w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
 
