@@ -36,7 +36,6 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1s
     volumes:
-      - ./dependencies/grafana/data:/var/lib/grafana
       - ./dependencies/grafana/provisioning:/etc/grafana/provisioning
   
   sensor-simulation:
@@ -53,8 +52,6 @@ services:
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
       - SENSOR_SAMPLE_FREQUENCY=80.0
-      - SENSOR_AMPLITUDE=1.0
-      - SENSOR_SINE_FREQUENCY=60.0
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
   

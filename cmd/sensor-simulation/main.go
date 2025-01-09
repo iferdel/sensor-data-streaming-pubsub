@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"math"
 	"math/rand"
 	"os"
 	"strconv"
@@ -17,18 +16,6 @@ import (
 	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
-
-// SineWave represents a single sine wave with its parameters.
-type SineWave struct {
-	Amplitude float64
-	Frequency float64
-	Phase     float64
-}
-
-// Generate returns the value of the sine wave at a given time.
-func (sw *SineWave) Generate(dt float64) float64 {
-	return sw.Amplitude * math.Sin(2*math.Pi*sw.Frequency*dt+sw.Phase)
-}
 
 func main() {
 
@@ -52,20 +39,6 @@ func main() {
 }
 
 func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
-
-	// amplitudeStr := os.Getenv("SENSOR_AMPLITUDE")
-	// amplitude, err := strconv.ParseFloat(amplitudeStr, 64)
-	// if err != nil {
-	// 	fmt.Println("non valid amplitude: it is empty")
-	// 	return
-	// }
-	//
-	// sineFrequencyStr := os.Getenv("SENSOR_SINE_FREQUENCY") // Frequency of the sine wave in Hz
-	// sineFrequency, err := strconv.ParseFloat(sineFrequencyStr, 64)
-	// if err != nil {
-	// 	fmt.Println("non valid sineFrequency: it is empty")
-	// 	return
-	// }
 
 	bootLogs := []routing.SensorLog{}
 
@@ -233,27 +206,26 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
 
+	_ = rand.New(rand.NewSource(seed))
+	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
+
 	// Example parameters
 	amplitude1 := 1.0
 	frequency1 := 5.0 // 5 Hz
 	amplitude2 := 0.6
 	frequency2 := 2.5 // 2.5 Hz
 
-	_ = rand.New(rand.NewSource(seed))
-	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
-
 	// Initialize sine waves
-	sine1 := SineWave{
+	sine1 := sensorlogic.SineWave{
 		Amplitude: amplitude1,
 		Frequency: frequency1,
 		Phase:     0.0,
 	}
-	sine2 := SineWave{
+	sine2 := sensorlogic.SineWave{
 		Amplitude: amplitude2,
 		Frequency: frequency2,
 		Phase:     0.0,
 	}
-
 	var dt float64 = 0.0 // Tracks the elapsed time in seconds
 	dtIncrement := 1.0 / sensorState.SampleFrequency
 
