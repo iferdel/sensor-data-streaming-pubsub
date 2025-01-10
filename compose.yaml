@@ -51,7 +51,7 @@ services:
     container_name: iot-sensor-simulation-1
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
-      - SENSOR_SAMPLE_FREQUENCY=5.0
+      - SENSOR_SAMPLE_FREQUENCY=35.0
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
   
