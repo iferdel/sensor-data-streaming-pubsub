@@ -1,0 +1,44 @@
+apiVersion: 1
+
+datasources:
+  - name: IoT Measurements
+    type: postgres
+    access: proxy
+    uid: be9ijnandyz9ce
+    orgId: 1
+    version: 1
+    editable: true
+    url: iot-timescaledb-1:5432
+    user: iot_readonly
+    secureJsonData:
+      password: iot_readonly
+    jsonData:
+      postgresVersion: 1700
+      database: iot
+      sslmode: disable
+      maxOpenConns: 100 # Grafana v5.4+
+      maxIdleConns: 100 # Grafana v5.4+
+      maxIdleConnsAuto: true # Grafana v9.5.1+
+      connMaxLifetime: 14400 # Grafana v5.4+
+      timescaledb: true
+
+  - name: IoT DB Monitoring
+    type: postgres
+    access: proxy
+    uid: de9iten8jjqiof
+    orgId: 1
+    version: 1
+    editable: true
+    url: iot-timescaledb-1:5432
+    user: iot_monitoring
+    secureJsonData:
+      password: iot_monitoring
+    jsonData:
+      postgresVersion: 1700
+      database: monitoring
+      sslmode: disable
+      maxOpenConns: 100 # Grafana v5.4+
+      maxIdleConns: 100 # Grafana v5.4+
+      maxIdleConnsAuto: true # Grafana v9.5.1+
+      connMaxLifetime: 14400 # Grafana v5.4+
+      timescaledb: true
