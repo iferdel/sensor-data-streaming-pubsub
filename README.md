@@ -1,20 +1,26 @@
 # Sensor Data Streaming PubSub
 
-## General Description :telescope:
+## General Description
 
-<img src="./assets/grafana-dashboard.gif" width="250" height="250"/>
 ![grafana-dashboard](./assets/grafana-dashboard.gif)
+* (GIF showing grafana-dashboard with more than one sensor + monitor db queries --stats from postgres using timescaledb functionality--)
 * (GIF showing iotctl behaviour -- maybe with bubbletea implemented already which would beautify the status of running sensors and not running sensors)*
-* (GIF showing pods on k8)
-* (GIF showing database stats by means of CTE's and pg_stat_statements + pg_stat_kcache)
+* (GIF showing pods on k8 -- invitation to [homelab](https://github.com/iferdel/homelab))
+* *maybe(GIF showing map with GPS data from sensors -- either static or dynamic locations)*
+
 * General diagram
-* -- maybe(GIF showing GPS data from sensors)*
+
+I think that a design like this is a good starting point for a larger project that would involve real and broader sensor monitoring spectrum with GPS (either with wifi or GSM), in either mobile vehicles or static machinery and why not, maybe in civil infraestructure. 
+
+## Reason :seedling:
+
+Back in 2020, I worked on **vibration analysis**. My main background back then was in **Mechanical Engineering**, and I took on a role that involved designing sensor installations, performing measurements in the field, and then analyzing them back at the office. I measured various types of mechanical equipment, such as overhead cranes in a mining plant and climate control systems (pumps, cooling towers, air handling units) in Chile’s main airport, as well as civil structures (protected, commercial, and private buildings) subjected to nearby construction or certain physical phenomena.
+All of these tasks were performed **in-situ**, which motivated me to consider a more ambitious approach: **remote, real-time monitoring**. Such a system could open up new opportunities for clients, offering continuous insight without requiring on-site personnel.
+With that in mind, my goal for this project is to build a full **end-to-end**, real-time monitoring solution.
 
 
-Being ambitious that a design like this is a good starting point to a larger project that would involve real and broader sensor monitoring spectrum with GPS (either with wifi or GSM), in either mobile vehicles or static machinery and why not, maybe in civil infraestructure. 
-
-## Directory Tree :deciduous_tree:
-*I like the structure that got manifest while developing the project, thats why I'm attaching the filetree since it reads nicely.*
+## :deciduous_tree: Directory Tree 
+*I like the structure that became manifest while developing the project. That's why I'm attaching the filetree since it reads nicely.*
 ```
 .
 ├── LICENSE
@@ -96,12 +102,6 @@ Being ambitious that a design like this is a good starting point to a larger pro
 └── utils
     └── wait-for-services.sh
 ```
-## Reason :seedling:
-
-Back in 2020, I worked on **vibration analysis**. My main background back then was in **Mechanical Engineering**, and I took on a role that involved designing sensor installations, performing measurements in the field, and then analyzing them back at the office. I measured various types of mechanical equipment, such as overhead cranes in a mining plant and climate control systems (pumps, cooling towers, air handling units) in Chile’s main airport, as well as civil structures (protected, commercial, and private buildings) subjected to nearby construction or certain physical phenomena.
-All of these tasks were performed **in-situ**, which motivated me to consider a more ambitious approach: **remote, real-time monitoring**. Such a system could open up new opportunities for clients, offering continuous insight without requiring on-site personnel.
-With that in mind, my goal for this project is to build a full **end-to-end**, real-time monitoring solution.
-
 ## Architecture :rabbit: :elephant: :tiger: :whale: :octopus:
 
 *(high-level system diagram to visualize the architecture)*
