@@ -2,7 +2,7 @@
 
 ## General Description :telescope:
 
-![grafana-dashboard](./assets/grafana-dashboard.mov)
+![grafana-dashboard](./assets/grafana-dashboard.gif)
 * (GIF showing iotctl behaviour -- maybe with bubbletea implemented already which would beautify the status of running sensors and not running sensors)*
 * (GIF showing pods on k8)
 * (GIF showing database stats by means of CTE's and pg_stat_statements + pg_stat_kcache)
