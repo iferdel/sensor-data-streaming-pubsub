@@ -2,6 +2,7 @@
 
 ## General Description :telescope:
 
+<img src="./assets/grafana-dashboard.gif" width="250" height="250"/>
 ![grafana-dashboard](./assets/grafana-dashboard.gif)
 * (GIF showing iotctl behaviour -- maybe with bubbletea implemented already which would beautify the status of running sensors and not running sensors)*
 * (GIF showing pods on k8)
@@ -13,52 +14,87 @@
 Being ambitious that a design like this is a good starting point to a larger project that would involve real and broader sensor monitoring spectrum with GPS (either with wifi or GSM), in either mobile vehicles or static machinery and why not, maybe in civil infraestructure. 
 
 ## Directory Tree :deciduous_tree:
+*I like the structure that got manifest while developing the project, thats why I'm attaching the filetree since it reads nicely.*
 ```
 .
-├── Dockerfile
+├── LICENSE
 ├── README.md
+├── assets
+│   └── grafana-dashboard.gif
 ├── cmd
 │   ├── iotctl
+│   │   ├── Dockerfile
 │   │   ├── cmd
 │   │   │   ├── awake.go
 │   │   │   ├── changesamplefrequency.go
+│   │   │   ├── delete.go
 │   │   │   ├── root.go
+│   │   │   ├── sensorstatus.go
 │   │   │   └── sleep.go
 │   │   └── main.go
-│   ├── sensor
-│   │   ├── handlers.go
-│   │   └── main.go
 │   ├── sensor-logs-ingester
+│   │   ├── Dockerfile
 │   │   ├── handlers.go
 │   │   └── main.go
 │   ├── sensor-measurements-ingester
+│   │   ├── Dockerfile
 │   │   ├── handlers.go
 │   │   └── main.go
-│   └── sensor-registry
+│   ├── sensor-registry
+│   │   ├── Dockerfile
+│   │   ├── handlers.go
+│   │   └── main.go
+│   └── sensor-simulation
+│       ├── Dockerfile
 │       ├── handlers.go
 │       └── main.go
 ├── compose.yaml
+├── dependencies
+│   ├── grafana
+│   │   ├── README.md
+│   │   ├── grafana.ini
+│   │   └── provisioning
+│   │       ├── dashboards
+│   │       │   ├── iot.json
+│   │       │   ├── iot.yaml
+│   │       │   └── queries.sql
+│   │       └── datasources
+│   │           └── datasources.yaml
+│   ├── rabbitmq
+│   │   ├── Dockerfile
+│   │   ├── definitions.json
+│   │   └── rabbitmq.conf
+│   └── timescaledb
+│       ├── Dockerfile
+│       ├── init.sh
+│       └── postgresql.conf
 ├── go.mod
 ├── go.sum
 ├── ideas.md
-└── internal
-    ├── pubsub
-    │   ├── consume.go
-    │   └── publish.go
-    ├── routing
-    │   ├── models.go
-    │   └── routing.go
-    ├── sensorlogic
-    │   ├── awake.go
-    │   ├── changesamplefrequency.go
-    │   ├── sensordata.go
-    │   ├── sensorstate.go
-    │   └── sleep.go
-    └── storage
-        ├── logs.go
-        ├── measurements.go
-        └── sensors.go
-
+├── internal
+│   ├── pubsub
+│   │   ├── consume.go
+│   │   └── publish.go
+│   ├── routing
+│   │   ├── models.go
+│   │   └── routing.go
+│   ├── sensorlogic
+│   │   ├── awake.go
+│   │   ├── changesamplefrequency.go
+│   │   ├── sensor.go
+│   │   ├── sensorlogs.go
+│   │   ├── sensormeasurements.go
+│   │   ├── sensorsignal.go
+│   │   └── sleep.go
+│   └── storage
+│       ├── README.md
+│       ├── db.go
+│       ├── logs.go
+│       ├── measurements.go
+│       ├── models.go
+│       └── sensors.go
+└── utils
+    └── wait-for-services.sh
 ```
 ## Reason :seedling:
 
