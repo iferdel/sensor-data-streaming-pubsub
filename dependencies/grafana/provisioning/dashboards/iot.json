@@ -1,6 +1,6 @@
 {
-	"annotations": {
-		"list": [
+  "annotations": {
+    "list": [
       {
         "builtIn": 1,
         "datasource": {
@@ -79,7 +79,7 @@
               }
             ]
           },
-	  "unit": "accG"
+          "unit": "accG"
         },
         "overrides": []
       },
@@ -102,6 +102,7 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "11.4.0",
       "targets": [
         {
           "datasource": {
@@ -111,7 +112,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-					"rawSql": "SELECT sensor_measurement.time, sensor_measurement.measurement, sensor.serial_number\r\nFROM sensor_measurement INNER JOIN sensor\r\n  ON sensor_measurement.sensor_id = sensor.id\r\nWHERE sensor.serial_number in ($serial_number)\r\nORDER BY time;",
+          "rawSql": "SELECT sensor_measurement.time, sensor_measurement.measurement, sensor.serial_number\r\nFROM sensor_measurement INNER JOIN sensor\r\n  ON sensor_measurement.sensor_id = sensor.id\r\nWHERE sensor.serial_number in ($serial_number)\r\nORDER BY time;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -144,21 +145,20 @@
       "type": "timeseries"
     }
   ],
+  "preload": false,
   "refresh": "auto",
-  "schemaVersion": 39,
+  "schemaVersion": 40,
   "tags": [],
   "templating": {
     "list": [
-			{
-				"auto": false,
+      {
+        "auto": false,
         "auto_count": 30,
         "auto_min": "10s",
         "current": {
-          "selected": false,
           "text": "1m",
           "value": "1m"
         },
-        "hide": 0,
         "name": "bucket_interval",
         "options": [
           {
@@ -214,17 +214,18 @@
         ],
         "query": "1m,10m,30m,1h,6h,12h,1d,7d,14d,30d",
         "refresh": 2,
-        "skipUrlSync": false,
         "type": "interval"
       },
       {
         "current": {
-          "selected": false,
-          "text": "AAD-1123",
-          "value": "AAD-1123"
+          "text": [
+            "AAD-1123"
+          ],
+          "value": [
+            "AAD-1123"
+          ]
         },
         "definition": "SELECT serial_number FROM sensor;",
-        "hide": 0,
         "includeAll": false,
         "multi": true,
         "name": "serial_number",
@@ -232,22 +233,23 @@
         "query": "SELECT serial_number FROM sensor;",
         "refresh": 1,
         "regex": "",
-        "skipUrlSync": false,
         "sort": 1,
         "type": "query"
       }
     ]
   },
   "time": {
-    "from": "2025-01-10T01:00:12.970Z",
-    "to": "2025-01-10T01:00:29.637Z"
+    "from": "now-10s",
+    "to": "now+10s"
   },
   "timepicker": {
-    "refresh_intervals": ["5s"]
+    "refresh_intervals": [
+      "5s"
+    ]
   },
   "timezone": "browser",
   "title": "IoT",
   "uid": "de9iu4i6taf40f",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }
