@@ -79,7 +79,7 @@ Sensor will receive (mapped through its id):
     - commands that would affect the sensor behaviour such as sleep, awake and change sample frequency.
 
 <details>
-<summary><h3>:deciduous_tree: Directory Tree</h3></summary>
+<summary><strong>:deciduous_tree: Directory Tree</strong></summary>
 
 *I like the structure that became manifest while developing the project. That's why I'm attaching the filetree since it reads nicely.*
 ```
@@ -166,11 +166,27 @@ Sensor will receive (mapped through its id):
 
 </details>
 
-## Database Schemas :floppy_disk:
+<details open>
+<summary><strong>:floppy_disk: Database Schema</strong></summary>
 
 Probably the best from timescaledb is that it is just postgress, so we can handle relations between tables, and use SQL. In this scenario its quite handy since we can store metadata about sensors and relate with the measurements and other info by means of relations.
 
 (image of ERD)
+
+</summary>
+
+<details open>
+<summary><strong>Messaging Routing</strong></summary>
+
+Exchange, Queues, and Routing Keys:
+
+    Exchange: 
+    Queues: 
+    Routing Keys:
+      -
+      -
+
+</summary>
 
 ## Monitoring :computer:
 
@@ -197,13 +213,6 @@ In addition to the sensor layer (client), three key microservices will form the 
 
 ### Pub Sub Compontents to be Used
 
-Exchange, Queues, and Routing Keys:
-
-    Exchange: 
-    Queues: 
-    Routing Keys:
-      -
-      -
 
 ### Pub/Sub Pattern for Each Microservice:
 
