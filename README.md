@@ -27,6 +27,13 @@ With that in mind, my goal for this project is to build a comprehensive **end-to
 
 The core of this solution is based on an **event-driven** architecture using a **pub/sub** pattern at its core, making **distributed system** possible. Nevertheless, as with any other system, an **hybrid** approach is required, such as relying on **point-to-point** communication for the interaction with the sensor cluster thorugh a command line tooling *iotctl* which communicates with an *api* that enables a controlled interaction with the database and message broker.
 
+<dl>
+  <dt>Lower cost</dt>
+  <dd>The new version of this product costs significantly less than the previous one!</dd>
+  <dt>Easier to use</dt>
+  <dd>We've changed the product so that it's much easier to use!</dd>
+</dl>
+
 The services defined in the project are the following:
 `iotctl` 
 : command line tool to interact remotely with cluster of nodes (it communicates point-to-point to iot-api service)
