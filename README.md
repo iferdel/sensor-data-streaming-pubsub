@@ -68,8 +68,11 @@ Not fan of hosting databases in k8, I would definitely use the cloud solution as
 
 </details>
 
-## Design :art:
-'paint on a canvas' - kawhi leonard
+## :art: Design 
+
+> Just threw some paint on the canvas tonight.
+>
+> -- <cite>Kawhi Leonard</cite>
 
 Sensors will send:
     - id (serial number)
@@ -192,11 +195,8 @@ Exchange, Queues, and Routing Keys:
 </summary>
 
 ## :computer::chart_with_upwards_trend: Monitoring
-
 TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and visualization of sensor data. This enables quick insights into sensor performance, trends, and anomalies. By the same token, it also allows the monitoring of key stats from the database cluster powering up the query of information from the pg_stat_statements and pg_stat_kcache extensions from postgres.
 
-## Examples :cherries:
-
-(tmux showing up logs and cmd applying behavioural changes over the sensors.)
+## :cherries: Examples 
 (...)
 
