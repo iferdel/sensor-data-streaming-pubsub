@@ -79,7 +79,7 @@ Sensor will receive (mapped through its id):
     - commands that would affect the sensor behaviour such as sleep, awake and change sample frequency.
 
 <details>
-<summary>:deciduous_tree: Directory Tree</summary>
+<summary><h3>:deciduous_tree: Directory Tree</h3></summary>
 
 *I like the structure that became manifest while developing the project. That's why I'm attaching the filetree since it reads nicely.*
 ```
