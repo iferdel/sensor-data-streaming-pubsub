@@ -30,14 +30,19 @@ The core of this solution is based on an **event-driven** architecture using a *
 The services defined in the project are the following:
 `iotctl` 
 : command line tool to interact remotely with cluster of nodes (it communicates point-to-point to iot-api service)
+
 `iot-api`
 : api that interacts through https with commands sent from iotctl uses. It takes care of the auth, for example. It accepts post and get requests. On the other hand, it also publishes messages to rabbitmq and interacts with the database to get up to date information to inform back to iotctl users.
+
 `sensor-simulation`
 : simulates an accelerometer, it consumes commands sent from iot-api and publishes its logs (like booting logs), the sensor serial number for registration of the sensor into the database aswell as the measurement values.
+
 `sensor-registry`
 : it consumes the sensor information about serial number, like a 'look, I'm sensor with serial number xxxx, if I'm not in the database, go register me so i can start sending measurements".
+
 `sensor-logs-ingester`
 : it consumes the sensor logs and saves them into a .log file to further processing in a centralized manner.
+
 `sensor-measurements-ingester`
 : it consumes the sensor(s) measurements and insert them into the postgres/timescaledb instance.
 
