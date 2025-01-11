@@ -51,7 +51,7 @@ Not fan of hosting databases in k8, I would definitely use the cloud solution as
 *Disclaimer: one could conclude that a hybrid architecture for critical low-latency control would also be quite handy. In that case, one would expect using gRPC as the way to communicate between a service that would send direct commands to change behaviour (in a reactive way) not the sensor but to the machine or whatever is behind.*
 
 <details>
-<summary><strong>:seven::seven::seven: Key Architectural Points</strong></summary>
+<summary><strong>Key Architectural Points</strong></summary>
 
 - **Data Transfer**: The solution is intended to use Protobuf as a data serialization format to match real scenarios with embedded C or C++. However, for the initial setup (POC), the Go encoding/gob serializer is in use to ease development.
 - **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD. The only service that's out from the cluster is the command line tool which is intended to be used within a remote machine that needs to authenticate in order to interact with the sensor cluster.
@@ -176,7 +176,7 @@ Probably the best from timescaledb is that it is just postgress, so we can handl
 
 (image of ERD)
 
-</summary>
+</details>
 
 <details open>
 <summary><strong>:rabbit:  Messaging Routing</strong></summary>
@@ -191,7 +191,7 @@ Exchange, Queues, and Routing Keys:
 
 </summary>
 
-## Monitoring :computer:
+## :computer::chart_with_upwards_trend: Monitoring
 
 TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and visualization of sensor data. This enables quick insights into sensor performance, trends, and anomalies. By the same token, it also allows the monitoring of key stats from the database cluster powering up the query of information from the pg_stat_statements and pg_stat_kcache extensions from postgres.
 
@@ -199,35 +199,4 @@ TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and 
 
 (tmux showing up logs and cmd applying behavioural changes over the sensors.)
 (...)
-
-## Thoughts on the Process...
-
-### Simulation
-
-I'm thinking of simulating tens, hundreds and why not, thousands of sensors sending data.
-So not only the pubsub is being tested with this high throughput of data, but the database.
-
-### Microservices Considered
-
-In addition to the sensor layer (client), three key microservices will form the core of this architecture:
-    Sensor Control Panel: A service (or CLI tool) that interacts with each sensor to adjust operational parameters, such as putting a sensor to sleep or changing its sampling frequency.
-    Sensor Data Capture: A horizontally scalable service (utilizing Kubernetes Horizontal Pod Autoscaling) that consumes sensor data and writes it to the database.
-    Sensor Data Processing & Alarms: A service that analyzes incoming data to detect patterns or threshold violations and then triggers commands or alarms as needed.
-
-### Pub Sub Compontents to be Used
-
-
-### Pub/Sub Pattern for Each Microservice:
-
-1) Sensor:
-    Publisher: Sensor data and acknowledgments after commands or triggers are processed
-    Subscriber: Commands and alarms sent from other services
-2) Sensor Control Panel:
-    Publisher: Commands (with necessary arguments) sent to sensors
-    Subscriber: Sensor status updates and command acknowledgments
-3) Sensor Data Capture:
-    Subscriber: Consumes continuous sensor data streams for persistence in the database
-    Sensor Data Processing & Alarms:
-        Publisher: Triggers or alerts based on analyzed sensor data
-        Subscriber: Receives raw sensor data for processing
 
