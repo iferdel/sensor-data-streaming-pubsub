@@ -46,11 +46,13 @@ The core of this solution is based on an **event-driven** architecture using a *
 
 Having said that, the project is intended to be hosted on a **Kubernetes cluster** to ensure high availability and horizontal scaling as needed—for example, if the amount of incoming data increases from an increase in sensor sampling rates or if more sensors are added (which in the simulation sense, it is a kind of replication of the simulation service which could count as an horizontal scaling).
 Yet, the only services that would not be hosted directly on the cluster is the database itself and the command line tool since it is intended to be installed on users that want to interact with the services.
-==Not fan of hosting databases in k8, I would definitely use the cloud solution== as it scales better and there is a whole team taking care of this.
+Not fan of hosting databases in k8, I would definitely use the cloud solution as it scales better and there is a whole team taking care of this.
 
 *Disclaimer: one could conclude that a hybrid architecture for critical low-latency control would also be quite handy. In that case, one would expect using gRPC as the way to communicate between a service that would send direct commands to change behaviour (in a reactive way) not the sensor but to the machine or whatever is behind.*
 
-### Key architectural points :seven::seven::seven::
+<details>
+<summary><strong>:seven::seven::seven: Key Architectural Points</strong></summary>
+
 - **Data Transfer**: The solution is intended to use Protobuf as a data serialization format to match real scenarios with embedded C or C++. However, for the initial setup (POC), the Go encoding/gob serializer is in use to ease development.
 - **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD. The only service that's out from the cluster is the command line tool which is intended to be used within a remote machine that needs to authenticate in order to interact with the sensor cluster.
 - **CI/CD**: For CI/CD, I’m using a private Jenkins server and Docker Hub for image storage, while the GitHub repository hosts the source code. The whole CD would be handled with FluxCD.
@@ -64,7 +66,8 @@ Yet, the only services that would not be hosted directly on the cluster is the d
     - *Inter-service communication uses AMQP with RabbitMQ, employing quorum queues.*
     - *Alarm service communication uses gRPC for low-latency communication with the machine where the sensor to affect behaviour*
 
- :rabbit: :elephant: :tiger: :whale: :octopus:
+</details>
+
 ## Design :art:
 'paint on a canvas' - kawhi leonard
 
@@ -167,7 +170,7 @@ Sensor will receive (mapped through its id):
 </details>
 
 <details open>
-<summary><strong>:floppy_disk: Database Schema</strong></summary>
+<summary><strong>:elephant: :tiger: Database Schema</strong></summary>
 
 Probably the best from timescaledb is that it is just postgress, so we can handle relations between tables, and use SQL. In this scenario its quite handy since we can store metadata about sensors and relate with the measurements and other info by means of relations.
 
@@ -176,7 +179,7 @@ Probably the best from timescaledb is that it is just postgress, so we can handl
 </summary>
 
 <details open>
-<summary><strong>Messaging Routing</strong></summary>
+<summary><strong>:rabbit:  Messaging Routing</strong></summary>
 
 Exchange, Queues, and Routing Keys:
 
