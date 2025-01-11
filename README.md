@@ -182,7 +182,7 @@ Probably the best from timescaledb is that it is just postgress, so we can handl
 </details>
 
 <details open>
-<summary><strong>:rabbit:  Messaging Routing</strong></summary>
+<summary><strong>:rabbit: Messaging Routing</strong></summary>
 
 Exchange, Queues, and Routing Keys:
 
@@ -191,6 +191,14 @@ Exchange, Queues, and Routing Keys:
     Routing Keys:
       -
       -
+
+</summary>
+
+<details open>
+<summary><strong>:pencil: Engineering Calculation Report</strong></summary>
+
+**General Formula of Accelerometer Signal**\
+a(t) = A sin(ωt + φ)
 
 </summary>
 
