@@ -198,7 +198,7 @@ Exchange, Queues, and Routing Keys:
 <summary><strong>:pencil: Engineering Calculation Report</strong></summary>
 
 **General Formula of Accelerometer Signal**\
-a(t) = A sin(ωt + φ)
+$`a(t) = A sin(ωt + φ)`$
 
 </summary>
 
