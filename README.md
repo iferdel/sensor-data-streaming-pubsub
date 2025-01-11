@@ -8,9 +8,7 @@
 * (GIF showing pods on k8 -- invitation to [homelab](https://github.com/iferdel/homelab))
 * *maybe(GIF showing map with GPS data from sensors -- either static or dynamic locations)*
 
-* General diagram (excalidraw or another software)
-
-I think that a design like this is a good starting point for a larger project that would involve a real and broader sensor monitoring spectrum with GPS (either via Wi-Fi or GSM), in mobile vehicles or static machinery aswell as in civil infrastructure.
+*I think that a design like this is a good starting point for a larger project that would involve a real and broader sensor monitoring spectrum with GPS (either via Wi-Fi or GSM), in mobile vehicles or static machinery aswell as in civil infrastructure.*
 
 ## Reason
 
@@ -22,6 +20,54 @@ All of these tasks were performed **in-situ**, which motivated me to consider a 
 
 With that in mind, my goal for this project is to build a comprehensive **end-to-end**, real-time monitoring solution.
 
+
+## Architecture
+
+*(architecture diagram)*
+
+The core of this solution is based on an **event-driven** architecture using a **pub/sub** pattern at its core, making **distributed system** possible, relying on **point-to-point** communication only for the interaction with the sensor cluster thorugh a command line tooling *iotctl* which communicates with an *api* that enables a controlled interaction with the database and message broker.
+
+The project is intended to be hosted on a **Kubernetes cluster** to ensure high availability and horizontal scaling as needed—for example, if the amount of incoming data increases from an increase in sensor sampling rates or if more sensors are added (which in the simulation sense, it is a kind of replication of the simulation service which could count as an horizontal scaling)
+
+*Disclaimer: one could conclude that a hybrid architecture for critical low-latency control would also be quite handy. In that case, one would expect using gRPC as the way to communicate between a service that would send direct commands to change behaviour (in a reactive way) not the sensor but to the machine or whatever is behind.*
+
+The services defined in the project are the following:
+* iotctl: command line tool to interact remotely with cluster of nodes (it communicates point-to-point to iot-api service)
+* iot-api: api that interacts through https with commands sent from iotctl uses. It takes care of the auth, for example. It accepts post and get requests. On the other hand, it also publishes messages to rabbitmq and interacts with the database to get up to date information to inform back to iotctl users.
+* sensor simulation: simulates an accelerometer, it consumes commands sent from iot-api and publishes its logs (like booting logs), the sensor serial number for registration of the sensor into the database aswell as the measurement values.
+* sensor registry: it consumes the sensor information about serial number, like a 'look, I'm sensor with serial number xxxx, if I'm not in the database, go register me so i can start sending measurements".
+* logs ingester: it consumes the sensor logs and saves them into a .log file to further processing in a centralized manner.
+* measurement ingester: it consumes the sensor measurements and insert them into the postgres/timescaledb instance.
+
+These services are dependant of other software such as the message broker, a database that would handle timeseries data with ease and a visualization tool to real-time monitoring.
+
+### Key architectural points :seven::seven::seven::
+- **Data Transfer**: The solution is intended to use Protobuf as a data serialization format to match real scenarios with embedded C or C++. However, for the initial setup (POC), the Go encoding/gob serializer is in use to ease development.
+- **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD. The only service that's out from the cluster is the command line tool which is intended to be used within a remote machine that needs to authenticate in order to interact with the sensor cluster.
+- **CI/CD**: For CI/CD, I’m using a private Jenkins server and Docker Hub for image storage, while the GitHub repository hosts the source code. The whole CD would be handled with FluxCD.
+- **Secrets**: I’m using Azure Key Vault for secrets in the homelab. 
+- **Database**: The solution uses PostgreSQL with [TimeScaleDB](https://www.timescale.com/), an extension optimized for time-series data. In a real scenario, the paid cloud tier would be in use, but for this project I’m storaging everything on bare metal, integrated with CloudNativePG and OpenEBS + Mayastor for storage. Ephemeral and with data retention policy. Not fan of hosting databases in k8, I would definitely use the cloud solution as it scales better and there is a whole team taking care of this.
+- **Data Management**: TimeScaleDB’s policies handle data expiration and compression, preventing storage overflow and improving performance.
+- **Visualization**: Grafana is used for near real-time dashboards, leveraging its querying capabilities to visualize time-series data stored as well as stats from the database itself by means of wrapping the stats from pg_stat_statements and pg_stat_kcache with postgres CTEs and procedures.
+- **Alarms**: *...*  
+- **Communication Protocols**:
+    - *Sensor communication uses MQTT with streaming queues.*
+    - *Inter-service communication uses AMQP with RabbitMQ, employing quorum queues.*
+    - *Alarm service communication uses gRPC for low-latency communication with the machine where the sensor to affect behaviour*
+
+ :rabbit: :elephant: :tiger: :whale: :octopus:
+## Design :art:
+'paint on a canvas' - kawhi leonard
+
+Sensors will send:
+    - id (serial number)
+    - timestamp (with nanosecond precision)
+    - measurement (at a variable sample frequency)
+    - GPS location (latitude and longitude)
+This approach allows flexible scaling of the number of sensors and their data rates.
+
+Sensor will receive (mapped through its id):
+    - commands that would affect the sensor behaviour such as sleep, awake and change sample frequency.
 
 ## :deciduous_tree: Directory Tree 
 *I like the structure that became manifest while developing the project. That's why I'm attaching the filetree since it reads nicely.*
@@ -106,54 +152,15 @@ With that in mind, my goal for this project is to build a comprehensive **end-to
 └── utils
     └── wait-for-services.sh
 ```
-## Architecture :rabbit: :elephant: :tiger: :whale: :octopus:
-
-*(high-level system diagram to visualize the architecture)*
-This solution is based on an **event-driven** architecture using a **pub/sub** pattern at its core, powered by a **distributed system**. The project is intended to be hosted on a **Kubernetes cluster** to ensure high availability and horizontal scaling as needed—for example, if sensor sampling rates increase or if we add more sensors.
-The services in question are:
-* sensor simulation
-* sensor registry
-* logs ingester
-* measurement ingester
-* control iotctl 
-
-Besides this services, to a processing service that stores the data in a database, and finally to a dashboard for visualization.
-
-### Key architectural points :seven::seven::seven::
-*Disclaimer: Here we are considering an entire PubSub architecture, but one could conclude that a hybrid architecture for critical low-latency control would also be quite handy. In that case, one would expect using gRPC as the way to communicate between a service that would send direct commands to change behaviour (in a reactive way) not the sensor but to the machine or whatever is behind.*
-- **Data Transfer**: The solution is intended to use Protobuf as a data serialization format to match real scenarios with embedded C or C++. However, for the initial setup (POC), the Go encoding/gob serializer will be used.
-- **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD.
-- **CI/CD**: For CI/CD, I’m using a private Jenkins server and Docker Hub for image storage, while the GitHub repository hosts the source code. The whole CD would be handled with FluxCD.
-- **Secrets**: I’m using Azure Key Vault for secrets in the homelab. 
-- **Database**: The solution uses PostgreSQL with [TimeScaleDB](https://www.timescale.com/), an extension optimized for time-series data. In a real scenario, the paid cloud tier would be in use, but for this project I’m storaging everything on bare metal, integrated with CloudNativePG and OpenEBS + Mayastor for storage. Ephemeral and with data retention policy.
-- **Data Management**: TimeScaleDB’s policies handle data expiration and compression, preventing storage overflow and improving performance.
-- **Visualization**: Grafana is used for near real-time dashboards, leveraging its querying capabilities to visualize time-series data stored as well as stats from the database itself by means of wrapping the stats from pg_stat_statements and pg_stat_kcache with postgres CTEs and procedures.
-- **Alarms**: *...*  
-- **Communication Protocols**:
-    - *Sensor communication uses MQTT with streaming queues.*
-    - *Inter-service communication uses AMQP with RabbitMQ, employing quorum queues.*
-    - *Alarm service communication uses gRPC for low-latency communication with the machine where the sensor to affect behaviour*
-
-## Design :art:
-'paint on a canvas' - kawhi leonard
-
-Sensors will send:
-    - id (serial number)
-    - timestamp (with nanosecond precision)
-    - measurement (at a variable sample frequency)
-    - GPS location (latitude and longitude)
-This approach allows flexible scaling of the number of sensors and their data rates.
-
-Sensor will receive (mapped through its id):
-    - commands that would affect the sensor behaviour such as sleep, awake and change sample frequency.
-
 ## Database Schemas :floppy_disk:
+
+Probably the best from timescaledb is that it is just postgress, so we can handle relations between tables, and use SQL. In this scenario its quite handy since we can store metadata about sensors and relate with the measurements and other info by means of relations.
 
 (image of ERD)
 
 ## Monitoring :computer:
 
-TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and visualization of sensor data. This enables quick insights into sensor performance, trends, and anomalies.
+TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and visualization of sensor data. This enables quick insights into sensor performance, trends, and anomalies. By the same token, it also allows the monitoring of key stats from the database cluster powering up the query of information from the pg_stat_statements and pg_stat_kcache extensions from postgres.
 
 ## Examples :cherries:
 
@@ -178,13 +185,11 @@ In addition to the sensor layer (client), three key microservices will form the 
 
 Exchange, Queues, and Routing Keys:
 
-    Exchange: sensor_streaming
-    Queues: sensor_{i} for each sensor i
+    Exchange: 
+    Queues: 
     Routing Keys:
-        sensor_{i}.commands.sleep
-        sensor_{i}.commands.change_sample_frequency
-        sensor_{i}.data
-        sensor_{i}.alarms.trigger
+      -
+      -
 
 ### Pub/Sub Pattern for Each Microservice:
 
