@@ -51,7 +51,7 @@ Not fan of hosting databases in k8, I would definitely use the cloud solution as
 *Disclaimer: one could conclude that a hybrid architecture for critical low-latency control would also be quite handy. In that case, one would expect using gRPC as the way to communicate between a service that would send direct commands to change behaviour (in a reactive way) not the sensor but to the machine or whatever is behind.*
 
 <details>
-<summary><strong>Key Architectural Points</strong></summary>
+<summary><strong>:mag: Key Architectural Points</strong></summary>
 
 - **Data Transfer**: The solution is intended to use Protobuf as a data serialization format to match real scenarios with embedded C or C++. However, for the initial setup (POC), the Go encoding/gob serializer is in use to ease development.
 - **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD. The only service that's out from the cluster is the command line tool which is intended to be used within a remote machine that needs to authenticate in order to interact with the sensor cluster.
@@ -72,7 +72,7 @@ Not fan of hosting databases in k8, I would definitely use the cloud solution as
 
 > Just threw some paint on the canvas tonight.
 >
-> -- <cite>Kawhi Leonard</cite>
+> -- <cite><i>Kawhi Leonard</i></cite>
 
 Sensors will send:
     - id (serial number)
