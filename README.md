@@ -166,22 +166,20 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 <details>
 <summary><strong>:elephant: :tiger: Database Schema</strong></summary>
 
-The beauty of [TimescaleDB](https://www.timescale.com/) is that it’s built on top of PostgreSQL, allowing us to use SQL and thus embrace core principles of relational databases, such as normalization.
+The beauty of [TimescaleDB](https://www.timescale.com/) lies in its foundation on PostgreSQL, allowing us to leverage SQL and embrace core relational database principles, such as normalization. While it is well known that relational databases are typically unfitted for time-series data, TimescaleDB extends PostgreSQL to overcome this limitation, making projects like this a clear testament to its capability.
 
-In PostgreSQL, the collection of databases in a server instance is called *cluster*. The cluster for this project consist in two databases, one for the project itself called `iot` and other database for monitoring the postgres cluster statistics called `monitoring`. The former uses `autoexplain`, `timescaledb` and `postgis` extensions, the latter uses `pg_stat_statements`, `pg_stat_kcache` along with timescaledb for real-time monitoring of these stats.
+In PostgreSQL, the collection of databases within a server instance is referred to as a *cluster*. The cluster for this project consist of two databases: one named `iot`, dedicated to the project itself, and another named `monitoring`, used for tracking PostgreSQL cluster statistics. The formar utilizes the `autoexplain`, `timescaledb`, and `postgis` extensions, while the latter employs `pg_stat_statements`, `pg_stat_kcache`, and `timescaledb` to enable real-time monitoring of database statistics.
 
-Postgres manages access permissions using the [`ROLE`](https://www.postgresql.org/docs/current/user-manag.html) terminology. In this cluster these are the roles in play:
-- `iot`: superuser-like user - for security reasons, avoids having around a postgres user.
-- `iot_app`: user with permissions to operate over iot database in the whole CRUD spectrum.
-- `iot_replication`: user responsible for replication of the database if needed.
-- `iot_readonly`: readonly over iot database.
-- `iot_monitoring`: user with permissions to operate over monitoring database (and thus with stats extensions)
+Postgres manages access permissions using the [`ROLE`](https://www.postgresql.org/docs/current/user-manag.html) terminology. In this cluster, the following roles are defined:
+- `iot`: A superuser-like role—used instead of the default `postgres` role as a security measure.
+- `iot_app`: A role with full CRUD permissions on the iot database.
+- `iot_replication`: A role responsible for database replication, if needed.
+- `iot_readonly`: A role with read-only access to the iot database.
+- `iot_monitoring`: A role with permissions to operate on the monitoring database, including access to the stats extensions data.
 
-*The public schema from iot database is revoked to public user as a well known good practice*
-
+*As a security best practice, the public schema in the iot database has had its default permissions revoked for the public role.*
 
 ![iot-db-erd](./assets/db-iot-erd.drawio.svg)
-
 
 > [Timescale hypertables do not support primary keys](https://stackoverflow.com/a/77463051). This is because the underlying data must be partitioned to several physical PostgreSQL tables. Partitioned look-ups cannot support a primary key, but a [composite primary key](https://docs.timescale.com/use-timescale/latest/schema-management/about-constraints/#about-constraints) of together unique columns could be used.
 
@@ -213,15 +211,19 @@ Exchange, Queues, and Routing Keys:
 </details>
 
 <details>
+<summary><strong>:computer: Monitoring</strong></summary>
+
+TimeScaleDB integrates seamlessly with **Grafana**, allowing real-time querying and visualization of sensor data.
+
+</details>
+
+<details>
 <summary><strong>:pencil: Engineering Calculation Report</strong></summary>
 
 **General Formula of Accelerometer Signal**\
 $`a(t) = A sin(ωt + φ)`$
 
 </details>
-
-## :computer: Monitoring
-TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and visualization of sensor data. This enables quick insights into sensor performance, trends, and anomalies. By the same token, it also allows the monitoring of key stats from the database cluster powering up the query of information from the pg_stat_statements and pg_stat_kcache extensions from postgres.
 
 ## :cherries: Examples 
 (...)
