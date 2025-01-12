@@ -103,7 +103,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 
     CREATE TABLE sensor (
 	id SERIAL PRIMARY KEY, 
-	serial_number VARCHAR(50) UNIQUE NOT NULL
+	serial_number VARCHAR(20) UNIQUE NOT NULL
 	);
 
     CREATE TABLE sensor_measurement (
