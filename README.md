@@ -197,7 +197,7 @@ Postgres manages access permissions using the [`ROLE`](https://www.postgresql.or
 
 </details>
 
-<details open>
+<details>
 <summary><strong>:rabbit: Messaging Routing</strong></summary>
 
 Exchange, Queues, and Routing Keys:
@@ -222,13 +222,13 @@ Exchange, Queues, and Routing Keys:
 
 </summary>
 
-<details open>
+<details>
 <summary><strong>:pencil: Engineering Calculation Report</strong></summary>
 
 **General Formula of Accelerometer Signal**\
 $`a(t) = A sin(ωt + φ)`$
 
-</summary>
+</details>
 
 ## :computer::chart_with_upwards_trend: Monitoring
 TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and visualization of sensor data. This enables quick insights into sensor performance, trends, and anomalies. By the same token, it also allows the monitoring of key stats from the database cluster powering up the query of information from the pg_stat_statements and pg_stat_kcache extensions from postgres.
