@@ -75,16 +75,6 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 >
 > -- <cite><i>Kawhi Leonard</i></cite>
 
-Sensors will send:
-    - id (serial number)
-    - timestamp (with nanosecond precision)
-    - measurement (at a variable sample frequency)
-    - GPS location (latitude and longitude)
-This approach allows flexible scaling of the number of sensors and their data rates.
-
-Sensor will receive (mapped through its id):
-    - commands that would affect the sensor behaviour such as sleep, awake and change sample frequency.
-
 <details>
 <summary><strong>:deciduous_tree: Directory Tree</strong></summary>
 
