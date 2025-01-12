@@ -175,9 +175,20 @@ Sensor will receive (mapped through its id):
 <details open>
 <summary><strong>:elephant: :tiger: Database Schema</strong></summary>
 
-The beauty of TimescaleDB is that it’s built on top of PostgreSQL, allowing us to use SQL and thus embrace core principles of relational databases, such as normalization.
+The beauty of [TimescaleDB](https://www.timescale.com/) is that it’s built on top of PostgreSQL, allowing us to use SQL and thus embrace core principles of relational databases, such as normalization.
 
-![database-erd](./assets/sensor-data-streaming-pubsub-erd.drawio.svg)
+In PostgreSQL, the collection of databases in a server instance it is called *cluster*. The cluster for this project consist in two databases, one for the project itself called `iot` and other database for monitoring the postgres cluster statistics called `monitoring`. The former uses `autoexplain`, `timescaledb` and `postgis` extensions, the latter uses `pg_stat_statements`, `pg_stat_kcache` along with timescaleDB to real-time monitoring of these stats.
+
+Postgres manages access permissions using the [`ROLE`](https://www.postgresql.org/docs/current/user-manag.html) terminology. In this cluster these are the roles in play:
+- `iot`: superuser-like user - for security reasons, avoids having around a postgres user.
+- `iot_app`: user with permissions to operate over iot database in the whole CRUD spectrum.
+- `iot_replication`: user responsible for replication of the database if needed.
+- `iot_readonly`: readonly over iot database.
+- `iot_monitoring`: user with permissions to operate over monitoring database (and thus with stats extensions)
+*The public schema from iot database is revoked to public user as a well known good practice*
+
+
+![iot-db-erd](./assets/db-iot-erd.drawio.svg)
 
 
 > [Timescale hypertables do not support primary keys](https://stackoverflow.com/a/77463051). This is because the underlying data must be partitioned to several physical PostgreSQL tables. Partitioned look-ups cannot support a primary key, but a [composite primary key](https://docs.timescale.com/use-timescale/latest/schema-management/about-constraints/#about-constraints) of together unique columns could be used.
