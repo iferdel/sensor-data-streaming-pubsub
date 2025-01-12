@@ -195,7 +195,7 @@ Exchange, Queues, and Routing Keys:
         - sensor.<sensor.serial_number>.commands               
         - sensor.all.registry.created      
         - sensor.all.logs
-    Keys used in consumers with wildcards and in publishers with the specific value
+    Keys used in publishers with specific values and in consumers with wildcards
         Publishers:
         - sensor.<sensor.serial_number>.measurements
         - sensor.<sensor.serial_number>.commands
