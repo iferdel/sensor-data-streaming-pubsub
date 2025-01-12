@@ -2,7 +2,7 @@
 
 ## General Description
 
-This is a ...
+This project implements an end-to-end real-time monitoring solution for IoT devices, designed to measure parameters like acceleration (or others such as temperature, strain, or humidity) in mechanical equipment or civil structures, with real-time geospatial tracking.
 
 ![grafana-dashboard](./assets/grafana-dashboard.gif)
 * (GIF showing grafana-dashboard with more than one sensor + monitor db queries --stats from postgres using timescaledb functionality--)
