@@ -163,7 +163,7 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 
 </details>
 
-<details open>
+<details>
 <summary><strong>:elephant: :tiger: Database Schema</strong></summary>
 
 The beauty of [TimescaleDB](https://www.timescale.com/) is that it’s built on top of PostgreSQL, allowing us to use SQL and thus embrace core principles of relational databases, such as normalization.
@@ -210,7 +210,7 @@ Exchange, Queues, and Routing Keys:
         - sensor.*.registry.#
         - sensor.*.logs.#
 
-</summary>
+</details>
 
 <details>
 <summary><strong>:pencil: Engineering Calculation Report</strong></summary>
