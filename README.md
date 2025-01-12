@@ -175,15 +175,12 @@ Sensor will receive (mapped through its id):
 <details open>
 <summary><strong>:elephant: :tiger: Database Schema</strong></summary>
 
-The beauty of TimescaleDB is that it’s built on top of PostgreSQL, allowing us to use SQL and thus embrace core principles of relational databases, such as normalziation.
+The beauty of TimescaleDB is that it’s built on top of PostgreSQL, allowing us to use SQL and thus embrace core principles of relational databases, such as normalization.
 
 ![database-erd](./assets/sensor-data-streaming-pubsub-erd.drawio.svg)
 
 
 > [Timescale hypertables do not support primary keys](https://stackoverflow.com/a/77463051). This is because the underlying data must be partitioned to several physical PostgreSQL tables. Partitioned look-ups cannot support a primary key, but a [composite primary key](https://docs.timescale.com/use-timescale/latest/schema-management/about-constraints/#about-constraints) of together unique columns could be used.
-
-
-
 
 </details>
 
@@ -192,11 +189,23 @@ The beauty of TimescaleDB is that it’s built on top of PostgreSQL, allowing us
 
 Exchange, Queues, and Routing Keys:
 
-    Exchange: 
-    Queues: 
-    Routing Keys:
-      -
-      -
+    Exchange of type Topic: iot
+    Queues, following entity.id.consumer.type pattern:
+        - sensor.all.measurements.db_writer
+        - sensor.<sensor.serial_number>.commands               
+        - sensor.all.registry.created      
+        - sensor.all.logs
+    Keys used in consumers with wildcards and in publishers with the specific value
+        Publishers:
+        - sensor.<sensor.serial_number>.measurements
+        - sensor.<sensor.serial_number>.commands
+        - sensor.<sensor.serial_number>.registry
+        - sensor.<sensor.serial_number>.logs
+        Consumers:
+        - sensor.*.measurements
+        - sensor.*.commands.#
+        - sensor.*.registry.#
+        - sensor.*.logs.#
 
 </summary>
 
