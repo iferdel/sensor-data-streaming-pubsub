@@ -23,7 +23,7 @@ All of these tasks were performed **in-situ**, which motivated me to consider a 
 With that in mind, my goal for this project is to build a comprehensive **end-to-end**, real-time monitoring solution.
 
 
-## Architecture
+## :nut_and_bolt: Architecture
 *(architecture diagram)*
 
 The core of this solution is built around an **event-driven** architecture that utilizes a **pub/sub** pattern, enabling the creation of a **distributed system**. However, as with many systems, a **hybrid** approach is necessary. This includes employing **point-to-point** communication for interactions with the sensor cluster via a command-line tool which communicates with an API, allowing controlled interactions with both the **database** and the **message broker**.
@@ -220,7 +220,7 @@ $`a(t) = A sin(ωt + φ)`$
 
 </details>
 
-## :computer::chart_with_upwards_trend: Monitoring
+## :computer: Monitoring
 TimeScaleDB integrates seamlessly with Grafana, allowing real-time querying and visualization of sensor data. This enables quick insights into sensor performance, trends, and anomalies. By the same token, it also allows the monitoring of key stats from the database cluster powering up the query of information from the pg_stat_statements and pg_stat_kcache extensions from postgres.
 
 ## :cherries: Examples 
