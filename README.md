@@ -1,6 +1,9 @@
 # Sensor Data Streaming PubSub
 
 ## General Description
+
+This is a ...
+
 ![grafana-dashboard](./assets/grafana-dashboard.gif)
 * (GIF showing grafana-dashboard with more than one sensor + monitor db queries --stats from postgres using timescaledb functionality--)
 * (GIF showing iotctl behaviour -- maybe with bubbletea implemented already which would beautify the status of running sensors and not running sensors)*
@@ -8,7 +11,7 @@
 * *maybe(GIF showing map with GPS data from sensors -- either static or dynamic locations)*
 
 > [!NOTE]
-> I think that a design like this is a good starting point for a larger project that would involve a real and broader sensor monitoring spectrum with GPS (either via Wi-Fi or GSM), in mobile vehicles or static machinery aswell as in civil infrastructure.
+> I think that a design like this serves as a solid starting point for a larger project involving real-time and broader sensor monitoring, including GPS (via Wi-Fi or GSM), in both mobile vehicles and static machinery, as well as in civil infrastructure.
 
 ## Reason
 Back in 2020, I worked on **vibration analysis**. My main background at that time was in **Mechanical Engineering**, and I took on a role that involved designing sensor installations, performing in-field measurements, and analyzing the data back at the office. 
@@ -23,32 +26,28 @@ With that in mind, my goal for this project is to build a comprehensive **end-to
 ## Architecture
 *(architecture diagram)*
 
-The core of this solution is based on an **event-driven** architecture using a **pub/sub** pattern at its core, making **distributed system** possible. Nevertheless, as with any other system, an **hybrid** approach is required, such as relying on **point-to-point** communication for the interaction with the sensor cluster thorugh a command line tooling *iotctl* which communicates with an *api* that enables a controlled interaction with the database and message broker.
+The core of this solution is built around an **event-driven** architecture that utilizes a **pub/sub** pattern, enabling the creation of a **distributed system**. However, as with many systems, a **hybrid** approach is necessary. This includes employing **point-to-point** communication for interactions with the sensor cluster via a command-line tool which communicates with an API, allowing controlled interactions with both the **database** and the **message broker**.
 
 ### The services defined in the project are the following:
 <dl>
   <dt><code>iotctl</code></dt>
-  <dd>Command line tool to interact remotely with cluster of nodes.</dd>
+  <dd>A command-line tool to interact remotely with a cluster of sensors.</dd>
   <dt><code>iot-api</code></dt>
-  <dd>An API that facilitates communication between the service and *iotctl* users over *HTTPS*. It's like the gateway to interact with the database and the sensors themselves thourgh the message broker.</dd>
+  <dd>An API that facilitates communication between the service and `iotctl` users over *HTTPS*. It acts as a gateway for interacting with the database and the sensors through the message broker.</dd>
   <dt><code>sensor-simulation</code></dt>
-  <dd>Simulates an accelerometer measuring on a specific environment, that means it mimics the signal of, for example, a bearing from a pump system. It consumes commands sent from iot-api and publishes its logs (like booting logs), the sensor serial number for registration of the sensor into the database aswell as the measurement values.</dd>
+  <dd>Simulates an accelerometer measuring a specific environment. For example, it could mimic the signal of a bearing in a pump system. It consumes commands sent from `iot-api` and publishes its logs (e.g., booting logs), the sensor's serial number for enrollment of the sensor in the database, as well as the measurement values.</dd>
   <dt><code>sensor-registry</code></dt>
-  <dd>It consumes the sensor information about serial number, like a 'look, I'm sensor with serial number xxxx, if I'm not in the database, go register me so i can start sending measurements".</dd>
+  <dd>Consumes sensor enrollment information,  with a behavior like: "Look, I'm a sensor with serial number 'xxxx'. If I'm not in the database, please register me so I can start sending measurements."</dd>
   <dt><code>sensor-logs-ingester</code></dt>
-  <dd>It consumes the sensor logs and saves them into a .log file to further processing in a centralized manner.</dd>
+  <dd>Consumes sensor logs and saves them into a .log for centralized processing later.</dd>
   <dt><code>sensor-measurements-ingester</code></dt>
-  <dd>It consumes the sensor(s) measurements and insert them into the postgres/timescaledb instance.</dd>
+  <dd>Consumes sensor measurements and inserts them into the postgres/timescaledb instance.</dd>
 </dl>
 
 > [!IMPORTANT]
 > These services are dependant of other software such as the message broker, a database that would handle timeseries data with ease and a visualization tool to real-time monitoring.
 
-Having said that, the project is intended to be hosted on a **Kubernetes cluster** to ensure high availability and horizontal scaling as needed—for example, if the amount of incoming data increases from an increase in sensor sampling rates or if more sensors are added (which in the simulation sense, it is a kind of replication of the simulation service which could count as an horizontal scaling).
-Yet, the only services that would not be hosted directly on the cluster is the database itself and the command line tool since it is intended to be installed on users that want to interact with the services.
-Not fan of hosting databases in k8, I would definitely use the cloud solution as it scales better and there is a whole team taking care of this.
-
-*Disclaimer: one could conclude that a hybrid architecture for critical low-latency control would also be quite handy. In that case, one would expect using gRPC as the way to communicate between a service that would send direct commands to change behaviour (in a reactive way) not the sensor but to the machine or whatever is behind.*
+The project is designed to be deployed using **GitOps** on a **Kubernetes** cluster within my [homelab](https://github.com/iferdel/homelab), ensuring availability and horizontal scaling. For example, to handle increased sensor sampling rates or the addition of more sensors (simulated by replicating the simulation service). While I'm **not a fan of self-hosted databases** and would prefer a full cloud solution, an exception is made here for practicality. Meanwhile, the command-line tool is designed to be installed locally by users with access to the cluster under a specific role.
 
 <details>
 <summary><strong>:mag: Key Architectural Points</strong></summary>
@@ -65,6 +64,8 @@ Not fan of hosting databases in k8, I would definitely use the cloud solution as
     - *Sensor communication uses MQTT with streaming queues.*
     - *Inter-service communication uses AMQP with RabbitMQ, employing quorum queues.*
     - *Alarm service communication uses gRPC for low-latency communication with the machine where the sensor to affect behaviour*
+
+*Disclaimer: one could conclude that a hybrid architecture for critical low-latency control would also be quite handy. In that case, one would expect using gRPC as the way to communicate between a service that would send direct commands to change behaviour (in a reactive way) not the sensor but to the machine or whatever is behind.*
 
 </details>
 
@@ -177,7 +178,7 @@ Sensor will receive (mapped through its id):
 
 The beauty of [TimescaleDB](https://www.timescale.com/) is that it’s built on top of PostgreSQL, allowing us to use SQL and thus embrace core principles of relational databases, such as normalization.
 
-In PostgreSQL, the collection of databases in a server instance it is called *cluster*. The cluster for this project consist in two databases, one for the project itself called `iot` and other database for monitoring the postgres cluster statistics called `monitoring`. The former uses `autoexplain`, `timescaledb` and `postgis` extensions, the latter uses `pg_stat_statements`, `pg_stat_kcache` along with timescaleDB to real-time monitoring of these stats.
+In PostgreSQL, the collection of databases in a server instance is called *cluster*. The cluster for this project consist in two databases, one for the project itself called `iot` and other database for monitoring the postgres cluster statistics called `monitoring`. The former uses `autoexplain`, `timescaledb` and `postgis` extensions, the latter uses `pg_stat_statements`, `pg_stat_kcache` along with timescaledb for real-time monitoring of these stats.
 
 Postgres manages access permissions using the [`ROLE`](https://www.postgresql.org/docs/current/user-manag.html) terminology. In this cluster these are the roles in play:
 - `iot`: superuser-like user - for security reasons, avoids having around a postgres user.
@@ -185,6 +186,7 @@ Postgres manages access permissions using the [`ROLE`](https://www.postgresql.or
 - `iot_replication`: user responsible for replication of the database if needed.
 - `iot_readonly`: readonly over iot database.
 - `iot_monitoring`: user with permissions to operate over monitoring database (and thus with stats extensions)
+
 *The public schema from iot database is revoked to public user as a well known good practice*
 
 
