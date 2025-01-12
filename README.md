@@ -180,7 +180,7 @@ Sensor will receive (mapped through its id):
 Probably the best from timescaledb is that it is just postgress, so we can handle relations between tables, and use SQL. In this scenario its quite handy since we can store metadata about sensors and relate with the measurements and other info by means of relations.
 
 > [!IMPORTANT]
->  [Timescale hypertables do not support primary keys](https://stackoverflow.com/a/77463051). This is because the underlying data must be partitioned to several physical PostgreSQL tables. Partitioned look-ups cannot support a primary key, but a [composite primary key](https://docs.timescale.com/use-timescale/latest/schema-management/about-constraints/#about-constraints) of together unique columns could be used.
+> This is because the underlying data must be partitioned to several physical PostgreSQL tables. Partitioned look-ups cannot support a primary key, but a [composite primary key](https://docs.timescale.com/use-timescale/latest/schema-management/about-constraints/#about-constraints) of together unique columns could be used.
 
 
 
