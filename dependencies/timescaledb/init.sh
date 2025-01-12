@@ -140,5 +140,16 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     -- * Activate the pg_stat_kcache extension
     CREATE EXTENSION pg_stat_kcache;
 
+    --------------------------------------------------------------------------------------------
+    -- 2. Geospatial extensions
+    --------------------------------------------------------------------------------------------
+
+    -- * Connect to the iot database
+    \c iot
+
+    -- * Activate the postgis extension (installed but disabled by default in timescaledb docker image)
+    CREATE EXTENSION postgis;
+
     -- ** auto_explain is loaded/enabled by default if used in shared_preload_libraries.
+
 EOSQL
