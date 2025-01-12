@@ -188,25 +188,31 @@ Postgres manages access permissions using the [`ROLE`](https://www.postgresql.or
 <details>
 <summary><strong>:rabbit: Messaging Routing</strong></summary>
 
-Exchange, Queues, and Routing Keys:
+**Exchange:**  
+- Type: `Topic`  
+- Name: `iot`  
 
-    Exchange of type Topic: iot
-    Queues, following entity.id.consumer.type pattern:
-        - sensor.all.measurements.db_writer
-        - sensor.<sensor.serial_number>.commands               
-        - sensor.all.registry.created      
-        - sensor.all.logs
-    Keys used in publishers with specific values and in consumers with wildcards
-        Publishers:
-        - sensor.<sensor.serial_number>.measurements
-        - sensor.<sensor.serial_number>.commands
-        - sensor.<sensor.serial_number>.registry
-        - sensor.<sensor.serial_number>.logs
-        Consumers:
-        - sensor.*.measurements
-        - sensor.*.commands.#
-        - sensor.*.registry.#
-        - sensor.*.logs.#
+**Queues**  
+Queues follow the `entity.id.consumer.type` pattern:  
+- `sensor.all.measurements.db_writer`  
+- `sensor.<sensor.serial_number>.commands`  
+- `sensor.all.registry.created`  
+- `sensor.all.logs`  
+
+**Routing Keys**  
+Keys are used by publishers with specific values and by consumers with wildcards:
+
+- **Publishers** use specific routing keys:  
+  - `sensor.<sensor.serial_number>.measurements`  
+  - `sensor.<sensor.serial_number>.commands`  
+  - `sensor.<sensor.serial_number>.registry`  
+  - `sensor.<sensor.serial_number>.logs`  
+
+- **Consumers** use wildcard routing keys:  
+  - `sensor.*.measurements`  
+  - `sensor.*.commands.#`  
+  - `sensor.*.registry.#`  
+  - `sensor.*.logs.#`  
 
 </details>
 
