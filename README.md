@@ -11,7 +11,10 @@ This project implements an end-to-end real-time monitoring solution for IoT devi
 * *maybe(GIF showing map with GPS data from sensors -- either static or dynamic locations)*
 
 > [!NOTE]
-> I think that a design like this serves as a solid starting point for a larger project involving real sensor hardware, including GPS (via Wi-Fi or GSM), in both mobile vehicles and static machinery, as well as in civil infrastructure. RabbitMQ is quite flexible and powerfull with its routing strategy, recenlty featured stream queues, resilience and so on. Same with TimescaleDB which closens up a whole paradigm of noSQL regarding time-series solutions. Lastly, Go is pretty dope.
+> I think that a design like this serves as a solid starting point for a larger project involving real sensor hardware, including data and GPS transmission via Wi-Fi or GSM in both mobile vehicles and static machinery, as well as in civil infrastructure. 
+> RabbitMQ is quite flexible and powerfull with its routing strategy, recenlty featured stream queues. 
+> Similarly, TimescaleDB bridges a significant paradigm gap, making SQL a competitive option for time-series solutions, which were traditionally dominated by NoSQL databases. 
+> The project is written in Go. Go is pretty dope.
 
 ## Reason
 Back in 2020, I worked on **vibration analysis**. My main background at that time was in **Mechanical Engineering**, and I took on a role that involved designing sensor installations, performing in-field measurements, and analyzing the data back at the office. 
@@ -166,7 +169,7 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 <details>
 <summary><strong>:elephant: :tiger: Database Schema</strong></summary>
 
-The beauty of [TimescaleDB](https://www.timescale.com/) lies in its foundation on PostgreSQL, allowing us to leverage SQL and embrace core relational database principles, such as normalization. While it is well known that relational databases are typically unfitted for time-series data, TimescaleDB extends PostgreSQL to overcome this limitation, making projects like this a clear testament to its capability.
+The beauty of [TimescaleDB](https://www.timescale.com/) lies in its foundation on PostgreSQL, allowing us to leverage SQL and embrace core relational database principles, such as normalization, ACID, and all the cool stuff that relational databases are meant for. While it is well known that relational databases are typically unfitted for time-series data, TimescaleDB extends PostgreSQL to overcome this limitation, making projects like this a clear testament to its capability.
 
 In PostgreSQL, the collection of databases within a server instance is referred to as a *cluster*. The cluster for this project consist of two databases: one named `iot`, dedicated to the project itself, and another named `monitoring`, used for tracking PostgreSQL cluster statistics. The formar utilizes the `autoexplain`, `timescaledb`, and `postgis` extensions, while the latter employs `pg_stat_statements`, `pg_stat_kcache`, and `timescaledb` to enable real-time monitoring of database statistics.
 
