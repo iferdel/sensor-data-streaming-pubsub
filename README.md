@@ -11,7 +11,7 @@ This project implements an end-to-end real-time monitoring solution for IoT devi
 * *maybe(GIF showing map with GPS data from sensors -- either static or dynamic locations)*
 
 > [!NOTE]
-> I think that a design like this serves as a solid starting point for a larger project involving real-time and broader sensor monitoring, including GPS (via Wi-Fi or GSM), in both mobile vehicles and static machinery, as well as in civil infrastructure.
+> I think that a design like this serves as a solid starting point for a larger project involving real sensor hardware, including GPS (via Wi-Fi or GSM), in both mobile vehicles and static machinery, as well as in civil infrastructure.
 
 ## Reason
 Back in 2020, I worked on **vibration analysis**. My main background at that time was in **Mechanical Engineering**, and I took on a role that involved designing sensor installations, performing in-field measurements, and analyzing the data back at the office. 
