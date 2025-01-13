@@ -24,7 +24,7 @@ With that in mind, my goal for this project is to build a comprehensive **end-to
 
 
 ## :nut_and_bolt: Architecture
-![architecture-diagram](./assets/architecture-diagram.drawio.svg)
+![architecture-diagram](./assets/architecture-diagram.drawio.png)
 
 The core of this solution is built around an **event-driven** architecture that utilizes a **pub/sub** pattern, enabling the creation of a **distributed system**. However, as with many systems, a **hybrid** approach is necessary. This includes employing **point-to-point** communication for interactions with the sensor cluster via a command-line tool which communicates with an API, allowing controlled interactions with both the **database** and the **message broker**.
 
