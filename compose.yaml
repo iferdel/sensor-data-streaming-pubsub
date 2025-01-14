@@ -26,6 +26,7 @@ services:
 
   alloy:
     image: grafana/alloy:latest
+    container_name: iot-alloy
     ports:
       - 12345:12345
     volumes:

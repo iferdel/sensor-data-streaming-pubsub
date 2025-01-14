@@ -1,5 +1,5 @@
 local.file_match "applogs" {
-    path_targets = [{"__path__" = "/tmp/app-logs/app.log"}]
+    path_targets = [{"__path__" = "/tmp/app-logs/iot.log"}]
     sync_period = "5s"
 }
 
