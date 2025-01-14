@@ -1,5 +1,5 @@
 cmd/iotctl/
-cmd/iot-api/
-cmd/sensor-logs-ingester/
 cmd/sensor-measurements-ingester/
+cmd/sensor-logs-ingester/
+cmd/sensor-registry/
 cmd/sensor-simulation/
