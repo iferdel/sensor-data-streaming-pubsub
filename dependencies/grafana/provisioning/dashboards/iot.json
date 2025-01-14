@@ -84,7 +84,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 8,
+        "h": 7,
         "w": 12,
         "x": 0,
         "y": 0
@@ -141,9 +141,50 @@
           "refId": "B"
         }
       ],
-      "title": "Panel Title",
+      "title": "Acceleration $serial_number",
       "type": "timeseries"
-    }
+    },
+		{
+      "datasource": {
+        "uid": "P8E80F9AEF21F6940"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "hideTimeOverride": false,
+      "id": 2,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": false,
+        "prettifyLogMessage": true,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Ascending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "editorMode": "builder",
+          "expr": "{logger=\"$serial_number\"} |= ``",
+          "queryType": "range",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": "30m",
+      "title": "Logs $serial_number",
+      "transparent": true,
+      "type": "logs"
+		}
   ],
   "preload": false,
   "refresh": "auto",
