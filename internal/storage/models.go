@@ -3,8 +3,9 @@ package storage
 import "time"
 
 type SensorRecord struct {
-	ID           int
-	SerialNumber string
+	ID              int
+	SerialNumber    string
+	SampleFrequency float64
 }
 
 // timescaleDB hypertable -- Does not support primary keys

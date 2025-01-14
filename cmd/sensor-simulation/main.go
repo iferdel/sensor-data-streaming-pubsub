@@ -149,7 +149,8 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.KeySensorRegistryFormat, serialNumber)+"."+"created", // routing key
 		routing.Sensor{
-			SerialNumber: serialNumber,
+			SerialNumber:    serialNumber,
+			SampleFrequency: sampleFrequency,
 		}, // based on Data Transfer Object
 	)
 	// TODO: get back acknowledgment of publish sensor

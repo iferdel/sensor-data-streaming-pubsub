@@ -6,7 +6,8 @@ import "time"
 
 // registry service
 type Sensor struct {
-	SerialNumber string
+	SerialNumber    string
+	SampleFrequency float64
 }
 
 // measurements-ingester service

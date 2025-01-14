@@ -64,7 +64,7 @@ func GetSensor() error {
 	return nil
 }
 
-func WriteSensor(serialNumber string) error {
+func WriteSensor(sr SensorRecord) error {
 	// TODO: Implement Mutex RW
 
 	ctx := context.Background()
@@ -84,23 +84,23 @@ func WriteSensor(serialNumber string) error {
 	);`
 
 	var rowExists bool
-	err = dbpool.QueryRow(ctx, queryCheckIfExists, serialNumber).Scan(&rowExists)
+	err = dbpool.QueryRow(ctx, queryCheckIfExists, sr.SerialNumber).Scan(&rowExists)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	if rowExists {
-		fmt.Printf("Entry for sensor `%s` already exists. Skipping...\n", serialNumber)
+		fmt.Printf("Entry for sensor `%s` already exists. Skipping...\n", sr.SerialNumber)
 		return nil
 	}
 
-	queryInsertMetadata := `INSERT INTO sensor (serial_number) VALUES ($1);`
+	queryInsertMetadata := `INSERT INTO sensor (serial_number, sample_frequency) VALUES ($1, $2);`
 
-	_, err = dbpool.Exec(ctx, queryInsertMetadata, serialNumber)
+	_, err = dbpool.Exec(ctx, queryInsertMetadata, sr.SerialNumber, sr.SampleFrequency)
 	if err != nil {
 		return fmt.Errorf("Unable to insert sensor metadata into database: %v\n", err)
 	}
-	fmt.Printf("Inserted sensor (%s) into `sensor` table\n", serialNumber)
+	fmt.Printf("Inserted sensor (%s) into `sensor` table\n", sr.SerialNumber)
 
 	return nil
 }

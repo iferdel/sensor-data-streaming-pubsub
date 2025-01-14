@@ -8,12 +8,18 @@ import (
 	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 )
 
-func handlerSensorRegistry() func(s routing.Sensor) pubsub.AckType {
-	return func(s routing.Sensor) pubsub.AckType {
+func handlerSensorRegistry() func(dto routing.Sensor) pubsub.AckType {
+	return func(dto routing.Sensor) pubsub.AckType {
 		// placeholder
 		fmt.Println("==========================================")
 
-		err := storage.WriteSensor(s.SerialNumber)
+		// Map DTO -to- DB Record
+		record := storage.SensorRecord{
+			SerialNumber:    dto.SerialNumber,
+			SampleFrequency: dto.SampleFrequency,
+		}
+
+		err := storage.WriteSensor(record)
 		if err != nil {
 			fmt.Printf("error writing sensor instance: %v\n", err)
 			return pubsub.NackRequeue
