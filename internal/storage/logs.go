@@ -18,7 +18,7 @@ func WriteLog(sensorLog SensorLogRecord) error {
 	defer f.Close()
 	formattedTime := sensorLog.Timestamp.Format(time.RFC3339Nano)
 
-	str := fmt.Sprintf("%s %v (%v): %v\n",
+	str := fmt.Sprintf("time=\"%s\" logger=\"%v\" level=\"%v\" message=\"%v\"\n",
 		formattedTime,
 		sensorLog.SerialNumber,
 		sensorLog.Level,
