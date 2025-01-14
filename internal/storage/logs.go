@@ -6,12 +6,12 @@ import (
 	"time"
 )
 
-const logsFile = "iot.log"
+const logPath = "log/iot.log"
 
 func WriteLog(sensorLog SensorLogRecord) error {
 	fmt.Printf("received logs from %v...\n", sensorLog.SerialNumber)
 
-	f, err := os.OpenFile(logsFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("could not open logs file: %v", err)
 	}

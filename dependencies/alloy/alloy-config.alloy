@@ -1,0 +1,33 @@
+local.file_match "applogs" {
+    path_targets = [{"__path__" = "/tmp/app-logs/app.log"}]
+    sync_period = "5s"
+}
+
+loki.write "local_loki" {
+    endpoint {
+        url = "http://loki:3100/loki/api/v1/push"
+    }
+}
+
+loki.source.file "local_files" {
+    targets    = local.file_match.applogs.targets
+    forward_to = [loki.process.add_new_label.receiver]
+}
+
+
+loki.process "add_new_label" {
+    stage.logfmt {
+        mapping = {
+            "extracted_level" = "level",
+            "extracted_logger" = "logger",
+        }
+    }
+
+    stage.labels {
+        values = {
+            "level" = "extracted_level",
+            "logger" = "extracted_logger",
+        }
+    }
+     forward_to = [loki.write.local_loki.receiver]
+}

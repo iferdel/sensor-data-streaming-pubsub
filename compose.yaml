@@ -23,12 +23,33 @@ services:
     volumes:
       - ./dependencies/timescaledb/postgresql.conf:/etc/postgresql.conf
     command: postgres -c config_file=/etc/postgresql.conf
-  
+
+  alloy:
+    image: grafana/alloy:latest
+    ports:
+      - 12345:12345
+    volumes:
+      - ./dependencies/alloy/alloy-config.alloy:/etc/alloy/config.alloy
+      - iot_log_volume:/tmp/app-logs
+    command: run --server.http.listen-addr=0.0.0.0:12345 --storage.path=/var/lib/alloy/data /etc/alloy/config.alloy
+    depends_on:
+      - loki
+
+  loki:
+    image: grafana/loki:main
+    container_name: iot-loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./dependencies/loki/loki-config.yaml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+
   grafana:
     image: grafana/grafana:latest
     container_name: iot-grafana
     depends_on:
       - timescaledb
+      - loki
     ports:
       - "3000:3000"
     environment:
@@ -67,7 +88,7 @@ services:
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
     volumes:
-      - iot_log_volume:/app/iot.log  
+      - iot_log_volume:/app/log  
 
   sensor-measurements-ingester:
     depends_on:
