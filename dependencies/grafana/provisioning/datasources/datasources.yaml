@@ -42,3 +42,9 @@ datasources:
       maxIdleConnsAuto: true # Grafana v9.5.1+
       connMaxLifetime: 14400 # Grafana v5.4+
       timescaledb: true
+
+  - name: Loki
+    type: loki
+    access: proxy
+    uid: P8E80F9AEF21F6940
+    url: http://loki:3100    
