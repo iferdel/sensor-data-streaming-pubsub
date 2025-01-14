@@ -48,7 +48,7 @@ The core of this solution is built around an **event-driven** architecture that 
 </dl>
 
 > [!IMPORTANT]
-> These services are dependant of other software such as the message broker, a database that would handle timeseries data with ease and a visualization tool to real-time monitoring.
+> These services are dependant of other software such as the message broker, a database that would handle timeseries data with ease, a log aggregation system with an observability collector and a visualization tool to real-time monitoring.
 
 The project is designed to be deployed using **GitOps** on a **Kubernetes** cluster within my [homelab](https://github.com/iferdel/homelab), ensuring availability and horizontal scaling. For example, to handle increased sensor sampling rates or the addition of more sensors (simulated by replicating the simulation service). While I'm **not a fan of self-hosted databases** and would prefer a full cloud solution, an exception is made here for practicality. Meanwhile, the command-line tool is designed to be installed locally by users with access to the cluster under a specific role.
 
@@ -61,7 +61,7 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 - **Secrets**: I’m using Azure Key Vault for secrets in the homelab. 
 - **Database**: The solution uses PostgreSQL with [TimeScaleDB](https://www.timescale.com/), an extension optimized for time-series data. In a real scenario, the paid cloud tier would be in use, but for this project I’m storaging everything on bare metal.
 - **Data Management**: TimeScaleDB’s policies handle data expiration and compression, preventing storage overflow and improving performance.
-- **Visualization**: Grafana is used for near real-time dashboards, leveraging its querying capabilities to visualize time-series data stored as well as stats from the database itself by means of wrapping the stats from pg_stat_statements and pg_stat_kcache with postgres CTEs and procedures.
+- **Visualization**: Grafana is used for near real-time dashboards, leveraging its querying capabilities to visualize time-series data stored as well as stats from the database itself by means of wrapping the stats from pg_stat_statements and pg_stat_kcache with postgres CTEs and procedures. Last by not least, to query logs (e.g. sensor boot logs) from sources like Loki.
 - **Alarms**: *...*  
 - **Communication Protocols**:
     - *Sensor communication uses MQTT with streaming queues.*
@@ -84,17 +84,26 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 *I like the structure that became manifest while developing the project. That's why I'm attaching the filetree since it reads nicely.*
 ```
 .
+├── IDEAS.md
 ├── LICENSE
 ├── README.md
 ├── assets
+│   ├── architecture-diagram.drawio.png
+│   ├── architecture-diagram.drawio.svg
+│   ├── db-iot-erd.drawio.svg
 │   └── grafana-dashboard.gif
 ├── cmd
-│   ├── iotctl
+│   ├── iot-api
 │   │   ├── Dockerfile
+│   │   ├── handlers.go
+│   │   └── main.go
+│   ├── iotctl
 │   │   ├── cmd
 │   │   │   ├── awake.go
 │   │   │   ├── changesamplefrequency.go
 │   │   │   ├── delete.go
+│   │   │   ├── login.go
+│   │   │   ├── logout.go
 │   │   │   ├── root.go
 │   │   │   ├── sensorstatus.go
 │   │   │   └── sleep.go
@@ -117,6 +126,8 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 │       └── main.go
 ├── compose.yaml
 ├── dependencies
+│   ├── alloy
+│   │   └── alloy-config.alloy
 │   ├── grafana
 │   │   ├── README.md
 │   │   ├── grafana.ini
@@ -125,8 +136,12 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 │   │       │   ├── iot.json
 │   │       │   ├── iot.yaml
 │   │       │   └── queries.sql
-│   │       └── datasources
-│   │           └── datasources.yaml
+│   │       ├── datasources
+│   │       │   └── datasources.yaml
+│   │       └── plugins
+│   │           └── app.yaml
+│   ├── loki
+│   │   └── loki-config.yaml
 │   ├── rabbitmq
 │   │   ├── Dockerfile
 │   │   ├── definitions.json
@@ -137,7 +152,6 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 │       └── postgresql.conf
 ├── go.mod
 ├── go.sum
-├── ideas.md
 ├── internal
 │   ├── pubsub
 │   │   ├── consume.go
