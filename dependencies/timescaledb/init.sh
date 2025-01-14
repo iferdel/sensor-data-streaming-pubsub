@@ -180,7 +180,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 		REFERENCES target(id)
 		    ON DELETE CASCADE
 	);
-	COMMENT ON TABLE target_location IS 'multiple sensors may be on the same target, that is why target_location table makes more sense than sensor_location';
+	COMMENT ON TABLE target_location IS 'multiple sensors may be on the same target, that is why target_location table makes more sense than sensor_location. Another reason is that the sample frequency from sensor_measurement is scoped to the domain of that variable';
     SELECT create_hypertable('target_location', by_range('time'));
     CREATE INDEX ON target_location (target_id, time DESC);
 

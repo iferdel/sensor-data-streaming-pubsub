@@ -1,12 +1,7 @@
 -- general
-- add samplefrequency to sensor_measurement table so it can be queried in grafana to be shown
-- add 'target' table to show different equipments/locations where a sensor is mounted (with description and so on). FK on sensor table
-- with last point, maybe a weak entity between the two 'sensor' and 'target' tables, just to keep track if any sensor changes location within the target or to another target
 - TUI in iotctl that enables these kind of changes
 - When a new sensor is turned on and no target is assigned, no measurement is made (it is registered though), until in iotctl TUI someone assign it to a target with a form. 
 - From last point, in iotctl one can 'get' the status of all sensors registered, thus being able to see which ones are 'waiting for target association'.
-- GPS location should not be done in the sensor_measurement table since the sample frequency would differ between measurements of the parameter and location.
-- Following the last point, a sensor_location table with FK to sensor should be made. This would tell the lat and lon for that sensor, nothing else. If one wants to see on which part of the target is in, or other metadata from the target, this would be presented in the weak entity between sensor and target tables (or maybe directly to 'target' table)
 
 -- iotctl
 * this cli tool is intended to be run remotely in any local machine with access to the cluter that contains the project.
