@@ -80,6 +80,30 @@ services:
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
   
+  iot-api:
+    depends_on:
+      - rabbitmq
+      - timescaledb
+    build:
+      context: .          
+      dockerfile: ./cmd/iot-api/Dockerfile
+      target: dev
+    container_name: iot-api
+    volumes:
+      - ./cmd/iot-api:/app/cmd/iot-api        # Mount the specific service's code
+      - ./internal:/app/internal              # Mount shared internal code
+      - ./assets:/app/assets                  # Mount assets if needed by the API
+      - ./utils:/app/utils                    # Mount utilities like scripts
+      - ./go.mod:/app/go.mod                  # Track Go dependencies
+      - ./go.sum:/app/go.sum
+    ports:
+      - "8080:8080"
+    environment:
+      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
+    command: >
+      sh -c "CompileDaemon -build='go build -o /app/iot-api ./cmd/iot-api' -command='/app/iot-api'"
+
   sensor-logs-ingester:
     depends_on:
       - rabbitmq

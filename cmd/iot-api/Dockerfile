@@ -1,27 +1,30 @@
 # ---------------------------------------
-# 1) Build stage
+# 1) Build Stage
 # ---------------------------------------
 FROM golang:1.23-alpine AS build
 
 WORKDIR /app
 
+# Add dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy all sources (including cmd/iot-api)
 COPY . .
 
+# Build binary for production
 RUN go build -o iot-api ./cmd/iot-api
 
+
 # ---------------------------------------
-# 2) Final stage
+# 2) Development Stage
 # ---------------------------------------
-FROM alpine:3.16
+FROM golang:1.23-alpine AS dev
 
 WORKDIR /app
 
-# Copy the compiled binary from the builder stage
-COPY --from=build /app/iot-api /app/iot-api
+# Install CompileDaemon for hot-reloading
+RUN apk add --no-cache bash git && \
+    go install github.com/githubnemo/CompileDaemon@latest
 
-COPY utils/wait-for-services.sh /app/
-CMD ["/bin/sh", "/app/wait-for-services.sh", "/app/iot-api"]
-
+# Bind mounts will overlay files
