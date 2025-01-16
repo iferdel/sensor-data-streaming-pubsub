@@ -66,7 +66,8 @@ type apiConfig struct {
 func (cfg *apiConfig) commandHandler(w http.ResponseWriter, req *http.Request) {
 
 	type sensorCommand struct {
-		Command string `json:"command"` // intended for 'sleep' 'awake' 'changeSampleFrequency'
+		Command string                 `json:"command"` // intended for 'sleep' 'awake' 'changeSampleFrequency'
+		Params  map[string]interface{} `json:"params"`
 	}
 
 	decoder := json.NewDecoder(req.Body)
@@ -78,37 +79,13 @@ func (cfg *apiConfig) commandHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	type commandResponse struct {
-		Status  string `json:"status"`
-		Message string `json:"message"`
-	}
-
 	if _, exists := sensorlogic.ValidCommands[command.Command]; !exists {
-		log.Printf("Invalid command received: %v", command.Command)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest) // 400
-		dat, err := json.Marshal(commandResponse{
-			Status:  "invalid",
-			Message: "Invalid command received",
-		})
-		if err != nil {
-			log.Printf("Error marshalling JSON: %s", err)
-			w.WriteHeader(500)
-			return
-		}
-		w.Write(dat)
+		respondWithError(w, 400, "this is not a valid command", nil)
 		return
 	}
+	// validate params
 
-	dat, err := json.Marshal(commandResponse{Status: "valid", Message: "this is a valid command"})
-	if err != nil {
-		log.Printf("Error marshalling JSON: %s", err)
-		w.WriteHeader(500)
-		return
-	}
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	w.Write(dat)
+	respondWithJSON(w, 200, "this is a valid command!")
 }
 
 func (cfg *apiConfig) healthHandler(w http.ResponseWriter, req *http.Request) {
@@ -141,4 +118,30 @@ func (cfg *apiConfig) middelwareLog(next http.Handler) http.Handler {
 		log.Printf("%v: %v", req.Method, req.URL.Path)
 		next.ServeHTTP(w, req)
 	})
+}
+
+func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
+	if err != nil {
+		log.Println(err)
+	}
+	if code > 499 {
+		log.Println("Responding with 5XX error:", msg)
+	}
+	type errorResponse struct {
+		Error string `json:"error"`
+	}
+	respondWithJSON(w, code, errorResponse{Error: msg})
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	dat, err := json.Marshal(payload) // payload accepts any type
+	if err != nil {
+		log.Printf("Error marshalling JSON: %s", err)
+		w.WriteHeader(500)
+		return
+	}
+	w.Write(dat)
+	return
 }
