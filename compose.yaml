@@ -101,8 +101,6 @@ services:
     environment:
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
-    command: >
-      sh -c "CompileDaemon -build='go build -o /app/iot-api ./cmd/iot-api' -command='/app/iot-api'"
 
   sensor-logs-ingester:
     depends_on:

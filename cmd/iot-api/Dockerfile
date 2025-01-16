@@ -15,16 +15,19 @@ COPY . .
 # Build binary for production
 RUN go build -o iot-api ./cmd/iot-api
 
-
 # ---------------------------------------
-# 2) Development Stage
+# Development Stage
 # ---------------------------------------
 FROM golang:1.23-alpine AS dev
 
 WORKDIR /app
 
-# Install CompileDaemon for hot-reloading
-RUN apk add --no-cache bash git && \
-    go install github.com/githubnemo/CompileDaemon@latest
+# Install Air and other necessary tools
+RUN apk add --no-cache gcc musl-dev && \
+    go install github.com/air-verse/air@latest
 
-# Bind mounts will overlay files
+# Copy air config
+COPY ./cmd/iot-api/air.toml .
+
+# We'll mount our code volume in docker-compose
+CMD ["air", "-c", "./air.toml"]
