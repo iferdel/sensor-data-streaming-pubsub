@@ -5,11 +5,14 @@ FROM golang:1.23-alpine AS build
 
 WORKDIR /app
 
+# Add dependencies
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Copy all sources (including cmd/sensor-logs-ingester)
 COPY . .
 
+# Build binary for production
 RUN go build -o sensor-logs-ingester ./cmd/sensor-logs-ingester
 
 # ---------------------------------------
