@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
+	"github.com/iferdel/sensor-data-streaming-server/internal/validation"
 	"github.com/spf13/cobra"
 )
 
@@ -19,6 +20,14 @@ var deleteCmd = &cobra.Command{
 		sensorSerialNumber, err := cmd.Flags().GetString("sensor")
 		if err != nil {
 			log.Printf("error retrieving sensorid flag: %v", err)
+			return
+		}
+		if sensorSerialNumber == "" {
+			log.Printf("sensor serial number cannot be empty")
+			return
+		}
+		if !validation.HasValidCharacters(sensorSerialNumber) {
+			log.Printf("sensor serial number not valid")
 			return
 		}
 

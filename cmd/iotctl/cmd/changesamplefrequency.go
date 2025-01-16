@@ -7,6 +7,7 @@ import (
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
+	"github.com/iferdel/sensor-data-streaming-server/internal/validation"
 	"github.com/spf13/cobra"
 )
 
@@ -24,6 +25,15 @@ var changeSampleFrequencyCmd = &cobra.Command{
 			log.Printf("error retrieving sensorid flag: %v", err)
 			return
 		}
+		if sensorSerialNumber == "" {
+			log.Printf("sensor serial number cannot be empty")
+			return
+		}
+		if !validation.HasValidCharacters(sensorSerialNumber) {
+			log.Printf("sensor serial number not valid")
+			return
+		}
+
 		newSampleFrequency, err := cmd.Flags().GetFloat64("changeSampleFrequency")
 		if err != nil {
 			log.Printf("error retrieving new sample frequency flag: %v", err)
