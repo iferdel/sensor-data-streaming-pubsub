@@ -143,7 +143,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 
     CREATE TABLE target (
 	id SERIAL PRIMARY KEY,
-	name VARCHAR(50)
+	name VARCHAR(50) NOT NULL
     );
 
     CREATE TABLE sensor (
@@ -161,7 +161,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     CREATE TABLE sensor_measurement ( 
 	time TIMESTAMPTZ NOT NULL,
 	sensor_id INTEGER NOT NULL,
-	measurement DOUBLE PRECISION,
+	measurement DOUBLE PRECISION NOT NULL,
 	UNIQUE (time, sensor_id),
 	CONSTRAINT fk_sensor 
 	    FOREIGN KEY (sensor_id) 
