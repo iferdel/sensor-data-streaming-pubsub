@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
+	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 )
 
 var apiSettings struct {
@@ -52,6 +53,12 @@ func main() {
 	// api endpoints
 	router.Handle("GET /api/health", apiCfg.middlewareMetricsInc(http.HandlerFunc(apiCfg.healthHandler)))
 	router.HandleFunc("POST /api/validate_command", apiCfg.commandHandler)
+	// router.HandleFunc("GET /api/sensors", apiCfg.getSensorsHandler)
+	router.HandleFunc("GET /api/targets", apiCfg.getTargetsHandler)
+	// router.HandleFunc("POST /api/targets", apiCfg.createTargetsHandler)
+	// router.HandleFunc("POST /api/sensors/*/sleep", apiCfg.sensorSleepHandler)
+	// router.HandleFunc("POST /api/sensors/*/awake", apiCfg.sensorAwakeHandler)
+	// router.HandleFunc("POST /api/sensors/*/change-sample-frequency", apiCfg.sensorChangeSampleFrequencyHandler)
 
 	err := server.ListenAndServe()
 	if err != nil {
@@ -61,6 +68,19 @@ func main() {
 
 type apiConfig struct {
 	fileserverHits atomic.Int32
+}
+
+func (cfg *apiConfig) getTargetsHandler(w http.ResponseWriter, req *http.Request) {
+	type target struct {
+		Name string `json:"name"`
+	}
+	sensors, err := storage.GetSensor()
+	if err != nil {
+		log.Printf("Could not retrieve sensors: %s", err)
+		w.WriteHeader(500)
+		return
+	}
+	respondWithJSON(w, 200, sensors)
 }
 
 func (cfg *apiConfig) commandHandler(w http.ResponseWriter, req *http.Request) {

@@ -33,11 +33,11 @@ func GetSensorIDBySerialNumber(serialNumber string) (sensorID int, err error) {
 	return sensorID, nil
 }
 
-func GetSensor() error {
+func GetSensor() ([]SensorRecord, error) {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
-		return fmt.Errorf("Unable to connect to database: %v\n", err)
+		return nil, fmt.Errorf("Unable to connect to database: %v\n", err)
 	}
 	defer dbpool.Close()
 
@@ -49,19 +49,25 @@ func GetSensor() error {
 
 	rows, err := dbpool.Query(ctx, queryGetMetadata)
 	if err != nil {
-		return fmt.Errorf("Unable to get sensors: %v\n", err)
+		return nil, fmt.Errorf("Unable to get sensors: %v\n", err)
 	}
 	defer rows.Close()
+
+	var sensors []SensorRecord
 
 	for rows.Next() {
 		var serialNumber string
 		err = rows.Scan(&serialNumber)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		fmt.Println(serialNumber)
+
+		sensors = append(sensors, SensorRecord{
+			SerialNumber: serialNumber,
+		})
 	}
-	return nil
+
+	return sensors, nil
 }
 
 func WriteSensor(sr SensorRecord) error {
