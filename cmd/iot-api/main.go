@@ -8,8 +8,11 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
+	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
 	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
 	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
+	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 var apiSettings struct {
@@ -62,7 +65,7 @@ func main() {
 	// router.HandleFunc("POST /api/sensors/*/assign-target", apiCfg.sensorSleepHandler)
 	// router.HandleFunc("POST /api/sensors/*/sleep", apiCfg.sensorSleepHandler)
 	// router.HandleFunc("POST /api/sensors/*/awake", apiCfg.sensorAwakeHandler)
-	// router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/change-sample-frequency", apiCfg.sensorChangeSampleFrequencyHandler)
+	router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/change-sample-frequency", apiCfg.sensorChangeSampleFrequencyHandler)
 
 	err := server.ListenAndServe()
 	if err != nil {
@@ -74,23 +77,49 @@ type apiConfig struct {
 	fileserverHits atomic.Int32
 }
 
-// func (cfg *apiConfig) sensorChangeSampleFrequencyHandler(w http.ResponseWriter, req *http.Request) {
-//
-// 	defer req.Body.Close()
-//
-// 	decoder := json.NewDecoder(req.Body)
-// 	type parameters struct {
-// 		SerialNumber    string  `json:"serial_number"`
-// 		SampleFrequency float64 `json:"sample_frequency"`
-// 	}
-// 	params := parameters{}
-// 	decoder.Decode(&params)
-//
-// 	ss := sensorlogic.SensorState{}
-// 	ss.Sensor.SerialNumber = params.SerialNumber
-// 	ss.HandleChangeSampleFrequency(params)
-//
-// }
+func (cfg *apiConfig) sensorChangeSampleFrequencyHandler(w http.ResponseWriter, req *http.Request) {
+
+	defer req.Body.Close()
+
+	sensorSerialNumber := req.PathValue("sensorSerialNumber")
+
+	decoder := json.NewDecoder(req.Body)
+	type parameters struct {
+		NewSampleFrequency float64 `json:"new_sample_frequency"`
+	}
+	params := parameters{}
+	decoder.Decode(&params)
+
+	// publish logic
+	conn, err := amqp.Dial(routing.RabbitConnString)
+	if err != nil {
+		respondWithError(w, 500, "could not connect to RabbitMQ:", err)
+		return
+	}
+	fmt.Println("Server connected to RabbitMQ")
+	publishCh, err := conn.Channel()
+	if err != nil {
+		respondWithError(w, 500, "could not create channel:", err)
+		return
+	}
+	err = pubsub.PublishGob(
+		publishCh,                // amqp.Channel
+		routing.ExchangeTopicIoT, // exchange
+		fmt.Sprintf(routing.KeySensorCommandsFormat, sensorSerialNumber)+"."+"change_sample_frequency", // routing key
+		routing.SensorCommandMessage{
+			SerialNumber: sensorSerialNumber,
+			Timestamp:    time.Now(),
+			Command:      "changeSampleFrequency",
+			Params: map[string]interface{}{
+				"sampleFrequency": params.NewSampleFrequency,
+			},
+		}, // value
+	)
+	if err != nil {
+		log.Printf("could not publish change sample frequency command: %v", err)
+	}
+
+}
 
 func (cfg *apiConfig) getSensorsHandler(w http.ResponseWriter, req *http.Request) {
 
