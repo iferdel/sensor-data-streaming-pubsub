@@ -65,7 +65,7 @@ func main() {
 	router.HandleFunc("POST /api/targets", apiCfg.createTargetsHandler)
 	// router.HandleFunc("DELETE /api/targets", apiCfg.deleteTargetHandler)
 	// router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/assign-target", apiCfg.sensorAssignTargetHandler)
-	// router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/sleep", apiCfg.sensorSleepHandler)
+	router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/sleep", apiCfg.sensorSleepHandler)
 	// router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/awake", apiCfg.sensorAwakeHandler)
 	router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/change-sample-frequency", apiCfg.sensorChangeSampleFrequencyHandler)
 
@@ -92,7 +92,37 @@ func NewApiConfig() (*apiConfig, error) {
 	}, nil
 }
 
+func (cfg *apiConfig) sensorSleepHandler(w http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
+
+	sensorSerialNumber := req.PathValue("sensorSerialNumber")
+
+	publishCh, err := cfg.rabbitConn.Channel()
+	defer publishCh.Close()
+	if err != nil {
+		respondWithError(w, 500, "could not create channel to publish sensor's new sample frequency:", err)
+		return
+	}
+	err = pubsub.PublishGob(
+		publishCh,                // amqp.Channel
+		routing.ExchangeTopicIoT, // exchange
+		fmt.Sprintf(routing.KeySensorCommandsFormat, sensorSerialNumber)+"."+"sleep", // routing key
+		routing.SensorCommandMessage{
+			SerialNumber: sensorSerialNumber,
+			Timestamp:    time.Now(),
+			Command:      "sleep",
+			Params:       nil,
+		}, // value
+	)
+	if err != nil {
+		log.Printf("could not publish sleep command: %v", err)
+	}
+
+}
+
 func (cfg *apiConfig) sensorChangeSampleFrequencyHandler(w http.ResponseWriter, req *http.Request) {
+	// TODO: relation with database, how to keep state between sensor current sample frequency and db registered sample frequency.
+	// Maybe this last point (saving sample frequency in db) is redundant and useless
 
 	defer req.Body.Close()
 
