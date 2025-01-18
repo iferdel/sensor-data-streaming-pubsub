@@ -45,9 +45,11 @@ func main() {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	apiCfg := apiConfig{
-		fileserverHits: atomic.Int32{},
+	apiCfg, err := NewApiConfig()
+	if err != nil {
+		log.Fatal(err)
 	}
+	defer apiCfg.rabbitConn.Close()
 
 	// admin endpoints
 	router.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
@@ -61,13 +63,13 @@ func main() {
 	// router.HandleFunc("DELETE /api/sensors", apiCfg.createTargetsHandler)
 	router.HandleFunc("GET /api/targets", apiCfg.getTargetsHandler)
 	router.HandleFunc("POST /api/targets", apiCfg.createTargetsHandler)
-	// router.HandleFunc("DELETE /api/targets", apiCfg.createTargetsHandler)
-	// router.HandleFunc("POST /api/sensors/*/assign-target", apiCfg.sensorSleepHandler)
-	// router.HandleFunc("POST /api/sensors/*/sleep", apiCfg.sensorSleepHandler)
-	// router.HandleFunc("POST /api/sensors/*/awake", apiCfg.sensorAwakeHandler)
+	// router.HandleFunc("DELETE /api/targets", apiCfg.deleteTargetHandler)
+	// router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/assign-target", apiCfg.sensorAssignTargetHandler)
+	// router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/sleep", apiCfg.sensorSleepHandler)
+	// router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/awake", apiCfg.sensorAwakeHandler)
 	router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/change-sample-frequency", apiCfg.sensorChangeSampleFrequencyHandler)
 
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	if err != nil {
 		fmt.Printf("error in listen and serve: %v", err)
 	}
@@ -75,6 +77,19 @@ func main() {
 
 type apiConfig struct {
 	fileserverHits atomic.Int32
+	rabbitConn     *amqp.Connection
+}
+
+func NewApiConfig() (*apiConfig, error) {
+	conn, err := amqp.Dial(routing.RabbitConnString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
+	}
+
+	return &apiConfig{
+		fileserverHits: atomic.Int32{},
+		rabbitConn:     conn,
+	}, nil
 }
 
 func (cfg *apiConfig) sensorChangeSampleFrequencyHandler(w http.ResponseWriter, req *http.Request) {
@@ -90,16 +105,10 @@ func (cfg *apiConfig) sensorChangeSampleFrequencyHandler(w http.ResponseWriter, 
 	params := parameters{}
 	decoder.Decode(&params)
 
-	// publish logic
-	conn, err := amqp.Dial(routing.RabbitConnString)
+	publishCh, err := cfg.rabbitConn.Channel()
+	defer publishCh.Close()
 	if err != nil {
-		respondWithError(w, 500, "could not connect to RabbitMQ:", err)
-		return
-	}
-	fmt.Println("Server connected to RabbitMQ")
-	publishCh, err := conn.Channel()
-	if err != nil {
-		respondWithError(w, 500, "could not create channel:", err)
+		respondWithError(w, 500, "could not create channel to publish sensor's new sample frequency:", err)
 		return
 	}
 	err = pubsub.PublishGob(
