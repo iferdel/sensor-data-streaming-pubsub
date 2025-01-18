@@ -62,7 +62,7 @@ func main() {
 	// router.HandleFunc("POST /api/sensors/*/assign-target", apiCfg.sensorSleepHandler)
 	// router.HandleFunc("POST /api/sensors/*/sleep", apiCfg.sensorSleepHandler)
 	// router.HandleFunc("POST /api/sensors/*/awake", apiCfg.sensorAwakeHandler)
-	// router.HandleFunc("POST /api/sensors/*/change-sample-frequency", apiCfg.sensorChangeSampleFrequencyHandler)
+	// router.HandleFunc("POST /api/sensors/{sensorSerialNumber}/change-sample-frequency", apiCfg.sensorChangeSampleFrequencyHandler)
 
 	err := server.ListenAndServe()
 	if err != nil {
@@ -73,6 +73,24 @@ func main() {
 type apiConfig struct {
 	fileserverHits atomic.Int32
 }
+
+// func (cfg *apiConfig) sensorChangeSampleFrequencyHandler(w http.ResponseWriter, req *http.Request) {
+//
+// 	defer req.Body.Close()
+//
+// 	decoder := json.NewDecoder(req.Body)
+// 	type parameters struct {
+// 		SerialNumber    string  `json:"serial_number"`
+// 		SampleFrequency float64 `json:"sample_frequency"`
+// 	}
+// 	params := parameters{}
+// 	decoder.Decode(&params)
+//
+// 	ss := sensorlogic.SensorState{}
+// 	ss.Sensor.SerialNumber = params.SerialNumber
+// 	ss.HandleChangeSampleFrequency(params)
+//
+// }
 
 func (cfg *apiConfig) getSensorsHandler(w http.ResponseWriter, req *http.Request) {
 
