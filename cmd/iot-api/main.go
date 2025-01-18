@@ -53,9 +53,13 @@ func main() {
 	// api endpoints
 	router.Handle("GET /api/health", apiCfg.middlewareMetricsInc(http.HandlerFunc(apiCfg.healthHandler)))
 	router.HandleFunc("POST /api/validate_command", apiCfg.commandHandler)
-	// router.HandleFunc("GET /api/sensors", apiCfg.getSensorsHandler)
+	router.HandleFunc("GET /api/sensors", apiCfg.getSensorsHandler)
+	router.HandleFunc("GET /api/sensors/{sensorSerialNumber}", apiCfg.getSensorHandler)
+	// router.HandleFunc("DELETE /api/sensors", apiCfg.createTargetsHandler)
 	router.HandleFunc("GET /api/targets", apiCfg.getTargetsHandler)
-	// router.HandleFunc("POST /api/targets", apiCfg.createTargetsHandler)
+	router.HandleFunc("POST /api/targets", apiCfg.createTargetsHandler)
+	// router.HandleFunc("DELETE /api/targets", apiCfg.createTargetsHandler)
+	// router.HandleFunc("POST /api/sensors/*/assign-target", apiCfg.sensorSleepHandler)
 	// router.HandleFunc("POST /api/sensors/*/sleep", apiCfg.sensorSleepHandler)
 	// router.HandleFunc("POST /api/sensors/*/awake", apiCfg.sensorAwakeHandler)
 	// router.HandleFunc("POST /api/sensors/*/change-sample-frequency", apiCfg.sensorChangeSampleFrequencyHandler)
@@ -70,10 +74,8 @@ type apiConfig struct {
 	fileserverHits atomic.Int32
 }
 
-func (cfg *apiConfig) getTargetsHandler(w http.ResponseWriter, req *http.Request) {
-	type target struct {
-		Name string `json:"name"`
-	}
+func (cfg *apiConfig) getSensorsHandler(w http.ResponseWriter, req *http.Request) {
+
 	sensors, err := storage.GetSensor()
 	if err != nil {
 		log.Printf("Could not retrieve sensors: %s", err)
@@ -81,6 +83,49 @@ func (cfg *apiConfig) getTargetsHandler(w http.ResponseWriter, req *http.Request
 		return
 	}
 	respondWithJSON(w, 200, sensors)
+}
+
+func (cfg *apiConfig) getSensorHandler(w http.ResponseWriter, req *http.Request) {
+
+	sensorSerialNumber := req.PathValue("sensorSerialNumber")
+	sensor, err := storage.GetSensorBySerialNumber(sensorSerialNumber)
+
+	if err != nil {
+		log.Printf("Could not retrieve sensor %v: %s", sensorSerialNumber, err)
+		w.WriteHeader(500)
+		return
+	}
+	respondWithJSON(w, 200, sensor)
+}
+
+func (cfg *apiConfig) getTargetsHandler(w http.ResponseWriter, req *http.Request) {
+	sensors, err := storage.GetTarget()
+	if err != nil {
+		log.Printf("Could not retrieve targets: %s", err)
+		w.WriteHeader(500)
+		return
+	}
+	respondWithJSON(w, 200, sensors)
+}
+
+func (cfg *apiConfig) createTargetsHandler(w http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
+
+	decoder := json.NewDecoder(req.Body)
+	params := storage.TargetRecord{}
+	err := decoder.Decode(&params)
+	if err != nil {
+		respondWithError(w, 500, "Error decoding create target parameters", err)
+		return
+	}
+
+	err = storage.WriteTarget(params)
+	if err != nil {
+		respondWithError(w, 500, "Could not create new target", err)
+		return
+	}
+
+	respondWithJSON(w, 201, "Target created!")
 }
 
 func (cfg *apiConfig) commandHandler(w http.ResponseWriter, req *http.Request) {

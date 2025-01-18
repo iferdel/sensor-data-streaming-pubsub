@@ -2,6 +2,12 @@ package storage
 
 import "time"
 
+// TODO: add created_at and updated_at audit fields
+type TargetRecord struct {
+	ID   int
+	Name string
+}
+
 type SensorRecord struct {
 	ID              int
 	SerialNumber    string
