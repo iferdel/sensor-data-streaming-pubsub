@@ -49,3 +49,7 @@ COPY utils/wait-for-services.sh /app/
 
 CMD ["/bin/sh", "/app/wait-for-services.sh", "/app/iot-api"]
 
+# ---------------------------------------
+# Production Build
+# ---------------------------------------
+# ...
