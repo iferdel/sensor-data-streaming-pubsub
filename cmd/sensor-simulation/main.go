@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
 	"strconv"
@@ -17,7 +18,28 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
+type Config struct {
+	rabbitConn *amqp.Connection
+}
+
+func NewConfig() (*Config, error) {
+	conn, err := amqp.Dial(routing.RabbitConnString)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
+	}
+
+	return &Config{
+		rabbitConn: conn,
+	}, nil
+}
+
 func main() {
+
+	cfg, err := NewConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer cfg.rabbitConn.Close()
 
 	// environment variables
 	serialNumber := os.Getenv("SENSOR_SERIAL_NUMBER")
@@ -35,10 +57,10 @@ func main() {
 
 	const seed int64 = 99
 
-	sensorOperation(serialNumber, sampleFrequency, seed)
+	cfg.sensorOperation(serialNumber, sampleFrequency, seed)
 }
 
-func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
+func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 
 	bootLogs := []routing.SensorLog{}
 
@@ -56,20 +78,6 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 			Level:        "INFO",
 			Message:      "Bootloader version: v1.0.0",
 		})
-
-	conn, err := amqp.Dial(routing.RabbitConnString)
-	if err != nil {
-		msg := fmt.Sprintf("Could not connect to RabbitMQ: %v", err)
-		bootLogs = append(bootLogs,
-			routing.SensorLog{
-				SerialNumber: serialNumber,
-				Timestamp:    time.Now(),
-				Level:        "ERROR",
-				Message:      msg,
-			})
-		return
-	}
-	defer conn.Close()
 
 	bootLogs = append(bootLogs,
 		routing.SensorLog{
@@ -115,7 +123,7 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 	time.Sleep(100 * time.Millisecond)
 
 	// publish logic
-	publishCh, err := conn.Channel()
+	publishCh, err := cfg.rabbitConn.Channel()
 	if err != nil {
 		msg := fmt.Sprintf("Could not create publish channel: %v", err)
 		bootLogs = append(bootLogs,
@@ -157,12 +165,12 @@ func sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 
 	// subscribe to sensor command queue
 	err = pubsub.SubscribeGob(
-		conn,
+		cfg.rabbitConn,
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber),       // queue name
 		fmt.Sprintf(routing.KeySensorCommandsFormat, serialNumber)+"."+"#", // binding key
 		pubsub.QueueDurable, // queue type
-		handlerCommand(sensorState),
+		handlerCommand(cfg, sensorState),
 	)
 	if err != nil {
 		msg := fmt.Sprintf("Could not subscribe to command: %v", err)
