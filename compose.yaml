@@ -73,7 +73,16 @@ services:
     build:
       context: .          
       dockerfile: ./cmd/sensor-simulation/Dockerfile
+      target: dev
     container_name: iot-sensor-simulation-1
+    volumes:
+      # go-air dependant
+      - ./cmd/sensor-simulation:/app/cmd/sensor-simulation        # Mount the specific service's code
+      - ./internal:/app/internal              # Mount shared internal code
+      - ./assets:/app/assets                  # Mount assets if needed by the API
+      - ./utils:/app/utils                    # Mount utilities like scripts
+      - ./go.mod:/app/go.mod                  # Track Go dependencies
+      - ./go.sum:/app/go.sum
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
       - SENSOR_SAMPLE_FREQUENCY=35.0
