@@ -9,10 +9,8 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy all sources (including cmd/iot-api)
 COPY . .
 
-# Build binary for production
 RUN go build -o iot-api ./cmd/iot-api
 
 # ---------------------------------------
