@@ -141,8 +141,17 @@ services:
     build:
       context: .          
       dockerfile: ./cmd/sensor-measurements-ingester/Dockerfile
+      target: dev
     container_name: iot-sensor-measurements-ingester
     restart: unless-stopped
+    volumes:
+      # go-air dependant
+      - ./cmd/sensor-measurements-ingester:/app/cmd/sensor-measurements-ingester        # Mount the specific service's code
+      - ./internal:/app/internal              # Mount shared internal code
+      - ./assets:/app/assets                  # Mount assets if needed by the API
+      - ./utils:/app/utils                    # Mount utilities like scripts
+      - ./go.mod:/app/go.mod                  # Track Go dependencies
+      - ./go.sum:/app/go.sum
     environment:
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
@@ -154,10 +163,19 @@ services:
     build:
       context: .          
       dockerfile: ./cmd/sensor-registry/Dockerfile
+      target: dev
     container_name: iot-sensor-registry
     environment:
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
+    volumes:
+      # go-air dependant
+      - ./cmd/sensor-registry:/app/cmd/sensor-registry        # Mount the specific service's code
+      - ./internal:/app/internal              # Mount shared internal code
+      - ./assets:/app/assets                  # Mount assets if needed by the API
+      - ./utils:/app/utils                    # Mount utilities like scripts
+      - ./go.mod:/app/go.mod                  # Track Go dependencies
+      - ./go.sum:/app/go.sum
 
 volumes:
   iot_log_volume:
