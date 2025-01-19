@@ -1,8 +1,11 @@
 package cmd
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/validation"
 	"github.com/spf13/cobra"
@@ -34,6 +37,40 @@ var changeSampleFrequencyCmd = &cobra.Command{
 		}
 		if newSampleFrequency <= 0 {
 			fmt.Println("sample frequency must be a float greater than 0")
+			return
+		}
+
+		type parameters struct {
+			NewSampleFrequency float64 `json:"new_sample_frequency"`
+		}
+		jsonData, err := json.Marshal(parameters{
+			NewSampleFrequency: newSampleFrequency,
+		})
+		if err != nil {
+			log.Fatalf("error marshaling JSON: %v", err)
+			return
+		}
+
+		url := fmt.Sprintf("%s/sensors/%s/change-sample-frequency", API_URL, sensorSerialNumber)
+		req, err := http.NewRequest(http.MethodPut, url, bytes.NewBuffer(jsonData))
+
+		req.Header.Set("Content-Type", "application/json")
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		client := &http.Client{}
+		res, err := client.Do(req)
+		if err != nil {
+			fmt.Println("error making request: %w", err)
+			return
+		}
+		defer res.Body.Close()
+
+		if res.StatusCode < 200 || res.StatusCode >= 300 {
+			fmt.Printf("received non-2xx response code: %d", res.StatusCode)
 			return
 		}
 	},

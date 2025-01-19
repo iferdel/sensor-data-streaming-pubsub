@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/validation"
 	"github.com/spf13/cobra"
@@ -35,6 +36,26 @@ var awakeCmd = &cobra.Command{
 
 		if all {
 			fmt.Println("sending awake command to all sensors -- not yet implemented")
+			return
+		}
+
+		url := fmt.Sprintf("%s/sensors/%s/awake", API_URL, sensorSerialNumber)
+		req, err := http.NewRequest(http.MethodPut, url, nil)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		client := &http.Client{}
+		res, err := client.Do(req)
+		if err != nil {
+			fmt.Println("error making request: %w", err)
+			return
+		}
+		defer res.Body.Close()
+
+		if res.StatusCode < 200 || res.StatusCode >= 300 {
+			fmt.Printf("received non-2xx response code: %d", res.StatusCode)
 			return
 		}
 	},

@@ -4,6 +4,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const API_URL = "http://localhost:8080/api/v1"
+
 var rootCmd = &cobra.Command{
 	Use:   "iotctl",
 	Short: "CLI Tool for Managing IoT Sensors via REST API",
