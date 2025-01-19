@@ -87,7 +87,7 @@ services:
     build:
       context: .          
       dockerfile: ./cmd/iot-api/Dockerfile
-      target: dev
+      target: staging
     container_name: iot-api
     volumes:
       - ./cmd/iot-api:/app/cmd/iot-api        # Mount the specific service's code

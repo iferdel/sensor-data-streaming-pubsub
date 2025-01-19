@@ -1,7 +1,7 @@
 # ---------------------------------------
-# 1) Build Stage
+# 1) Base Stage
 # ---------------------------------------
-FROM golang:1.23-alpine AS build
+FROM golang:1.23-alpine AS base
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ COPY . .
 RUN go build -o iot-api ./cmd/iot-api
 
 # ---------------------------------------
-# Development Stage
+# Development Build
 # ---------------------------------------
 FROM golang:1.23-alpine AS dev
 
@@ -29,5 +29,23 @@ RUN apk add --no-cache gcc musl-dev && \
 # Copy air config
 COPY ./cmd/iot-api/air.toml .
 
-# We'll mount our code volume in docker-compose
-CMD ["air", "-c", "./air.toml"]
+# Copy wait for dependencies
+COPY utils/wait-for-services.sh /app/
+
+CMD ["/bin/sh", "/app/wait-for-services.sh", "air", "-c", "./air.toml"]
+
+# ---------------------------------------
+# Staging Build
+# ---------------------------------------
+FROM alpine:3.16 AS staging
+
+WORKDIR /app
+
+# Copy the compiled binary from the base stage
+COPY --from=base /app/iot-api /app/iot-api
+
+# Copy wait for dependencies
+COPY utils/wait-for-services.sh /app/
+
+CMD ["/bin/sh", "/app/wait-for-services.sh", "/app/iot-api"]
+
