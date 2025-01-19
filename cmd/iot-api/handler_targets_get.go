@@ -7,7 +7,7 @@ import (
 	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 )
 
-func (cfg *apiConfig) getTargetsHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg *apiConfig) handlerTargetsGet(w http.ResponseWriter, req *http.Request) {
 	sensors, err := storage.GetTarget()
 	if err != nil {
 		log.Printf("Could not retrieve targets: %s", err)

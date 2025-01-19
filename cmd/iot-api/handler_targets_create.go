@@ -7,7 +7,7 @@ import (
 	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 )
 
-func (cfg *apiConfig) createTargetsHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg *apiConfig) handlerTargetsCreate(w http.ResponseWriter, req *http.Request) {
 	defer req.Body.Close()
 
 	decoder := json.NewDecoder(req.Body)

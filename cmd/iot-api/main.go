@@ -9,7 +9,6 @@ import (
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
-	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -38,34 +37,19 @@ func main() {
 	// admin endpoints
 	// router.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
 
-	// create api key (further store in database)
-	// cli would apply for registration
-	// depending on username (for this case) the api key would authorize read-only or all
-	// so user registers -> server creates api key and save it in another column from the user table in that specific user's row/record
-	// api responds with api key (with https)
-	// user store its key locally (it could be done through the cli tool, which could save the api key automatically and refer later on into a dotfile) -- it may also be saved within the cli tool??
-	// the user should not share this key
-	// anytime the cli tool makes a requests the tool requests includes the api key in the http headers, particularly in "Authorization: Bearer <API_KEY>" header
-	// the api key is encrypted (avoid sha-256 bc is fast)
-	// the api verifies the api key in every request
-	// it extracts the key from the header (or anywhere it is) -> it validates the key with the database -> authorize it or unauthorized (401)
-	// role based access control (RBAC)
-	// set expiration key (and way to renew the key)
-	// database should
-
 	// api endpoints
 	// router.HandleFunc("POST /v1/api/register", apiCfg.registerHandler)
 	// router.HandleFunc("POST /v1/api/regenerate-key", apiCfg.regenerateKeyHandler)
-	router.HandleFunc("GET /v1/api/sensors", apiCfg.getSensorsHandler)
-	router.HandleFunc("GET /v1/api/sensors/{sensorSerialNumber}", apiCfg.getSensorHandler)
+	router.HandleFunc("GET /v1/api/sensors", apiCfg.handlerSensorsRetrieve)
+	router.HandleFunc("GET /v1/api/sensors/{sensorSerialNumber}", apiCfg.handlerSensorsGet)
 	// router.HandleFunc("DELETE /v1/api/sensors/{sensorSerialNumber}", apiCfg.createTargetsHandler)
-	router.HandleFunc("GET /v1/api/targets", apiCfg.getTargetsHandler)
-	router.HandleFunc("POST /v1/api/targets", apiCfg.createTargetsHandler)
+	router.HandleFunc("GET /v1/api/targets", apiCfg.handlerTargetsGet)
+	router.HandleFunc("POST /v1/api/targets", apiCfg.handlerTargetsCreate)
 	// router.HandleFunc("DELETE /v1/api/targets/{sensorSerialNumber}", apiCfg.deleteTargetHandler)
 	// router.HandleFunc("PUT /api/v1/sensors/{sensorSerialNumber}/target, apiCtf.sensorToTargetHanlder)
-	router.HandleFunc("PUT /v1/api/sensors/{sensorSerialNumber}/sleep", apiCfg.sensorSleepHandler)
-	router.HandleFunc("PUT /v1/api/sensors/{sensorSerialNumber}/awake", apiCfg.sensorAwakeHandler)
-	router.HandleFunc("PUT /v1/api/sensors/{sensorSerialNumber}/change-sample-frequency", apiCfg.sensorChangeSampleFrequencyHandler)
+	router.HandleFunc("PUT /v1/api/sensors/{sensorSerialNumber}/sleep", apiCfg.handlerSensorsSleep)
+	router.HandleFunc("PUT /v1/api/sensors/{sensorSerialNumber}/awake", apiCfg.handlerSensorsAwake)
+	router.HandleFunc("PUT /v1/api/sensors/{sensorSerialNumber}/change-sample-frequency", apiCfg.handlerSensorsChangeSampleFrequency)
 
 	err = server.ListenAndServe()
 	if err != nil {
@@ -88,7 +72,7 @@ func NewApiConfig() (*apiConfig, error) {
 	}, nil
 }
 
-func (cfg *apiConfig) sensorAwakeHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg *apiConfig) handlerSensorsAwake(w http.ResponseWriter, req *http.Request) {
 	sensorSerialNumber := req.PathValue("sensorSerialNumber")
 
 	publishCh, err := cfg.rabbitConn.Channel()
@@ -114,7 +98,7 @@ func (cfg *apiConfig) sensorAwakeHandler(w http.ResponseWriter, req *http.Reques
 
 }
 
-func (cfg *apiConfig) sensorSleepHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg *apiConfig) handlerSensorsSleep(w http.ResponseWriter, req *http.Request) {
 	sensorSerialNumber := req.PathValue("sensorSerialNumber")
 
 	publishCh, err := cfg.rabbitConn.Channel()
@@ -140,7 +124,7 @@ func (cfg *apiConfig) sensorSleepHandler(w http.ResponseWriter, req *http.Reques
 
 }
 
-func (cfg *apiConfig) sensorChangeSampleFrequencyHandler(w http.ResponseWriter, req *http.Request) {
+func (cfg *apiConfig) handlerSensorsChangeSampleFrequency(w http.ResponseWriter, req *http.Request) {
 	// TODO: relation with database, how to keep state between sensor current sample frequency and db registered sample frequency.
 	// Maybe this last point (saving sample frequency in db) is redundant and useless
 
@@ -177,7 +161,6 @@ func (cfg *apiConfig) sensorChangeSampleFrequencyHandler(w http.ResponseWriter, 
 	if err != nil {
 		log.Printf("could not publish change sample frequency command: %v", err)
 	}
-
 }
 
 func (cfg *apiConfig) middelwareLog(next http.Handler) http.Handler {
