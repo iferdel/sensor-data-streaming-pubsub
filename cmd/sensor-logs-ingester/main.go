@@ -38,7 +38,7 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	fmt.Println("Waiting for messages. Press Ctrl+C to exit.")
+	fmt.Println("Waiting for messages...")
 	<-sigs
-	fmt.Println("Shutting down gracefully.")
+	fmt.Println("Shutting down gracefully...")
 }
