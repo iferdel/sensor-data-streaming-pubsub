@@ -141,6 +141,28 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 
     -- 1.3 Create tables.
 
+    CREATE TABLE account (
+	id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	username VARCHAR(50) UNIQUE NOT NULL,
+	password_hash TEXT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+
+    CREATE TABLE api_key (
+	id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+	account_id UUID NOT NULL, 
+	api_key_hash TEXT NOT NULL,
+	created_at TIMESTAMPTZ DEFAULT NOW(),
+	expires_at TIMESTAMPTZ DEFAULT NULL,
+	revoked BOOL DEFAULT FALSE,
+	CONSTRAINT fk_account
+	    FOREIGN KEY (account_id)
+		REFERENCES account(id)
+		    ON DELETE CASCADE
+    );
+    COMMENT ON TABLE api_key IS 'one user may have more than one api key depending on the machine that is being logged into the system';
+    CREATE INDEX idx_api_key_hash ON api_key (api_key_hash);
+
     CREATE TABLE target (
 	id SERIAL PRIMARY KEY,
 	name VARCHAR(50) NOT NULL
@@ -156,7 +178,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 		REFERENCES target(id)
 		    ON DELETE CASCADE
 	);
-	COMMENT ON COLUMN sensor.target_id IS 'one target may have more than 1 sensor, but one sensor is only associated with one target. The sensor id gets populated through new sensors entering the system, but the target_id do not autopopulate on sensors turned on, but afterwards though command-line tooling which would make the association from an user to which target is used for which sensor. This is like a step afterwards since after booting and register serial number, the sensor enters into a --wait-- mode until someone enters the target of the sensor and then this triggers the starting point for start the measurements';
+    COMMENT ON COLUMN sensor.target_id IS 'one target may have more than 1 sensor, but one sensor is only associated with one target. The sensor id gets populated through new sensors entering the system, but the target_id do not autopopulate on sensors turned on, but afterwards though command-line tooling which would make the association from an user to which target is used for which sensor. This is like a step afterwards since after booting and register serial number, the sensor enters into a --wait-- mode until someone enters the target of the sensor and then this triggers the starting point for start the measurements';
 
     CREATE TABLE sensor_measurement ( 
 	time TIMESTAMPTZ NOT NULL,
@@ -168,7 +190,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 		REFERENCES sensor(id) 
 		    ON DELETE CASCADE
 	);
-	COMMENT ON COLUMN sensor_measurement.measurement IS 'double precision is best for this kind of data since we dont need exact-like precision covered by NUMERIC, as rounding errors can be tolerated';
+    COMMENT ON COLUMN sensor_measurement.measurement IS 'double precision is best for this kind of data since we dont need exact-like precision covered by NUMERIC, as rounding errors can be tolerated';
     SELECT create_hypertable('sensor_measurement', by_range('time'));
 
     CREATE TABLE target_location(
@@ -180,7 +202,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 		REFERENCES target(id)
 		    ON DELETE CASCADE
 	);
-	COMMENT ON TABLE target_location IS 'multiple sensors may be on the same target, that is why target_location table makes more sense than sensor_location. Another reason is that the sample frequency from sensor_measurement is scoped to the domain of that variable';
+    COMMENT ON TABLE target_location IS 'multiple sensors may be on the same target, that is why target_location table makes more sense than sensor_location. Another reason is that the sample frequency from sensor_measurement is scoped to the domain of that variable';
     SELECT create_hypertable('target_location', by_range('time'));
     CREATE INDEX ON target_location (target_id, time DESC);
 
