@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sync/atomic"
 	"time"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
-	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
 	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -18,20 +16,6 @@ import (
 var apiSettings struct {
 	secret string
 	dbConn string
-}
-
-type request struct {
-	path string
-}
-
-func handleRequests(reqs <-chan request) {
-	for req := range reqs {
-		handleRequest(req)
-	}
-}
-
-func handleRequest(req request) {
-	fmt.Println("handling request from", req.path)
 }
 
 const PORT = 8080
@@ -52,12 +36,26 @@ func main() {
 	defer apiCfg.rabbitConn.Close()
 
 	// admin endpoints
-	router.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
-	router.HandleFunc("POST /admin/reset", apiCfg.resetHandler)
+	// router.HandleFunc("GET /admin/metrics", apiCfg.metricsHandler)
+
+	// create api key (further store in database)
+	// cli would apply for registration
+	// depending on username (for this case) the api key would authorize read-only or all
+	// so user registers -> server creates api key and save it in another column from the user table in that specific user's row/record
+	// api responds with api key (with https)
+	// user store its key locally (it could be done through the cli tool, which could save the api key automatically and refer later on into a dotfile) -- it may also be saved within the cli tool??
+	// the user should not share this key
+	// anytime the cli tool makes a requests the tool requests includes the api key in the http headers, particularly in "Authorization: Bearer <API_KEY>" header
+	// the api key is encrypted (avoid sha-256 bc is fast)
+	// the api verifies the api key in every request
+	// it extracts the key from the header (or anywhere it is) -> it validates the key with the database -> authorize it or unauthorized (401)
+	// role based access control (RBAC)
+	// set expiration key (and way to renew the key)
+	// database should
 
 	// api endpoints
-	router.Handle("GET /v1/api/health", apiCfg.middlewareMetricsInc(http.HandlerFunc(apiCfg.healthHandler)))
-	router.HandleFunc("POST /v1/api/validate_command", apiCfg.commandHandler)
+	// router.HandleFunc("POST /v1/api/register", apiCfg.registerHandler)
+	// router.HandleFunc("POST /v1/api/regenerate-key", apiCfg.regenerateKeyHandler)
 	router.HandleFunc("GET /v1/api/sensors", apiCfg.getSensorsHandler)
 	router.HandleFunc("GET /v1/api/sensors/{sensorSerialNumber}", apiCfg.getSensorHandler)
 	// router.HandleFunc("DELETE /v1/api/sensors/{sensorSerialNumber}", apiCfg.createTargetsHandler)
@@ -76,8 +74,7 @@ func main() {
 }
 
 type apiConfig struct {
-	fileserverHits atomic.Int32
-	rabbitConn     *amqp.Connection
+	rabbitConn *amqp.Connection
 }
 
 func NewApiConfig() (*apiConfig, error) {
@@ -87,8 +84,7 @@ func NewApiConfig() (*apiConfig, error) {
 	}
 
 	return &apiConfig{
-		fileserverHits: atomic.Int32{},
-		rabbitConn:     conn,
+		rabbitConn: conn,
 	}, nil
 }
 
@@ -184,139 +180,9 @@ func (cfg *apiConfig) sensorChangeSampleFrequencyHandler(w http.ResponseWriter, 
 
 }
 
-func (cfg *apiConfig) getSensorsHandler(w http.ResponseWriter, req *http.Request) {
-
-	sensors, err := storage.GetSensor()
-	if err != nil {
-		log.Printf("Could not retrieve sensors: %s", err)
-		w.WriteHeader(500)
-		return
-	}
-	respondWithJSON(w, 200, sensors)
-}
-
-func (cfg *apiConfig) getSensorHandler(w http.ResponseWriter, req *http.Request) {
-
-	sensorSerialNumber := req.PathValue("sensorSerialNumber")
-	sensor, err := storage.GetSensorBySerialNumber(sensorSerialNumber)
-
-	if err != nil {
-		log.Printf("Could not retrieve sensor %v: %s", sensorSerialNumber, err)
-		w.WriteHeader(500)
-		return
-	}
-	respondWithJSON(w, 200, sensor)
-}
-
-func (cfg *apiConfig) getTargetsHandler(w http.ResponseWriter, req *http.Request) {
-	sensors, err := storage.GetTarget()
-	if err != nil {
-		log.Printf("Could not retrieve targets: %s", err)
-		w.WriteHeader(500)
-		return
-	}
-	respondWithJSON(w, 200, sensors)
-}
-
-func (cfg *apiConfig) createTargetsHandler(w http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
-
-	decoder := json.NewDecoder(req.Body)
-	params := storage.TargetRecord{}
-	err := decoder.Decode(&params)
-	if err != nil {
-		respondWithError(w, 500, "Error decoding create target parameters", err)
-		return
-	}
-
-	err = storage.WriteTarget(params)
-	if err != nil {
-		respondWithError(w, 500, "Could not create new target", err)
-		return
-	}
-
-	respondWithJSON(w, 201, "Target created!")
-}
-
-func (cfg *apiConfig) commandHandler(w http.ResponseWriter, req *http.Request) {
-
-	type sensorCommand struct {
-		Command string                 `json:"command"` // intended for 'sleep' 'awake' 'changeSampleFrequency'
-		Params  map[string]interface{} `json:"params"`
-	}
-
-	decoder := json.NewDecoder(req.Body)
-	command := sensorCommand{}
-	err := decoder.Decode(&command)
-	if err != nil {
-		log.Printf("Error decoding command: %s", err)
-		w.WriteHeader(500)
-		return
-	}
-
-	if _, exists := sensorlogic.ValidCommands[command.Command]; !exists {
-		respondWithError(w, 400, "this is not a valid command", nil)
-		return
-	}
-	// validate params
-
-	respondWithJSON(w, 200, "this is a valid command!")
-}
-
-func (cfg *apiConfig) healthHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("OK"))
-}
-
-func (cfg *apiConfig) metricsHandler(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("Hits: %v", cfg.fileserverHits.Load())))
-}
-
-func (cfg *apiConfig) resetHandler(w http.ResponseWriter, req *http.Request) {
-	_ = cfg.fileserverHits.Swap(0)
-}
-
-func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		// do 'middleware' stuff
-		cfg.fileserverHits.Add(1)
-		// call the next handler
-		next.ServeHTTP(w, req)
-	})
-}
-
 func (cfg *apiConfig) middelwareLog(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		log.Printf("%v: %v", req.Method, req.URL.Path)
 		next.ServeHTTP(w, req)
 	})
-}
-
-func respondWithError(w http.ResponseWriter, code int, msg string, err error) {
-	if err != nil {
-		log.Println(err)
-	}
-	if code > 499 {
-		log.Println("Responding with 5XX error:", msg)
-	}
-	type errorResponse struct {
-		Error string `json:"error"`
-	}
-	respondWithJSON(w, code, errorResponse{Error: msg})
-}
-
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	dat, err := json.Marshal(payload) // payload accepts any type
-	if err != nil {
-		log.Printf("Error marshalling JSON: %s", err)
-		w.WriteHeader(500)
-		return
-	}
-	w.Write(dat)
-	return
 }
