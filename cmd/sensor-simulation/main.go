@@ -37,22 +37,21 @@ func main() {
 
 	cfg, err := NewConfig()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Could not create rabbitMQ connection: %v", err)
 	}
+	fmt.Println("Connection to msg broker succeeded")
 	defer cfg.rabbitConn.Close()
 
 	// environment variables
 	serialNumber := os.Getenv("SENSOR_SERIAL_NUMBER")
 	if serialNumber == "" {
-		fmt.Println("non valid serial number: it is empty")
-		return
+		log.Fatal("non valid serial number: it is empty")
 	}
 
 	sampleFrequencyStr := os.Getenv("SENSOR_SAMPLE_FREQUENCY")
 	sampleFrequency, err := strconv.ParseFloat(sampleFrequencyStr, 64)
 	if err != nil {
-		fmt.Println("non valid sample frequency: it is empty")
-		return
+		log.Fatal("non valid sample frequency: it is empty")
 	}
 
 	const seed int64 = 99
@@ -62,96 +61,53 @@ func main() {
 
 func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
 
-	bootLogs := []routing.SensorLog{}
-
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "System powering on...",
-		})
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Bootloader version: v1.0.0",
-		})
-
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Connection to msg broker succeeded",
-		})
-
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Loading configuration...",
-		})
-
 	sensorState := sensorlogic.NewSensorState(serialNumber, sampleFrequency)
-
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Configuration loaded successfully",
-		})
-
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Performing sensor self-test",
-		})
-	time.Sleep(500 * time.Millisecond)
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Self-test result: PASSED",
-		})
-	time.Sleep(100 * time.Millisecond)
-
 	// publish logic
 	publishCh, err := cfg.rabbitConn.Channel()
+	// this should be written to /var/log as a log that is in the sensor (and not published)
 	if err != nil {
-		msg := fmt.Sprintf("Could not create publish channel: %v", err)
-		bootLogs = append(bootLogs,
-			routing.SensorLog{
-				SerialNumber: serialNumber,
-				Timestamp:    time.Now(),
-				Level:        "ERROR",
-				Message:      msg,
-			})
-		return
+		log.Fatalf("Could not create publish channel: %v", err)
 	}
+	fmt.Println("Publisher channel created")
 
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Publisher channel created",
-		})
+	// goroutine for sensor logs publish
+	go func() {
+		for {
+			select {
+			case infoMsg := <-sensorState.LogsInfo:
+				publishSensorLog(publishCh, routing.SensorLog{
+					SerialNumber: serialNumber,
+					Timestamp:    time.Now(),
+					Level:        "INFO",
+					Message:      infoMsg,
+				})
+			case errMsg := <-sensorState.LogsError:
+				publishSensorLog(publishCh, routing.SensorLog{
+					SerialNumber: serialNumber,
+					Timestamp:    time.Now(),
+					Level:        "ERROR",
+					Message:      errMsg,
+				})
+			}
+		}
+	}()
+
+	// add timestamp and level to make it more real. logging not only the message to the channel but the level and the timestamp.
+
+	sensorState.LogsInfo <- "System powering on..."
+	time.Sleep(100 * time.Millisecond)
+	sensorState.LogsInfo <- "Bootloader version: v1.0.0"
+	time.Sleep(200 * time.Millisecond)
+	sensorState.LogsInfo <- "Loading configuration..."
+	sensorState.LogsInfo <- "Configuration loaded successfully"
+	time.Sleep(100 * time.Millisecond)
+	sensorState.LogsInfo <- "Performing sensor self-test"
+	time.Sleep(500 * time.Millisecond)
+	sensorState.LogsInfo <- "Self-test result: PASSED"
+	time.Sleep(100 * time.Millisecond)
 
 	// publish sensor for registration if not already
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Sensor Auth...",
-		})
+	sensorState.LogsInfo <- "Sensor Auth..."
 	pubsub.PublishGob(
 		publishCh,                // channel
 		routing.ExchangeTopicIoT, // exchange
@@ -173,44 +129,14 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 		handlerCommand(cfg, sensorState),
 	)
 	if err != nil {
-		msg := fmt.Sprintf("Could not subscribe to command: %v", err)
-		bootLogs = append(bootLogs,
-			routing.SensorLog{
-				SerialNumber: serialNumber,
-				Timestamp:    time.Now(),
-				Level:        "ERROR",
-				Message:      msg,
-			})
+		sensorState.LogsError <- fmt.Sprintf("Could not subscribe to command queue: %v\n", err)
 		return
 	}
-
 	time.Sleep(100 * time.Millisecond)
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Successful subscription to iotctl messaging queue",
-		})
+	sensorState.LogsInfo <- "Successful subscription to iotctl messaging queue"
 
-	bootLogs = append(bootLogs,
-		routing.SensorLog{
-			SerialNumber: serialNumber,
-			Timestamp:    time.Now(),
-			Level:        "INFO",
-			Message:      "Booting completed, performing measurements...",
-		})
-
-	// publish sensor boot logs
-	for _, bootLog := range bootLogs {
-		err = publishSensorLog(
-			publishCh,
-			bootLog,
-		)
-		if err != nil {
-			fmt.Printf("Error publishing log: %s\n", err)
-		}
-	}
+	time.Sleep(500 * time.Millisecond)
+	sensorState.LogsInfo <- "Booting completed, performing measurements..."
 
 	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
@@ -286,7 +212,7 @@ func publishSensorLog(publishCh *amqp.Channel, sensorLog routing.SensorLog) erro
 	return pubsub.PublishGob(
 		publishCh,                // channel
 		routing.ExchangeTopicIoT, // exchange
-		fmt.Sprintf(routing.KeySensorLogsFormat, sensorLog.SerialNumber)+"."+"boot", // routing key
+		fmt.Sprintf(routing.KeySensorLogsFormat, sensorLog.SerialNumber), // routing key
 		sensorLog, // sensor log
 	)
 }
