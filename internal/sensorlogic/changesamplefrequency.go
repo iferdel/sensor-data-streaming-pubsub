@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func (sensorState *SensorState) HandleChangeSampleFrequency(params map[string]interface{}) (float64, error) {
+func (sensorState *SensorState) HandleChangeSampleFrequency(params map[string]interface{}) {
 	var sampleFrequency float64
 
 	if sf, ok := params["sampleFrequency"]; ok {
@@ -13,16 +13,13 @@ func (sensorState *SensorState) HandleChangeSampleFrequency(params map[string]in
 		sensorState.SampleFrequency = sampleFrequency
 		// signal the channel of the change of sample frequency
 		sensorState.SampleFrequencyChangeChan <- sampleFrequency
+		sensorState.LogsInfo <- fmt.Sprintf("Sample frequency changed to %v [Hz]", sampleFrequency)
 
 		if sensorState.IsSleep {
-			// TODO: using channel for logs may be better to spread logs over the handle
-			fmt.Println("changes of sample frequency applied, but sensor is currently in a sleep state")
-			return sampleFrequency, nil
+			sensorState.LogsInfo <- "changes of sample frequency applied, but sensor is currently in a sleep state"
 		}
 		fmt.Println("changes of sample frequency applied")
-		return sampleFrequency, nil
 	} else {
-		fmt.Println("SampleFrequency is not a number")
+		sensorState.LogsWarning <- "SampleFrequency is not a number. Skipping..."
 	}
-	return sampleFrequency, nil
 }

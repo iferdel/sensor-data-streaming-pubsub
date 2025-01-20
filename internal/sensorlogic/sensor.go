@@ -12,6 +12,7 @@ type Log struct {
 type SensorState struct {
 	Sensor                    Sensor       // 16 bytes (string)
 	LogsInfo                  chan string  // 16 bytes
+	LogsWarning               chan string  // 16 bytes
 	LogsError                 chan string  // 16 bytes
 	SampleFrequency           float64      // 8 bytes
 	SampleFrequencyChangeChan chan float64 // 8 bytes
@@ -24,6 +25,7 @@ func NewSensorState(serialNumber string, SampleFrequency float64) *SensorState {
 			SerialNumber: serialNumber,
 		},
 		LogsInfo:                  make(chan string, 1),
+		LogsWarning:               make(chan string, 1),
 		LogsError:                 make(chan string, 1),
 		SampleFrequency:           SampleFrequency,
 		SampleFrequencyChangeChan: make(chan float64, 1),

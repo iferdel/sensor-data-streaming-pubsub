@@ -81,6 +81,13 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 					Level:        "INFO",
 					Message:      infoMsg,
 				})
+			case warningMsg := <-sensorState.LogsWarning:
+				publishSensorLog(publishCh, routing.SensorLog{
+					SerialNumber: serialNumber,
+					Timestamp:    time.Now(),
+					Level:        "WARNING",
+					Message:      warningMsg,
+				})
 			case errMsg := <-sensorState.LogsError:
 				publishSensorLog(publishCh, routing.SensorLog{
 					SerialNumber: serialNumber,
@@ -91,8 +98,6 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 			}
 		}
 	}()
-
-	// add timestamp and level to make it more real. logging not only the message to the channel but the level and the timestamp.
 
 	sensorState.LogsInfo <- "System powering on..."
 	time.Sleep(100 * time.Millisecond)
@@ -126,7 +131,7 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber),       // queue name
 		fmt.Sprintf(routing.KeySensorCommandsFormat, serialNumber)+"."+"#", // binding key
 		pubsub.QueueDurable, // queue type
-		handlerCommand(cfg, sensorState),
+		handlerCommand(sensorState),
 	)
 	if err != nil {
 		sensorState.LogsError <- fmt.Sprintf("Could not subscribe to command queue: %v\n", err)
