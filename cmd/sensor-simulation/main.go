@@ -205,10 +205,16 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 				},
 			)
 
+		case isSleep := <-sensorState.IsSleepChan:
+			if isSleep {
+				ticker.Stop()
+			} else {
+				ticker = time.NewTicker(time.Second / time.Duration(sampleFrequency))
+			}
+
 		case newFreq := <-sensorState.SampleFrequencyChangeChan:
 			ticker.Stop()
 			ticker = time.NewTicker(time.Second / time.Duration(newFreq))
-			fmt.Println("Ticker frequency updated to:", newFreq)
 		}
 	}
 }

@@ -6,5 +6,7 @@ func (sensorState *SensorState) HandleSleep() {
 		return
 	}
 	sensorState.IsSleep = true
+	sensorState.IsSleepChan <- true
+
 	sensorState.LogsInfo <- "sensor is set to sleep"
 }

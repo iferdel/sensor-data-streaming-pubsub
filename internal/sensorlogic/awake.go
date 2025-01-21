@@ -3,6 +3,7 @@ package sensorlogic
 func (sensorState *SensorState) HandleAwake() {
 	if sensorState.IsSleep {
 		sensorState.IsSleep = false
+		sensorState.IsSleepChan <- false
 		sensorState.LogsInfo <- "sensor is awake from sleep"
 		return
 	}

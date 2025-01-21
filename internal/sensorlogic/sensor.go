@@ -17,6 +17,7 @@ type SensorState struct {
 	SampleFrequency           float64      // 8 bytes
 	SampleFrequencyChangeChan chan float64 // 8 bytes
 	IsSleep                   bool         // 1 byte, at the end to avoid memory layout (7 bytes of padding)
+	IsSleepChan               chan bool    // 1 byte, at the end to avoid memory layout (7 bytes of padding)
 }
 
 func NewSensorState(serialNumber string, SampleFrequency float64) *SensorState {
@@ -30,5 +31,6 @@ func NewSensorState(serialNumber string, SampleFrequency float64) *SensorState {
 		SampleFrequency:           SampleFrequency,
 		SampleFrequencyChangeChan: make(chan float64, 1),
 		IsSleep:                   false,
+		IsSleepChan:               make(chan bool, 1),
 	}
 }
