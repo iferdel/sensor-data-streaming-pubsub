@@ -5,10 +5,6 @@
 This project implements an end-to-end real-time monitoring solution for IoT devices, designed to measure parameters like acceleration (or others such as temperature, strain, or humidity) in mechanical equipment or civil structures, with real-time geospatial tracking.
 
 ![grafana-dashboard](./assets/grafana-dashboard.gif)
-* (GIF showing grafana-dashboard with more than one sensor + monitor db queries --stats from postgres using timescaledb functionality--)
-* (GIF showing iotctl behaviour -- maybe with bubbletea implemented already which would beautify the status of running sensors and not running sensors)*
-* (GIF showing pods on k8 -- invitation to [homelab](https://github.com/iferdel/homelab))
-* *maybe(GIF showing map with GPS data from sensors -- either static or dynamic locations)*
 
 > [!NOTE]
 > I think that a design like this serves as a solid starting point for a larger project involving real sensor hardware, including data and GPS transmission via Wi-Fi or GSM in both mobile vehicles and static machinery, as well as in civil infrastructure. 
