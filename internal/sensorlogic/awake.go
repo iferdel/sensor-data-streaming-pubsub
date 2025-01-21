@@ -1,10 +1,12 @@
 package sensorlogic
 
+import "fmt"
+
 func (sensorState *SensorState) HandleAwake() {
 	if sensorState.IsSleep {
 		sensorState.IsSleep = false
 		sensorState.IsSleepChan <- false
-		sensorState.LogsInfo <- "sensor is awake from sleep"
+		sensorState.LogsInfo <- fmt.Sprintf("sensor is awake from sleep at %v [Hz]", sensorState.SampleFrequency)
 		return
 	}
 	sensorState.LogsInfo <- "sensor is already in an awake state"
