@@ -181,3 +181,4 @@ volumes:
   volume_iot_log:
     driver: local
     name: volume_iot_log
+    external: false
