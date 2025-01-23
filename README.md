@@ -83,21 +83,24 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 ├── IDEAS.md
 ├── LICENSE
 ├── README.md
-├── assets
-│   ├── architecture-diagram.drawio.png
-│   ├── architecture-diagram.drawio.svg
-│   ├── db-iot-erd.drawio.svg
-│   └── grafana-dashboard.gif
 ├── cmd
 │   ├── iot-api
 │   │   ├── Dockerfile
-│   │   ├── handlers.go
+│   │   ├── air.toml
+│   │   ├── handler_sensors_awake.go
+│   │   ├── handler_sensors_freq.go
+│   │   ├── handler_sensors_get.go
+│   │   ├── handler_sensors_sleep.go
+│   │   ├── handler_targets_create.go
+│   │   ├── handler_targets_get.go
+│   │   ├── json.go
 │   │   └── main.go
 │   ├── iotctl
 │   │   ├── cmd
 │   │   │   ├── awake.go
 │   │   │   ├── changesamplefrequency.go
 │   │   │   ├── delete.go
+│   │   │   ├── get.go
 │   │   │   ├── login.go
 │   │   │   ├── logout.go
 │   │   │   ├── root.go
@@ -106,18 +109,22 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 │   │   └── main.go
 │   ├── sensor-logs-ingester
 │   │   ├── Dockerfile
+│   │   ├── air.toml
 │   │   ├── handlers.go
 │   │   └── main.go
 │   ├── sensor-measurements-ingester
 │   │   ├── Dockerfile
+│   │   ├── air.toml
 │   │   ├── handlers.go
 │   │   └── main.go
 │   ├── sensor-registry
 │   │   ├── Dockerfile
+│   │   ├── air.toml
 │   │   ├── handlers.go
 │   │   └── main.go
 │   └── sensor-simulation
 │       ├── Dockerfile
+│       ├── air.toml
 │       ├── handlers.go
 │       └── main.go
 ├── compose.yaml
@@ -129,15 +136,18 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 │   │   ├── grafana.ini
 │   │   └── provisioning
 │   │       ├── dashboards
+│   │       │   ├── dashboards.yaml
 │   │       │   ├── iot.json
-│   │       │   ├── iot.yaml
-│   │       │   └── queries.sql
+│   │       │   ├── queries.sql
+│   │       │   └── rabbitmq-overview.json
 │   │       ├── datasources
 │   │       │   └── datasources.yaml
 │   │       └── plugins
 │   │           └── app.yaml
 │   ├── loki
 │   │   └── loki-config.yaml
+│   ├── prometheus
+│   │   └── prometheus.yml
 │   ├── rabbitmq
 │   │   ├── Dockerfile
 │   │   ├── definitions.json
@@ -149,6 +159,8 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 ├── go.mod
 ├── go.sum
 ├── internal
+│   ├── auth
+│   │   └── auth.go
 │   ├── pubsub
 │   │   ├── consume.go
 │   │   └── publish.go
@@ -157,19 +169,23 @@ The project is designed to be deployed using **GitOps** on a **Kubernetes** clus
 │   │   └── routing.go
 │   ├── sensorlogic
 │   │   ├── awake.go
+│   │   ├── commands.go
 │   │   ├── changesamplefrequency.go
 │   │   ├── sensor.go
 │   │   ├── sensorlogs.go
 │   │   ├── sensormeasurements.go
 │   │   ├── sensorsignal.go
 │   │   └── sleep.go
-│   └── storage
-│       ├── README.md
-│       ├── db.go
-│       ├── logs.go
-│       ├── measurements.go
-│       ├── models.go
-│       └── sensors.go
+│   ├── storage
+│   │   ├── db.go
+│   │   ├── logs.go
+│   │   ├── measurements.go
+│   │   ├── models.go
+│   │   ├── sensors.go
+│   │   └── targets.go
+│   └── validation
+│       ├── sensor.go
+│       └── sensor_test.go
 └── utils
     └── wait-for-services.sh
 ```
