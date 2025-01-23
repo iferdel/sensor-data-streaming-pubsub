@@ -108,9 +108,6 @@ services:
     depends_on:
       - rabbitmq
       - timescaledb
-      - sensor-registry
-      - sensor-logs-ingester
-      - sensor-measurements-ingester
     build:
       context: .          
       dockerfile: ./cmd/sensor-simulation/Dockerfile
@@ -184,7 +181,7 @@ services:
       - ./go.mod:/app/go.mod                  # Track Go dependencies
       - ./go.sum:/app/go.sum
 
-  sensor-measurements-ingester:
+  sensor-measurements-ingester-0: &sensor-measurements-ingester
     depends_on:
       - rabbitmq
       - timescaledb
@@ -192,7 +189,7 @@ services:
       context: .          
       dockerfile: ./cmd/sensor-measurements-ingester/Dockerfile
       target: dev
-    container_name: iot-sensor-measurements-ingester
+    container_name: iot-sensor-measurements-ingester-0
     restart: unless-stopped
     volumes:
       # go-air dependant
@@ -205,6 +202,10 @@ services:
     environment:
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
+
+  sensor-measurements-ingester-1:
+    << : *sensor-measurements-ingester
+    container_name: iot-sensor-measurements-ingester-1
   
   sensor-registry:
     depends_on:
