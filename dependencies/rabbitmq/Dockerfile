@@ -1,5 +1,6 @@
-FROM rabbitmq:3.13-management
+FROM rabbitmq:4.0-management
 RUN rabbitmq-plugins enable rabbitmq_mqtt
+RUN rabbitmq-plugins enable rabbitmq_prometheus
 
 COPY rabbitmq.conf /etc/rabbitmq/
 COPY definitions.json /etc/rabbitmq/

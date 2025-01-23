@@ -1,10 +1,16 @@
 services:
-  rabbitmq:
+  rabbitmq: &rabbitmq
     build: dependencies/rabbitmq/
     container_name: iot-rabbitmq
     ports:
       - "5672:5672"   # RabbitMQ main port
+      - "15692:15692"   # RabbitMQ exposes the metrics on a dedicated TCP port, 15692 by default.
       - "15672:15672" # Management UI port
+    hostname: iot-rabbitmq
+    environment:
+      METRICS_PROMETHEUS: "true"
+      RABBITMQ_ERLANG_COOKIE: rabbitmq
+      RABBITMQ_LOG: debug,+color
 
   timescaledb:
     build: dependencies/timescaledb/
@@ -45,8 +51,43 @@ services:
       - ./dependencies/loki/loki-config.yaml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
 
+  prometheus:
+    image: prom/prometheus
+    container_name: iot-prometheus
+    volumes:
+      # - iot-rabbitmq-prometheus_prometheus:/prometheus
+      - ./dependencies/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  node-exporter:
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+    expose:
+      - 9100
+    # https://hub.docker.com/r/prom/node-exporter/tags
+    image: prom/node-exporter:v1.2.0
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+  cadvisor:
+    expose:
+      - 8000
+    # https://hub.docker.com/r/google/cadvisor/tags
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      #- /cgroup:/cgroup:ro #doesn't work on MacOS only for Linux
+
   grafana:
-    image: grafana/grafana:latest
+    image: grafana/grafana:11.4.0
     container_name: iot-grafana
     depends_on:
       - timescaledb
@@ -59,6 +100,7 @@ services:
       - GF_AUTH_BASIC_ENABLED=false
       - GF_FEATURE_TOGGLES_ENABLE=accessControlOnCall
       - GF_INSTALL_PLUGINS=https://storage.googleapis.com/integration-artifacts/grafana-lokiexplore-app/grafana-lokiexplore-app-latest.zip;grafana-lokiexplore-app
+      # ,lant-statusmap-panel,grafana-piechart-panel
       - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1s
     volumes:
       - ./dependencies/grafana/provisioning:/etc/grafana/provisioning
@@ -182,3 +224,7 @@ volumes:
     driver: local
     name: volume_iot_log
     external: false
+  # iot-rabbitmq-prometheus_prometheus:
+  #   driver: local
+  #   name: iot-rabbitmq-prometheus_prometheus
+  #   external: false
