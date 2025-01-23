@@ -9,9 +9,9 @@ type TargetRecord struct {
 }
 
 type SensorRecord struct {
-	ID              int
-	SerialNumber    string
-	SampleFrequency float64
+	ID              int     `json:"id"`
+	SerialNumber    string  `json:"serial_number"`
+	SampleFrequency float64 `json:"sample_frequency"`
 }
 
 // timescaleDB hypertable -- Does not support primary keys
