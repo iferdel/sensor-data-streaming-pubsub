@@ -112,7 +112,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT sensor_measurement.time, sensor_measurement.measurement, sensor.serial_number\r\nFROM sensor_measurement INNER JOIN sensor\r\n  ON sensor_measurement.sensor_id = sensor.id\r\nWHERE sensor.serial_number in ($serial_number)\r\nORDER BY time;",
+          "rawSql": "SELECT sensor_measurement.time, sensor_measurement.measurement, sensor.serial_number\r\nFROM sensor_measurement INNER JOIN sensor\r\n  ON sensor_measurement.sensor_id = sensor.id\r\nWHERE sensor.serial_number in ($serial_number)\r\nORDER BY time",
           "refId": "A",
           "sql": {
             "columns": [
@@ -266,12 +266,16 @@
             "AAD-1123"
           ]
         },
-        "definition": "SELECT serial_number FROM sensor;",
+				"datasource": {
+          "type": "grafana-postgresql-datasource",
+          "uid": "be9ijnandyz9ce"
+        },
+        "definition": "SELECT serial_number FROM sensor",
+				"multi": true,
         "includeAll": false,
-        "multi": true,
         "name": "serial_number",
         "options": [],
-        "query": "SELECT serial_number FROM sensor;",
+        "query": "SELECT serial_number FROM sensor",
         "refresh": 1,
         "regex": "",
         "sort": 1,

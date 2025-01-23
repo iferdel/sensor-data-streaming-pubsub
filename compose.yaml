@@ -55,7 +55,6 @@ services:
     image: prom/prometheus
     container_name: iot-prometheus
     volumes:
-      # - iot-rabbitmq-prometheus_prometheus:/prometheus
       - ./dependencies/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
     ports:
       - "9090:9090"
@@ -105,7 +104,7 @@ services:
     volumes:
       - ./dependencies/grafana/provisioning:/etc/grafana/provisioning
   
-  sensor-simulation:
+  sensor-simulation-0: &sensor-simulation
     depends_on:
       - rabbitmq
       - timescaledb
@@ -116,7 +115,7 @@ services:
       context: .          
       dockerfile: ./cmd/sensor-simulation/Dockerfile
       target: dev
-    container_name: iot-sensor-simulation-1
+    container_name: iot-sensor-simulation-0
     volumes:
       # go-air dependant
       - ./cmd/sensor-simulation:/app/cmd/sensor-simulation        # Mount the specific service's code
@@ -130,7 +129,16 @@ services:
       - SENSOR_SAMPLE_FREQUENCY=35.0
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
-  
+
+  sensor-simulation-1:
+    << : *sensor-simulation
+    container_name: iot-sensor-simulation-1
+    environment:
+      - SENSOR_SERIAL_NUMBER=BBB-3423
+      - SENSOR_SAMPLE_FREQUENCY=10.0
+      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
+
   iot-api:
     depends_on:
       - rabbitmq
@@ -224,7 +232,3 @@ volumes:
     driver: local
     name: volume_iot_log
     external: false
-  # iot-rabbitmq-prometheus_prometheus:
-  #   driver: local
-  #   name: iot-rabbitmq-prometheus_prometheus
-  #   external: false
