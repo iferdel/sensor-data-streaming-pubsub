@@ -9,25 +9,16 @@ import (
 	"context"
 	"fmt"
 	"time"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func WriteMeasurement(measurement SensorMeasurementRecord) error {
-	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, PostgresConnString)
-	if err != nil {
-		return fmt.Errorf("Unable to connect to database: %v\n", err)
-	}
-	defer dbpool.Close()
-
+func (DB *DB) WriteMeasurement(ctx context.Context, measurement SensorMeasurementRecord) error {
 	/********************************************/
 	/* INSERT into hypertable                   */
 	/********************************************/
 
 	queryInsertTimeseriesData := `INSERT INTO sensor_measurement (time, sensor_id, measurement) VALUES ($1, $2, $3);`
 
-	_, err = dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SensorID, measurement.Measurement)
+	_, err := DB.dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SensorID, measurement.Measurement)
 	if err != nil {
 		return fmt.Errorf("Unable to insert sample into Timescale %v\n", err)
 	}

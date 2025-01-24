@@ -1,6 +1,7 @@
 package sensorlogic
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
@@ -8,7 +9,7 @@ import (
 )
 
 // method from sensorstate maybe
-func HandleMeasurement(dto routing.SensorMeasurement) error {
+func HandleMeasurement(ctx context.Context, db *storage.DB, dto routing.SensorMeasurement) error {
 	sensorID, err := storage.GetSensorIDBySerialNumber(dto.SerialNumber)
 	if err != nil {
 		return fmt.Errorf("failed to get sensor ID: %v", err)
@@ -21,7 +22,7 @@ func HandleMeasurement(dto routing.SensorMeasurement) error {
 		Measurement: dto.Value,
 	}
 
-	if err := storage.WriteMeasurement(record); err != nil {
+	if err := db.WriteMeasurement(ctx, record); err != nil {
 		return fmt.Errorf("failed to write measurement: %v", err)
 	}
 

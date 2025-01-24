@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
+	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -22,6 +24,10 @@ func main() {
 	}
 	defer conn.Close()
 
+	db, err := storage.NewDBPool(storage.PostgresConnString)
+	defer db.Close()
+	ctx := context.Background()
+
 	// subscribe to Measurement queue
 	err = pubsub.SubscribeGob(
 		conn,
@@ -29,7 +35,7 @@ func main() {
 		routing.QueueSensorMeasurements,
 		fmt.Sprintf(routing.KeySensorMeasurements, "*")+".#", // binding key
 		pubsub.QueueDurable,
-		handlerMeasurements(),
+		handlerMeasurements(db, ctx),
 	)
 	if err != nil {
 		log.Fatalf("could not starting consuming measurements: %v", err)
