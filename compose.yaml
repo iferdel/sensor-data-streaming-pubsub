@@ -207,6 +207,10 @@ services:
     << : *sensor-measurements-ingester
     container_name: iot-sensor-measurements-ingester-1
   
+  sensor-measurements-ingester-2:
+    << : *sensor-measurements-ingester
+    container_name: iot-sensor-measurements-ingester-2
+
   sensor-registry:
     depends_on:
       - rabbitmq
