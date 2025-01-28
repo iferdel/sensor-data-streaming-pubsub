@@ -8,9 +8,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
-	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
-	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
+	"github.com/iferdel/treanteyes/internal/pubsub"
+	"github.com/iferdel/treanteyes/internal/routing"
+	"github.com/iferdel/treanteyes/internal/storage"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 

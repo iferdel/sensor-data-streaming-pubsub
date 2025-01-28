@@ -1,6 +1,6 @@
 package main
 
-import "github.com/iferdel/sensor-data-streaming-server/cmd/iotctl/cmd"
+import "github.com/iferdel/treanteyes/cmd/iotctl/cmd"
 
 func main() {
 	cmd.Execute()

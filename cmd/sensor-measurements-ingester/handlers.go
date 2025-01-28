@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
-	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
-	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
-	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
+	"github.com/iferdel/treanteyes/internal/pubsub"
+	"github.com/iferdel/treanteyes/internal/routing"
+	"github.com/iferdel/treanteyes/internal/sensorlogic"
+	"github.com/iferdel/treanteyes/internal/storage"
 )
 
 func handlerMeasurements(db *storage.DB, ctx context.Context) func(m routing.SensorMeasurement) pubsub.AckType {

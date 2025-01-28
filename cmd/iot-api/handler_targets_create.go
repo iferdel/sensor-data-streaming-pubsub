@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
+	"github.com/iferdel/treanteyes/internal/storage"
 )
 
 func (cfg *apiConfig) handlerTargetsCreate(w http.ResponseWriter, req *http.Request) {

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
+	"github.com/iferdel/treanteyes/internal/storage"
 	"github.com/spf13/cobra"
 )
 

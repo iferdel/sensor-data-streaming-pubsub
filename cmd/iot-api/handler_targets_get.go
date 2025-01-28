@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
+	"github.com/iferdel/treanteyes/internal/storage"
 )
 
 func (cfg *apiConfig) handlerTargetsGet(w http.ResponseWriter, req *http.Request) {

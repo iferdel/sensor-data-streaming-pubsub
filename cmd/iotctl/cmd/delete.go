@@ -3,7 +3,7 @@ package cmd
 import (
 	"log"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/validation"
+	"github.com/iferdel/treanteyes/internal/validation"
 	"github.com/spf13/cobra"
 )
 

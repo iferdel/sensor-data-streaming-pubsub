@@ -12,9 +12,9 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
-	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
-	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
+	"github.com/iferdel/treanteyes/internal/pubsub"
+	"github.com/iferdel/treanteyes/internal/routing"
+	"github.com/iferdel/treanteyes/internal/sensorlogic"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -131,7 +131,7 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber),       // queue name
 		fmt.Sprintf(routing.KeySensorCommandsFormat, serialNumber)+"."+"#", // binding key
 		pubsub.QueueDurable, // queue type
-		handlerCommand(sensorState),
+		handlerCommand(&sensorState),
 	)
 	if err != nil {
 		sensorState.LogsError <- fmt.Sprintf("Could not subscribe to command queue: %v\n", err)

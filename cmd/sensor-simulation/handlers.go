@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
-	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
-	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
+	"github.com/iferdel/treanteyes/internal/pubsub"
+	"github.com/iferdel/treanteyes/internal/routing"
+	"github.com/iferdel/treanteyes/internal/sensorlogic"
 )
 
 func handlerCommand(sensorState *sensorlogic.SensorState) func(cm routing.SensorCommandMessage) pubsub.AckType {

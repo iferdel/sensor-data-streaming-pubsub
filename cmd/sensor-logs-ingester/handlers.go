@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
-	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
-	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
+	"github.com/iferdel/treanteyes/internal/pubsub"
+	"github.com/iferdel/treanteyes/internal/routing"
+	"github.com/iferdel/treanteyes/internal/sensorlogic"
 )
 
 func handlerLogs() func(log routing.SensorLog) pubsub.AckType {

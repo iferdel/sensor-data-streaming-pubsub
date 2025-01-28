@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
+	"github.com/iferdel/treanteyes/internal/routing"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 

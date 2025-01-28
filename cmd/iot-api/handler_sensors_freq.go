@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
-	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
+	"github.com/iferdel/treanteyes/internal/pubsub"
+	"github.com/iferdel/treanteyes/internal/routing"
 )
 
 func (cfg *apiConfig) handlerSensorsChangeSampleFrequency(w http.ResponseWriter, req *http.Request) {
