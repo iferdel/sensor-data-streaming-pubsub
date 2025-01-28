@@ -23,6 +23,8 @@ With that in mind, my goal for this project is to build a comprehensive **end-to
 
 
 ## :nut_and_bolt: Architecture
+The way the project is structured follows a *Domain Driven* approach, this is thanks to my previous knowledge of the domain of measuring and processing IoT, enabling me to be the so called **Subject Matter Expert, SME**. This cross-knowledge between the domain and software keeps easier to implement such a design which is otherwise a challenge by itself. This project is also aiming to be scalable, thus **DDD** makes a good fit. The source I followed for this is in this article by a fellow called [Percy](https://programmingpercy.tech/blog/how-to-domain-driven-design-ddd-golang/). A good takeway from my endeavor of DDD is that it excels for scalable projects in any STEM field and it's probably the way to go unless the project is simple enough with no much dynamims over its constraints as time goes on.
+
 ![architecture-diagram](./assets/architecture-diagram.drawio.png)
 
 The core of this solution is built around an **event-driven** architecture that utilizes a **pub/sub** pattern, enabling the creation of a **distributed system**. However, as with many systems, a **hybrid** approach is necessary. This includes employing **point-to-point** communication for interactions with the sensor cluster via a command-line tool which communicates with an API, allowing controlled interactions with both the **database** and the **message broker**.
@@ -249,6 +251,7 @@ Keys are used by publishers with specific values and by consumers with wildcards
 <summary><strong>:computer: Monitoring</strong></summary>
 
 TimeScaleDB integrates seamlessly with **Grafana**, allowing real-time querying and visualization of sensor data.
+A cool benefit from using TimescaleDB is that it enables its usage across all regular Postgres capabilities. One example is the possibility of extend stats monitoring extensions such as pg_stat_statements using TimescaleDB specific functions. A good reference to implement this real-time DB stats monitoring is [Ryan Booz's extensive material](https://github.com/ryanbooz/Presentations).
 
 </details>
 
