@@ -2,7 +2,7 @@ package treanteyes
 
 import "github.com/google/uuid"
 
-type Target struct {
+type Asset struct {
 	ID          uuid.UUID
 	Customer    string
 	Name        string

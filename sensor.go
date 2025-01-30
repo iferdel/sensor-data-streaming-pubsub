@@ -26,7 +26,7 @@ const (
 type SensorState int
 
 const (
-	IsWaitingForTargetDefinition SensorState = iota
+	IsWaitingForAssetMounting SensorState = iota
 	IsAwake
 	IsSleep
 )

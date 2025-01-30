@@ -1,3 +1,7 @@
+* registry first, then assign target (create default target as demo) and then start measurements (way to automate this process for development)
+
+* dead-letter exchange for debugging nack cases
+
 * add logging 
 
 - For architecture diagram: socket svg is not as api as othe symbol could be
