@@ -15,7 +15,7 @@ func GetSensorIDBySerialNumber(serialNumber string) (sensorID int, err error) {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
-		return 0, fmt.Errorf("Unable to connect to database: %v\n", err)
+		return 0, fmt.Errorf("unable to connect to database: %v", err)
 	}
 	defer dbpool.Close()
 
@@ -37,7 +37,7 @@ func GetSensorBySerialNumber(serialNumber string) (sensor SensorRecord, err erro
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
-		return SensorRecord{}, fmt.Errorf("Unable to connect to database: %v\n", err)
+		return SensorRecord{}, fmt.Errorf("unable to connect to database: %v", err)
 	}
 	defer dbpool.Close()
 
@@ -62,7 +62,7 @@ func GetSensor() ([]SensorRecord, error) {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to connect to database: %v\n", err)
+		return nil, fmt.Errorf("unable to connect to database: %v", err)
 	}
 	defer dbpool.Close()
 
@@ -74,7 +74,7 @@ func GetSensor() ([]SensorRecord, error) {
 
 	rows, err := dbpool.Query(ctx, queryGetMetadata)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to get sensors: %v\n", err)
+		return nil, fmt.Errorf("unable to get sensors: %v", err)
 	}
 	defer rows.Close()
 
@@ -101,7 +101,7 @@ func WriteSensor(sr SensorRecord) error {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
-		return fmt.Errorf("Unable to connect to database: %v\n", err)
+		return fmt.Errorf("unable to connect to database: %v", err)
 	}
 	defer dbpool.Close()
 
@@ -129,7 +129,7 @@ func WriteSensor(sr SensorRecord) error {
 
 	_, err = dbpool.Exec(ctx, queryInsertMetadata, sr.SerialNumber, sr.SampleFrequency)
 	if err != nil {
-		return fmt.Errorf("Unable to insert sensor metadata into database: %v\n", err)
+		return fmt.Errorf("unable to insert sensor metadata into database: %v", err)
 	}
 	fmt.Printf("Inserted sensor (%s) into `sensor` table\n", sr.SerialNumber)
 
@@ -141,7 +141,7 @@ func DeleteSensor(serialNumber string) error {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
-		return fmt.Errorf("Unable to connect to database: %v\n", err)
+		return fmt.Errorf("unable to connect to database: %v", err)
 	}
 	defer dbpool.Close()
 
@@ -169,7 +169,7 @@ func DeleteSensor(serialNumber string) error {
 
 	_, err = dbpool.Exec(ctx, queryDeleteMetadata, serialNumber)
 	if err != nil {
-		return fmt.Errorf("Unable to delete sensor metadata from database: %v\n", err)
+		return fmt.Errorf("unable to delete sensor metadata from database: %v", err)
 	}
 	fmt.Printf("Deleted sensor (%s) from `sensor` table (and all its measurements)\n", serialNumber)
 	return nil

@@ -12,7 +12,7 @@ func GetTarget() ([]TargetRecord, error) {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to connect to database: %v\n", err)
+		return nil, fmt.Errorf("unable to connect to database: %v", err)
 	}
 	defer dbpool.Close()
 
@@ -24,7 +24,7 @@ func GetTarget() ([]TargetRecord, error) {
 
 	rows, err := dbpool.Query(ctx, queryGetMetadata)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to get targets: %v\n", err)
+		return nil, fmt.Errorf("unable to get targets: %v", err)
 	}
 	defer rows.Close()
 
@@ -51,7 +51,7 @@ func WriteTarget(tr TargetRecord) error {
 	ctx := context.Background()
 	dbpool, err := pgxpool.New(ctx, PostgresConnString)
 	if err != nil {
-		return fmt.Errorf("Unable to connect to database: %v\n", err)
+		return fmt.Errorf("unable to connect to database: %v", err)
 	}
 	defer dbpool.Close()
 
@@ -79,7 +79,7 @@ func WriteTarget(tr TargetRecord) error {
 
 	_, err = dbpool.Exec(ctx, queryInsertMetadata, tr.Name)
 	if err != nil {
-		return fmt.Errorf("Unable to insert target metadata into database: %v\n", err)
+		return fmt.Errorf("unable to insert target metadata into database: %v", err)
 	}
 	fmt.Printf("Inserted target (%s) into `target` table\n", tr.Name)
 

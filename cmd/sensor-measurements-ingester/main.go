@@ -25,6 +25,11 @@ func main() {
 	defer conn.Close()
 
 	db, err := storage.NewDBPool(storage.PostgresConnString)
+	if err != nil {
+		msg := fmt.Sprintf("could not open pool connection to PostgreSQL: %v", err)
+		fmt.Println(msg)
+		return
+	}
 	defer db.Close()
 	ctx := context.Background()
 

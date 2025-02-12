@@ -62,9 +62,9 @@ func main() {
 	}
 }
 
-func (cfg *apiConfig) middelwareLog(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		log.Printf("%v: %v", req.Method, req.URL.Path)
-		next.ServeHTTP(w, req)
-	})
-}
+// func (cfg *apiConfig) middelwareLog(next http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+// 		log.Printf("%v: %v", req.Method, req.URL.Path)
+// 		next.ServeHTTP(w, req)
+// 	})
+// }

@@ -22,7 +22,7 @@ func NewDBPool(connString string) (*DB, error) {
 
 	dbpool, err := pgxpool.New(ctx, connString)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to create connection pool: %v", err)
+		return nil, fmt.Errorf("unable to create connection pool: %v", err)
 	}
 
 	return &DB{

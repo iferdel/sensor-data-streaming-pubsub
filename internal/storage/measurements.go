@@ -20,7 +20,7 @@ func (DB *DB) WriteMeasurement(ctx context.Context, measurement SensorMeasuremen
 
 	_, err := DB.dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SensorID, measurement.Measurement)
 	if err != nil {
-		return fmt.Errorf("Unable to insert sample into Timescale %v\n", err)
+		return fmt.Errorf("unable to insert sample into Timescale %v", err)
 	}
 	fmt.Printf("%v - Successfully inserted sample into `measurement` hypertable", time.Now())
 	// TODO: as many inserts as rows of data, the idea is to deploy it with this pattern, measure the way the whole system behaves (broker, backend, db) and then optmize with batch processing

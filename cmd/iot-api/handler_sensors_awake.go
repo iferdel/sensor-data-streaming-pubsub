@@ -14,11 +14,11 @@ func (cfg *apiConfig) handlerSensorsAwake(w http.ResponseWriter, req *http.Reque
 	sensorSerialNumber := req.PathValue("sensorSerialNumber")
 
 	publishCh, err := cfg.rabbitConn.Channel()
-	defer publishCh.Close()
 	if err != nil {
 		respondWithError(w, 500, "could not create channel to publish sensor's awake command", err)
 		return
 	}
+	defer publishCh.Close()
 	err = pubsub.PublishGob(
 		publishCh,                // amqp.Channel
 		routing.ExchangeTopicIoT, // exchange

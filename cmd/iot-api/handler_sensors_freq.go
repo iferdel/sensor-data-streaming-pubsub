@@ -27,11 +27,12 @@ func (cfg *apiConfig) handlerSensorsChangeSampleFrequency(w http.ResponseWriter,
 	decoder.Decode(&params)
 
 	publishCh, err := cfg.rabbitConn.Channel()
-	defer publishCh.Close()
 	if err != nil {
 		respondWithError(w, 500, "could not create channel to publish sensor's new sample frequency:", err)
 		return
 	}
+	defer publishCh.Close()
+
 	err = pubsub.PublishGob(
 		publishCh,                // amqp.Channel
 		routing.ExchangeTopicIoT, // exchange
