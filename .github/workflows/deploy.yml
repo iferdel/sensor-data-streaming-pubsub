@@ -3,6 +3,8 @@ name: deploy container images to repository
 on:
   push:
     branches: [ main ]
+    paths:
+      - 'internal/**'
 
 jobs:
 
@@ -48,9 +50,6 @@ jobs:
       run: echo "VERSION=$(cat cmd/sensor-simulation/version.txt)" >> $GITHUB_ENV
     
     - name: Sensor Simulation -- Build & Push with Docker Build-Push Action
-      if: |
-        contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-simulation/') ||
-        contains(steps.changed.outputs.all_changed_files, 'internal/')
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -64,9 +63,6 @@ jobs:
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
 
     - name: Sensor Registry -- Build & Push with Docker Build-Push Action
-      if: |
-        contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-registry/') ||
-        contains(steps.changed.outputs.all_changed_files, 'internal/')
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -79,9 +75,6 @@ jobs:
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
     
     - name: Sensor Logs Ingester -- Build & Push with Docker Build-Push Action
-      if: |
-        contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-logs-ingester/') ||
-        contains(steps.changed.outputs.all_changed_files, 'internal/')
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -94,9 +87,6 @@ jobs:
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
 
     - name: Sensor Measurements Ingester -- Build & Push with Docker Build-Push Action
-      if: |
-        contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-measurements-ingester/') ||
-        contains(steps.changed.outputs.all_changed_files, 'internal/')
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -109,9 +99,6 @@ jobs:
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
 
     - name: IoT API -- Build & Push with Docker Build-Push Action
-      if: |
-        contains(steps.changed.outputs.all_changed_files, 'cmd/iot-api/') ||
-        contains(steps.changed.outputs.all_changed_files, 'internal/')
       uses: docker/build-push-action@v6
       with:
         context: .
