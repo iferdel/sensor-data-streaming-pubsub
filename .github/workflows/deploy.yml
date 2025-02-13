@@ -47,8 +47,10 @@ jobs:
       id: read_version
       run: echo "VERSION=$(cat cmd/sensor-simulation/version.txt)" >> $GITHUB_ENV
     
-    - name: Build & Push with Docker Build-Push Action
-    #   if: contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-simulation/')
+    - name: Sensor Simulation -- Build & Push with Docker Build-Push Action
+      if: |
+        contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-simulation/') ||
+        contains(steps.changed.outputs.all_changed_files, 'internal/')
       uses: docker/build-push-action@v6
       with:
         context: .
@@ -60,4 +62,67 @@ jobs:
           ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-simulation:${{ env.VERSION }}
         target: staging
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
+
+    - name: Sensor Registry -- Build & Push with Docker Build-Push Action
+      if: |
+        contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-registry/') ||
+        contains(steps.changed.outputs.all_changed_files, 'internal/')
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ./cmd/sensor-simulation/Dockerfile
+        push: true
+        platforms: linux/amd64
+        tags: |
+          ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-registry:${{ github.sha }}
+          ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-registry:${{ env.VERSION }}
+        target: staging
+        provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
     
+    - name: Sensor Logs Ingester -- Build & Push with Docker Build-Push Action
+      if: |
+        contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-logs-ingester/') ||
+        contains(steps.changed.outputs.all_changed_files, 'internal/')
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ./cmd/sensor-simulation/Dockerfile
+        push: true
+        platforms: linux/amd64
+        tags: |
+          ${{ vars.DOCKERHUB_USERNAME }}/iot-logs-ingester:${{ github.sha }}
+          ${{ vars.DOCKERHUB_USERNAME }}/iot-logs-ingester:${{ env.VERSION }}
+        target: staging
+        provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
+
+    - name: Sensor Measurements Ingester -- Build & Push with Docker Build-Push Action
+      if: |
+        contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-measurements-ingester/') ||
+        contains(steps.changed.outputs.all_changed_files, 'internal/')
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ./cmd/sensor-simulation/Dockerfile
+        push: true
+        platforms: linux/amd64
+        tags: |
+          ${{ vars.DOCKERHUB_USERNAME }}/iot-measurements-ingester:${{ github.sha }}
+          ${{ vars.DOCKERHUB_USERNAME }}/iot-measurements-ingester:${{ env.VERSION }}
+        target: staging
+        provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
+
+    - name: IoT API -- Build & Push with Docker Build-Push Action
+      if: |
+        contains(steps.changed.outputs.all_changed_files, 'cmd/iot-api/') ||
+        contains(steps.changed.outputs.all_changed_files, 'internal/')
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        file: ./cmd/iot-api/Dockerfile
+        push: true
+        platforms: linux/amd64
+        tags: |
+          ${{ vars.DOCKERHUB_USERNAME }}/iot-api:${{ github.sha }}
+          ${{ vars.DOCKERHUB_USERNAME }}/iot-api:${{ env.VERSION }}
+        target: staging
+        provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
