@@ -60,15 +60,15 @@ jobs:
           ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-simulation:${{ env.VERSION }}
         target: staging
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
+    
+    # CLI
+    - name: GoRelease for iotctl (non-containerized release)
+      uses: goreleaser/goreleaser-action@v6
+      with:
+        distribution: goreleaser
+        version: '~> v2'
+        args: release --clean --tag ${{ env.VERSION }}
+        workdir: cmd/iotctl
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    # - name: Build & Push Sensor Simulation
-    #   if: contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-simulation/')
-    #   run: |
-    #     SERVICE_VERSION=        docker buildx build \
-    #     --platform linux/amd64 \
-    #     --build-arg VERSION=$SERVICE_VERSION \
-    #     --target staging \
-    #     -f cmd/sensor-simulation/Dockerfile \
-    #     -t ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-simulation:$SERVICE_VERSION \
-    #     --push \
-    #     .
