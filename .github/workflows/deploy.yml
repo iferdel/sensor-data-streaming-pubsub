@@ -61,14 +61,3 @@ jobs:
         target: staging
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
     
-    # CLI
-    - name: GoRelease for iotctl (non-containerized release)
-      uses: goreleaser/goreleaser-action@v6
-      with:
-        distribution: goreleaser
-        version: '~> v2'
-        args: release --clean --tag ${{ env.VERSION }}
-        workdir: cmd/iotctl
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
