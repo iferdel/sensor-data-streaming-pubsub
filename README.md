@@ -1,5 +1,7 @@
 # Sensor Data Streaming PubSub
 
+![ci test badge](https://github.com/iferdel/sensor-data-streaming-pubsub/actions/workflows/ci.yml/badge.svg)
+
 ## General Description
 
 This project implements an end-to-end real-time monitoring solution for IoT devices, designed to measure parameters like acceleration (or others such as temperature, strain, or humidity) in mechanical equipment or civil structures, with real-time geospatial tracking.
