@@ -33,11 +33,15 @@ jobs:
         username: ${{ vars.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Set up QEMU 
-      uses: docker/setup-qemu-action@v3
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
+      with:
+        driver: cloud
+        endpoint: "iferdel777/iot"
+        install: true
 
     - name: Build & Push with Docker Build-Push Action
       uses: docker/build-push-action@v6
@@ -49,4 +53,6 @@ jobs:
         tags: |
           ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-simulation:${{ github.sha }}
         target: staging
+        provenance: false # for docker build cloud
+
 
