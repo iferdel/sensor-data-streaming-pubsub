@@ -1,4 +1,4 @@
-name: cd
+name: deploy container images to repository
 
 on:
   push:
