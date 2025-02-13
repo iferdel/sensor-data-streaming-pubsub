@@ -3,6 +3,7 @@ package sensorlogic
 import "fmt"
 
 func (sensorState *SensorState) HandleAwake() {
+	// placeholder
 	if sensorState.IsSleep {
 		sensorState.IsSleep = false
 		sensorState.IsSleepChan <- false
