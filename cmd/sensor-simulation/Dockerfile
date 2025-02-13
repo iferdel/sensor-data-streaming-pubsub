@@ -1,7 +1,7 @@
 # ---------------------------------------
 # Base Stage
 # ---------------------------------------
-FROM golang:1.23-alpine AS build
+FROM golang:1.23-alpine AS base
 
 WORKDIR /app
 
