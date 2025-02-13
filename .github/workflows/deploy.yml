@@ -58,7 +58,7 @@ jobs:
         push: true
         platforms: linux/amd64
         tags: |
-          ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-simulation:${{ github.sha }}
+          ${{ vars.DOCKERHUB_USERNAME }}/iot-api:${{ github.sha }}
           ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-simulation:${{ env.VERSION }}
         target: staging
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
@@ -74,7 +74,6 @@ jobs:
         push: true
         platforms: linux/amd64
         tags: |
-          ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-registry:${{ github.sha }}
           ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-registry:${{ env.VERSION }}
         target: staging
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
@@ -90,7 +89,6 @@ jobs:
         push: true
         platforms: linux/amd64
         tags: |
-          ${{ vars.DOCKERHUB_USERNAME }}/iot-logs-ingester:${{ github.sha }}
           ${{ vars.DOCKERHUB_USERNAME }}/iot-logs-ingester:${{ env.VERSION }}
         target: staging
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
@@ -106,7 +104,6 @@ jobs:
         push: true
         platforms: linux/amd64
         tags: |
-          ${{ vars.DOCKERHUB_USERNAME }}/iot-measurements-ingester:${{ github.sha }}
           ${{ vars.DOCKERHUB_USERNAME }}/iot-measurements-ingester:${{ env.VERSION }}
         target: staging
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
@@ -122,7 +119,6 @@ jobs:
         push: true
         platforms: linux/amd64
         tags: |
-          ${{ vars.DOCKERHUB_USERNAME }}/iot-api:${{ github.sha }}
           ${{ vars.DOCKERHUB_USERNAME }}/iot-api:${{ env.VERSION }}
         target: staging
         provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
