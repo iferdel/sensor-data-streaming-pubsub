@@ -43,16 +43,27 @@ jobs:
         endpoint: "iferdel777/iot"
         install: true
 
-    - name: Build & Push with Docker Build-Push Action
-      uses: docker/build-push-action@v6
-      with:
-        context: .
-        file: ./cmd/sensor-simulation/Dockerfile
-        push: true
-        platforms: linux/amd64
-        tags: |
-          ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-simulation:${{ github.sha }}
-        target: staging
-        provenance: false # for docker build cloud
+    # - name: Build & Push with Docker Build-Push Action
+    #   uses: docker/build-push-action@v6
+    #   with:
+    #     context: .
+    #     file: ./cmd/sensor-simulation/Dockerfile
+    #     push: true
+    #     platforms: linux/amd64
+    #     tags: |
+    #       ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-simulation:${{ github.sha }}
+    #     target: staging
+    #     provenance: false # this allows the provenance to be created/managed by docker build cloud and not by this build-push-action
 
-
+    - name: Build & Push Sensor Simulation
+      if: contains(steps.changed.outputs.all_changed_files, 'cmd/sensor-simulation/')
+      run: |
+        SERVICE_VERSION=$(cat cmd/sensor-simulation/VERSION)
+        docker buildx build \
+        --platform linux/amd64 \
+        --build-arg VERSION=$SERVICE_VERSION \
+        --target staging \
+        -f cmd/sensor-simulation/Dockerfile \
+        -t ${{ vars.DOCKERHUB_USERNAME }}/iot-sensor-simulation:$SERVICE_VERSION \
+        --push \
+        .
