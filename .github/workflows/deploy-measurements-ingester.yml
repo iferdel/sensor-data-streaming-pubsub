@@ -6,6 +6,7 @@ on:
     paths:
       - 'internal/**'
       - 'cmd/sensor-measurements-ingester/**'
+      - 'utils/**'
 
 jobs:
 

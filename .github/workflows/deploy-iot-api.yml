@@ -6,6 +6,7 @@ on:
     paths:
       - 'internal/**'
       - 'cmd/iot-api/**'
+      - 'utils/**'
 
 jobs:
 
