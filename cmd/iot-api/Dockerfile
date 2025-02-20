@@ -42,10 +42,7 @@ WORKDIR /app
 # Copy the compiled binary from the base stage
 COPY --from=base /app/iot-api /app/iot-api
 
-# Copy wait for dependencies
-COPY utils/wait-for-services.sh /app/
-
-CMD ["/bin/sh", "/app/wait-for-services.sh", "/app/iot-api"]
+CMD ["/app/iot-api"]
 
 # ---------------------------------------
 # Production Build

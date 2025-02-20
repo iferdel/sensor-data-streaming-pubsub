@@ -43,10 +43,7 @@ WORKDIR /app
 # Copy the compiled binary from the base stage
 COPY --from=base /app/sensor-logs-ingester /app/sensor-logs-ingester
 
-# Copy wait for dependencies
-COPY utils/wait-for-services.sh /app/
-
-CMD ["/bin/sh", "/app/wait-for-services.sh", "/app/sensor-logs-ingester"]
+CMD ["/app/sensor-logs-ingester"]
 
 # ---------------------------------------
 # Production Build
