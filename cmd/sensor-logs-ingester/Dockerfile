@@ -43,6 +43,8 @@ WORKDIR /app
 # Copy the compiled binary from the base stage
 COPY --from=base /app/sensor-logs-ingester /app/sensor-logs-ingester
 
+RUN mkdir -p /app/log && touch /app/log/iot.log
+
 CMD ["/app/sensor-logs-ingester"]
 
 # ---------------------------------------
