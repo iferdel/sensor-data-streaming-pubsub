@@ -1,10 +1,21 @@
 # Sensor Data Streaming PubSub
 
-![ci test badge](https://github.com/iferdel/sensor-data-streaming-pubsub/actions/workflows/ci.yml/badge.svg)
+![ci test badge](https://github.com/iferdel/sensor-data-streaming-pubsub/actions/workflows/tests.yml/badge.svg)
+![ci test badge](https://github.com/iferdel/sensor-data-streaming-pubsub/actions/workflows/tests.yml/badge.svg?event=push)
+![ci test badge](https://github.com/iferdel/sensor-data-streaming-pubsub/actions/workflows/tests.yml/badge.svg?event=pull_request)
+
+![GitOps](https://img.shields.io/badge/GitOps-Deployed-blue?style=flat-square)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-Cluster-informational?style=flat-square)
+![Status](https://img.shields.io/badge/Status-Active-success?style=flat-square)
 
 ## General Description
 
 This project implements an end-to-end real-time monitoring solution for IoT devices, designed to measure parameters like acceleration (or others such as temperature, strain, or humidity) in mechanical equipment or civil structures, with real-time geospatial tracking.
+
+<p style="color:#1E90FF; font-weight: bold;">
+The project is currently deployed using <strong>GitOps</strong> on a <strong>Kubernetes</strong> cluster within my 
+<a href="https://github.com/XXXX" style="color:#F39C12;">homelab</a>, ensuring availability and horizontal scaling.
+</p>
 
 ![grafana-dashboard](./assets/grafana-dashboard.gif)
 
@@ -47,8 +58,6 @@ The core of this solution is built around an **event-driven** architecture that 
 
 > [!IMPORTANT]
 > These services are dependant of other software such as the message broker, a database that would handle timeseries data with ease, a log aggregation system with an observability collector and a visualization tool to real-time monitoring.
-
-The project is designed to be deployed using **GitOps** on a **Kubernetes** cluster within my [homelab](https://github.com/iferdel/homelab), ensuring availability and horizontal scaling. For example, to handle increased sensor sampling rates or the addition of more sensors (simulated by replicating the simulation service). While I'm **not a fan of self-hosted databases** and would prefer a full cloud solution, an exception is made here for practicality. Meanwhile, the command-line tool is designed to be installed locally by users with access to the cluster under a specific role.
 
 <details>
 <summary><strong>:mag: Key Architectural Points</strong></summary>
