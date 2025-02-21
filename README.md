@@ -1,21 +1,12 @@
 # Sensor Data Streaming PubSub
 
 ![ci test badge](https://github.com/iferdel/sensor-data-streaming-pubsub/actions/workflows/tests.yml/badge.svg)
-![ci test badge](https://github.com/iferdel/sensor-data-streaming-pubsub/actions/workflows/tests.yml/badge.svg?event=push)
-![ci test badge](https://github.com/iferdel/sensor-data-streaming-pubsub/actions/workflows/tests.yml/badge.svg?event=pull_request)
-
-![GitOps](https://img.shields.io/badge/GitOps-Deployed-blue?style=flat-square)
-![Kubernetes](https://img.shields.io/badge/Kubernetes-Cluster-informational?style=flat-square)
-![Status](https://img.shields.io/badge/Status-Active-success?style=flat-square)
 
 ## General Description
 
 This project implements an end-to-end real-time monitoring solution for IoT devices, designed to measure parameters like acceleration (or others such as temperature, strain, or humidity) in mechanical equipment or civil structures, with real-time geospatial tracking.
 
-<p style="color:#1E90FF; font-weight: bold;">
-The project is currently deployed using <strong>GitOps</strong> on a <strong>Kubernetes</strong> cluster within my 
-<a href="https://github.com/XXXX" style="color:#F39C12;">homelab</a>, ensuring availability and horizontal scaling.
-</p>
+The project is currently deployed in my [homelab](https://github.com/iferdel/homelab) on a **Kubernetes** cluster powered by **GitOps**.
 
 ![grafana-dashboard](./assets/grafana-dashboard.gif)
 
