@@ -130,7 +130,8 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber),       // queue name
 		fmt.Sprintf(routing.KeySensorCommandsFormat, serialNumber)+"."+"#", // binding key
-		pubsub.QueueDurable, // queue type
+		pubsub.QueueDurable, // queue duration
+		pubsub.QueueClassic, // queue type
 		handlerCommand(sensorState),
 	)
 	if err != nil {

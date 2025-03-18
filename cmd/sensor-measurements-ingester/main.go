@@ -40,6 +40,7 @@ func main() {
 		routing.QueueSensorMeasurements,
 		fmt.Sprintf(routing.KeySensorMeasurements, "*")+".#", // binding key
 		pubsub.QueueDurable,
+		pubsub.QueueStream,
 		handlerMeasurements(db, ctx),
 	)
 	if err != nil {

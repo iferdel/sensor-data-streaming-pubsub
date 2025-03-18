@@ -28,6 +28,7 @@ func main() {
 		routing.QueueSensorLogs,
 		fmt.Sprintf(routing.KeySensorLogsFormat, "*")+"."+"#", // binding key
 		pubsub.QueueDurable,
+		pubsub.QueueQuorum,
 		handlerLogs(),
 	)
 	if err != nil {

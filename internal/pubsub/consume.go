@@ -23,6 +23,10 @@ const (
 	QueueStream
 )
 
+func (qt QueueType) String() string {
+	return [...]string{"classic", "quorum", "stream"}[qt]
+}
+
 type AckType int
 
 const (
@@ -37,6 +41,7 @@ func SubscribeGob[T any](
 	queueName,
 	key string,
 	queueDurability QueueDurability,
+	queueType QueueType,
 	handler func(T) AckType,
 ) error {
 	ch, queue, err := DeclareAndBind(
@@ -45,6 +50,7 @@ func SubscribeGob[T any](
 		queueName,
 		key,
 		queueDurability,
+		queueType,
 	)
 	if err != nil {
 		return fmt.Errorf("could not declare and bind queue: %v", err)
@@ -98,6 +104,7 @@ func DeclareAndBind(
 	queueName,
 	key string,
 	queueDurability QueueDurability,
+	queueType QueueType,
 ) (*amqp.Channel, amqp.Queue, error) {
 
 	ch, err := conn.Channel()
@@ -112,7 +119,7 @@ func DeclareAndBind(
 		queueDurability != QueueDurable, // exclusive
 		false,                           // noWait
 		amqp.Table{
-			"x-queue-type": "quorum",
+			"x-queue-type": queueType.String(),
 		}, // args
 	)
 
