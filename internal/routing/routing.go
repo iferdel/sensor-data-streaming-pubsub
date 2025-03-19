@@ -4,7 +4,8 @@ import "os"
 
 // PubSub Broker
 var (
-	RabbitConnString = os.Getenv("RABBIT_CONN_STRING")
+	RabbitConnString     = os.Getenv("RABBIT_CONN_STRING")
+	RabbitMQTTConnString = os.Getenv("RABBIT_MQTT_CONN_STRING")
 )
 
 // Exchange
