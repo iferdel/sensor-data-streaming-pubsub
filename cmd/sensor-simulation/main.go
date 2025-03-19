@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net/url"
 	"os"
 	"strconv"
 	"sync"
 	"text/tabwriter"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
 	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
@@ -20,16 +22,40 @@ import (
 
 type Config struct {
 	rabbitConn *amqp.Connection
+	mqttClient mqtt.Client
+}
+
+func MQTTCreateClientOptions(clientId, raw string) *mqtt.ClientOptions {
+	uri, _ := url.Parse(raw)
+	opts := mqtt.NewClientOptions()
+	opts.AddBroker(fmt.Sprintf("tcp://%s", uri.Host))
+	opts.SetUsername(uri.User.Username())
+	password, _ := uri.User.Password()
+	opts.SetPassword(password)
+	opts.SetClientID(clientId)
+
+	return opts
 }
 
 func NewConfig() (*Config, error) {
+	// amqp
 	conn, err := amqp.Dial(routing.RabbitConnString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}
 
+	// mqtt
+	mqttOpts := MQTTCreateClientOptions("publisher", routing.RabbitMQTTConnString)
+	mqttClient := mqtt.NewClient(mqttOpts)
+	token := mqttClient.Connect()
+	token.Wait()
+	if err := token.Error(); err != nil {
+		return nil, fmt.Errorf("failed to connect to RabbitMQ using MQTT connection: %w", err)
+	}
+
 	return &Config{
 		rabbitConn: conn,
+		mqttClient: mqttClient,
 	}, nil
 }
 
@@ -41,6 +67,7 @@ func main() {
 	}
 	fmt.Println("Connection to msg broker succeeded")
 	defer cfg.rabbitConn.Close()
+	defer cfg.mqttClient.Disconnect(200 * uint(time.Millisecond))
 
 	// environment variables
 	serialNumber := os.Getenv("SENSOR_SERIAL_NUMBER")
@@ -184,17 +211,29 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 		return value
 	}
 
-	show := func(name string, accX any) {
-		fmt.Fprintf(w, "%s\t%v\n", name, accX)
-	}
+	// show := func(name string, accX any) {
+	// 	fmt.Fprintf(w, "%s\t%v\n", name, accX)
+	// }
 	for {
 		select {
 		case <-ticker.C:
 			accX := simulateSample()
-			show(serialNumber, accX)
+			// show(serialNumber, accX)
 			w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
 
-			// publish measurement
+			// publish measurement through MQTT
+			cfg.mqttClient.Publish(
+				fmt.Sprintf(routing.KeySensorMeasurements, ("MQTT"+"-"+serialNumber)),
+				0,
+				true,
+				routing.SensorMeasurement{
+					SerialNumber: serialNumber,
+					Timestamp:    time.Now(), // TODO: should it be when the measurement was conceived
+					Value:        accX,
+				},
+			)
+
+			// publish measurement through AMQP
 			pubsub.PublishGob(
 				publishCh,
 				routing.ExchangeTopicIoT,
