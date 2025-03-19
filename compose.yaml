@@ -125,6 +125,7 @@ services:
       - SENSOR_SERIAL_NUMBER=AAD-1123
       - SENSOR_SAMPLE_FREQUENCY=35.0
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - RABBIT_MQTT_CONN_STRING=mqtt://guest:guest@iot-rabbitmq:1883/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
 
   sensor-simulation-1:
