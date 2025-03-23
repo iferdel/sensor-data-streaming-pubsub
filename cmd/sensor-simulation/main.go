@@ -172,8 +172,13 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 	time.Sleep(500 * time.Millisecond)
 	sensorState.LogsInfo <- "Booting completed, performing measurements..."
 
+	var measurements []routing.SensorMeasurement
+	batchTime := time.Second * 1
+
 	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
+	batchTimer := time.NewTicker(batchTime)
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
+	defer batchTimer.Stop()
 
 	_ = rand.New(rand.NewSource(seed))
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
@@ -212,27 +217,33 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 		return value
 	}
 
-	// show := func(name string, accX any) {
-	// 	fmt.Fprintf(w, "%s\t%v\n", name, accX)
-	// }
+	show := func(name string, accX any) {
+		fmt.Fprintf(w, "%s\t%v\n", name, accX)
+	}
 	for {
 		select {
 		case <-ticker.C:
 			accX := simulateSample()
-			// show(serialNumber, accX)
+			show(serialNumber, accX)
 			w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
 
 			// publish measurement through MQTT
+			measurements = append(measurements, routing.SensorMeasurement{
+				SerialNumber: serialNumber,
+				Timestamp:    time.Now(), // TODO: should it be when the measurement was conceived
+				Value:        accX,
+			})
 
+		case <-batchTimer.C:
+
+			if len(measurements) == 0 {
+				continue // nothing to send...
+			}
 			payloadBytes, err := json.Marshal(
-				routing.SensorMeasurement{
-					SerialNumber: serialNumber,
-					Timestamp:    time.Now(), // TODO: should it be when the measurement was conceived
-					Value:        accX,
-				},
+				measurements,
 			)
 			if err != nil {
-				log.Printf("Failed to marshal measurement: %v", err)
+				log.Printf("Failed to marshal measurements: %v", err)
 				return
 			}
 			pubToken := cfg.mqttClient.Publish(
@@ -246,17 +257,7 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 				log.Printf("Publish error: %v", pubToken.Error())
 			}
 
-			// // publish measurement through AMQP
-			// pubsub.PublishGob(
-			// 	publishCh,
-			// 	routing.ExchangeTopicIoT,
-			// 	fmt.Sprintf(routing.KeySensorMeasurements, serialNumber),
-			// 	routing.SensorMeasurement{
-			// 		SerialNumber: serialNumber,
-			// 		Timestamp:    time.Now(), // TODO: should it be when the measurement was conceived
-			// 		Value:        accX,
-			// 	},
-			// )
+			measurements = measurements[:0]
 
 		case isSleep := <-sensorState.IsSleepChan:
 			if isSleep {
