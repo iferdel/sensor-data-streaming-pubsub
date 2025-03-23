@@ -6,6 +6,7 @@ services:
       - "5672:5672"   # RabbitMQ main port
       - "15692:15692"   # RabbitMQ exposes the metrics on a dedicated TCP port, 15692 by default.
       - "15672:15672" # Management UI port
+      - "1883:1883" # MQTT
     hostname: iot-rabbitmq
     environment:
       METRICS_PROMETHEUS: "true"
@@ -202,6 +203,7 @@ services:
       - ./go.sum:/app/go.sum
     environment:
       - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - RABBIT_MQTT_CONN_STRING=mqtt://guest:guest@iot-rabbitmq:1883/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
 
   sensor-measurements-ingester-1:
