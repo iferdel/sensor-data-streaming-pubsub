@@ -34,7 +34,7 @@ func main() {
 	ctx := context.Background()
 
 	// subscribe to Measurement queue
-	err = pubsub.SubscribeGob(
+	err = pubsub.SubscribeJSON(
 		conn,
 		routing.ExchangeTopicIoT,
 		routing.QueueSensorMeasurements,

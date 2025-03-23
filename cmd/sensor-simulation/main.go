@@ -3,6 +3,7 @@ package main
 // A client may accidentally or maliciously route messages using non-existent routing keys. To avoid complications from lost information, collecting unroutable messages in a RabbitMQ alternate exchange is an easy, safe backup. RabbitMQ handles unroutable messages in two ways based on the mandatory flag setting within the message header. The server either returns the message when the flag is set to "true" or silently drops the message when set to "false". RabbitMQ let you define an alternate exchange to apply logic to unroutable messages.
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
@@ -222,28 +223,40 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 			w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
 
 			// publish measurement through MQTT
-			cfg.mqttClient.Publish(
-				fmt.Sprintf(routing.KeySensorMeasurements, ("MQTT"+"-"+serialNumber)),
-				0,
-				true,
-				routing.SensorMeasurement{
-					SerialNumber: serialNumber,
-					Timestamp:    time.Now(), // TODO: should it be when the measurement was conceived
-					Value:        accX,
-				},
-			)
 
-			// publish measurement through AMQP
-			pubsub.PublishGob(
-				publishCh,
-				routing.ExchangeTopicIoT,
-				fmt.Sprintf(routing.KeySensorMeasurements, serialNumber),
+			payloadBytes, err := json.Marshal(
 				routing.SensorMeasurement{
 					SerialNumber: serialNumber,
 					Timestamp:    time.Now(), // TODO: should it be when the measurement was conceived
 					Value:        accX,
 				},
 			)
+			if err != nil {
+				log.Printf("Failed to marshal measurement: %v", err)
+				return
+			}
+			pubToken := cfg.mqttClient.Publish(
+				fmt.Sprintf(routing.KeySensorMeasurements, serialNumber),
+				1,
+				true,
+				payloadBytes,
+			)
+			pubToken.Wait()
+			if pubToken.Error() != nil {
+				log.Printf("Publish error: %v", pubToken.Error())
+			}
+
+			// // publish measurement through AMQP
+			// pubsub.PublishGob(
+			// 	publishCh,
+			// 	routing.ExchangeTopicIoT,
+			// 	fmt.Sprintf(routing.KeySensorMeasurements, serialNumber),
+			// 	routing.SensorMeasurement{
+			// 		SerialNumber: serialNumber,
+			// 		Timestamp:    time.Now(), // TODO: should it be when the measurement was conceived
+			// 		Value:        accX,
+			// 	},
+			// )
 
 		case isSleep := <-sensorState.IsSleepChan:
 			if isSleep {
