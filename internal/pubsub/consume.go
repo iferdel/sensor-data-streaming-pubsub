@@ -111,7 +111,7 @@ func subscribe[T any](
 		return fmt.Errorf("could not declare and bind queue: %v", err)
 	}
 
-	err = ch.Qos(1000, 0, false)
+	err = ch.Qos(10, 0, false) // luckily enough stream queues does not support global QoS prefetch
 	if err != nil {
 		return fmt.Errorf("could not set QoS: %v", err)
 	}
