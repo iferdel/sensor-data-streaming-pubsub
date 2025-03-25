@@ -10,7 +10,6 @@ import (
 	"net/url"
 	"os"
 	"strconv"
-	"sync"
 	"text/tabwriter"
 	"time"
 
@@ -175,6 +174,8 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 	var measurements []routing.SensorMeasurement
 	batchTime := time.Second * 1
 
+	// ticker determines how often measurements are read from the original wave (sample rate)
+	// so it applies the anti-aliasing (at least two times the signal's maximum frequency)
 	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
 	batchTimer := time.NewTicker(batchTime)
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
@@ -200,21 +201,14 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 		Frequency: frequency2,
 		Phase:     0.0,
 	}
-	var dt float64 = 0.0 // Tracks the elapsed time in seconds
-	dtIncrement := 1.0 / sensorState.SampleFrequency
 
-	// Mutex to protect dt in case of concurrent access
-	var mu sync.Mutex
-
+	startTime := time.Now()
 	// Function to simulate a single sample
-	simulateSample := func() float64 {
-		mu.Lock()
-		defer mu.Unlock()
+	simulateSample := func() (float64, time.Duration) {
+		timestamp := time.Since(startTime)
 		// Generate the superimposed signal
-		value := sine1.Generate(dt) + sine2.Generate(dt)
-		// Increment time
-		dt += dtIncrement
-		return value
+		value := sine1.Generate(timestamp.Seconds()) + sine2.Generate(timestamp.Seconds())
+		return value, timestamp
 	}
 
 	show := func(name string, accX any) {
@@ -223,14 +217,14 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 	for {
 		select {
 		case <-ticker.C:
-			accX := simulateSample()
+			accX, timestamp := simulateSample()
 			show(serialNumber, accX)
 			w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
 
 			// publish measurement through MQTT
 			measurements = append(measurements, routing.SensorMeasurement{
 				SerialNumber: serialNumber,
-				Timestamp:    time.Now(), // TODO: should it be when the measurement was conceived
+				Timestamp:    startTime.Add(timestamp),
 				Value:        accX,
 			})
 
