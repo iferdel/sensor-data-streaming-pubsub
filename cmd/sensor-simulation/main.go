@@ -1,16 +1,20 @@
 package main
 
-// A client may accidentally or maliciously route messages using non-existent routing keys. To avoid complications from lost information, collecting unroutable messages in a RabbitMQ alternate exchange is an easy, safe backup. RabbitMQ handles unroutable messages in two ways based on the mandatory flag setting within the message header. The server either returns the message when the flag is set to "true" or silently drops the message when set to "false". RabbitMQ let you define an alternate exchange to apply logic to unroutable messages.
+// A client may accidentally or maliciously route messages using non-existent routing keys.
+// To avoid complications from lost information, collecting unroutable messages in a RabbitMQ
+// alternate exchange is an easy, safe backup. RabbitMQ handles unroutable messages in two ways
+// based on the mandatory flag setting within the message header.
+// The server either returns the message when the flag is set to "true"
+// or silently drops the message when set to "false".
+// RabbitMQ let you define an alternate exchange to apply logic to unroutable messages.
 
 import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/url"
 	"os"
 	"strconv"
-	"text/tabwriter"
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -81,12 +85,10 @@ func main() {
 		log.Fatal("non valid sample frequency: it is empty")
 	}
 
-	const seed int64 = 99
-
-	cfg.sensorOperation(serialNumber, sampleFrequency, seed)
+	cfg.sensorOperation(serialNumber, sampleFrequency)
 }
 
-func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64, seed int64) {
+func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64) {
 
 	sensorState := sensorlogic.NewSensorState(serialNumber, sampleFrequency)
 	// publish logic
@@ -171,55 +173,36 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 	time.Sleep(500 * time.Millisecond)
 	sensorState.LogsInfo <- "Booting completed, performing measurements..."
 
-	var measurements []routing.SensorMeasurement
-	batchTime := time.Second * 1
-
 	// ticker determines how often measurements are read from the original wave (sample rate)
 	// so it applies the anti-aliasing (at least two times the signal's maximum frequency)
 	ticker := time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
-	batchTimer := time.NewTicker(batchTime)
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
+
+	// batchTimer is the ticker that will trigger the publish of the packet of data
+	batchTime := time.Second * 1
+	batchTimer := time.NewTicker(batchTime)
 	defer batchTimer.Stop()
 
-	_ = rand.New(rand.NewSource(seed))
-	w := tabwriter.NewWriter(os.Stdout, 1, 1, 1, ' ', 0)
-
-	// Example parameters
-	amplitude1 := 1.0
-	frequency1 := 5.0 // 5 Hz
-	amplitude2 := 0.6
-	frequency2 := 2.5 // 2.5 Hz
-
-	// Initialize sine waves
-	sine1 := sensorlogic.SineWave{
-		Amplitude: amplitude1,
-		Frequency: frequency1,
-		Phase:     0.0,
+	sineWaves := []sensorlogic.SineWave{
+		{Amplitude: 1.0, Frequency: 5.0, Phase: 0.0},
+		{Amplitude: 0.6, Frequency: 2.5, Phase: 0.0},
+		{Amplitude: 0.3, Frequency: 60.0, Phase: 0.3},
+		{Amplitude: 0.16, Frequency: 120.0, Phase: 0.3},
 	}
-	sine2 := sensorlogic.SineWave{
-		Amplitude: amplitude2,
-		Frequency: frequency2,
-		Phase:     0.0,
-	}
-
 	startTime := time.Now()
-	// Function to simulate a single sample
-	simulateSample := func() (float64, time.Duration) {
-		timestamp := time.Since(startTime)
-		// Generate the superimposed signal
-		value := sine1.Generate(timestamp.Seconds()) + sine2.Generate(timestamp.Seconds())
-		return value, timestamp
-	}
+	var measurements []routing.SensorMeasurement
 
-	show := func(name string, accX any) {
-		fmt.Fprintf(w, "%s\t%v\n", name, accX)
-	}
 	for {
 		select {
 		case <-ticker.C:
-			accX, timestamp := simulateSample()
-			show(serialNumber, accX)
-			w.Flush() // allows to write buffered output from tabwriter to stdout immediatly
+			accX, timestamp := func() (float64, time.Duration) {
+				timestamp := time.Since(startTime)
+				elapsedSec := timestamp.Seconds()
+
+				value := sensorlogic.SimulateSignal(sineWaves, elapsedSec)
+
+				return value, timestamp
+			}()
 
 			// publish measurement through MQTT
 			measurements = append(measurements, routing.SensorMeasurement{
@@ -256,8 +239,10 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64,
 		case isSleep := <-sensorState.IsSleepChan:
 			if isSleep {
 				ticker.Stop()
+				batchTimer.Stop()
 			} else {
 				ticker = time.NewTicker(time.Second / time.Duration(sensorState.SampleFrequency))
+				batchTimer = time.NewTicker(batchTime)
 			}
 
 		case newFreq := <-sensorState.SampleFrequencyChangeChan:
