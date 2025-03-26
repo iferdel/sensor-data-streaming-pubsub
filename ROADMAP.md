@@ -3,9 +3,11 @@
 - [] protobuf payload instead of json since real scenario
 - [] add geolocation (static by now)
 - [] create catalog of different target-position-sensor frequencies and amplitudes to mimic real cases. i.e pump bearing common frequencies
+- [] data in a stream can be used via a RabbitMQ client library or through a dedicated [binary protocol](https://github.com/rabbitmq/rabbitmq-server/blob/main/deps/rabbitmq_stream/docs/PROTOCOL.adoc) plugin and associated client(s). The latter option is highly recommended as it provides access to all stream-specific features and offers best possible throughput (performance). 
 ### iot-measurement-ingester
-- [] prefetch
+- [x] prefetch
 - [] use [stream plugin](https://www.rabbitmq.com/docs/stream-core-plugin-comparison)
+- [] [stream plugin client in go](https://github.com/rabbitmq/rabbitmq-stream-go-client)
 - [] one stream queue per sensor for measurements consumption
 - [] single active consumer feature for streams (con instancias de backup esperando por si ese consumer falla)
 - [] stream x-max-age parameter
@@ -37,7 +39,7 @@
 - [] deadletter exchange and queue for debugging purposes
 - [] rabbitmq docs + plugins docs + docs
 - [] improvement over nack and ack
-- [] read about prefetch in stream queues
+- [x] read about prefetch in stream queues // in only supports per-consumer Qos prefetch, which is default in this project setup.
 - [] measure I/O in stream queue somehow. Nowadays is a bit uncertain since stream queues are stored on disk as a append only logs
 ### documentation
 - [] For architecture diagram: socket svg is not as api as othe symbol could be
