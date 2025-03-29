@@ -53,5 +53,28 @@
       "internal": false,
       "arguments": {}
     }
-  ]
+  ],
+	"queues": [
+		{
+			"name":"sensor.all.measurements.db_writer",
+			"vhost":"/",
+			"durable":true,
+			"auto_delete":false,
+			"arguments": {
+				"x-max-length-bytes":2000000000,
+				"x-queue-leader-locator":"least-leaders",
+				"x-queue-type":"stream"
+			}
+		}
+	],
+	"bindings": [
+		{
+			"source":"iot",
+			"vhost":"/",
+			"destination":"sensor.all.measurements.db_writer",
+			"destination_type":"queue",
+			"routing_key":"sensor.*.measurements.#",
+			"arguments":{}
+		}
+	]
 }
