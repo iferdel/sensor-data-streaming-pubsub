@@ -222,6 +222,11 @@ Postgres manages access permissions using the [`ROLE`](https://www.postgresql.or
 <details>
 <summary><strong>:rabbit: Messaging Routing</strong></summary>
 
+Some notes worth the time:
+stream queues are append-only, and thus stored on disk. Also, by their append-only nature streams are like a 'fanout' kind of distribution of their message. They consume the same data from the queue since messages are not being deleted in the rabbitmq environment after consumption and ack (of course, there are retention policies around, so is not strictly like that). This situation infers that having more than one consumer at the same time concurrently consuming the same data is troublesome in terms of consistency and in throughput. Thats why using a [single active consumer for streams](https://www.rabbitmq.com/blog/2022/07/05/rabbitmq-3-11-feature-preview-single-active-consumer-for-streams) comes into play as it was released in RabbitMQ 3.1.
+
+UPDATE over protocols used in publishers and consumers. Maybe picture similar to the one showed in this [blog post](https://www.rabbitmq.com/blog/2021/10/07/rabbitmq-streams-interoperability)
+
 **Exchange:**  
 - Type: `Topic`  
 - Name: `iot`  
