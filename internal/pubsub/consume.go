@@ -7,6 +7,9 @@ import (
 	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
+	_ "github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"    // amqp 1.0 package to encode messages
+	_ "github.com/rabbitmq/rabbitmq-stream-go-client/pkg/message" // messages interface package, you may not need to import it directly
+	_ "github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"  // Main package
 )
 
 type QueueDurability int
