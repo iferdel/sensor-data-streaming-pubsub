@@ -31,6 +31,9 @@ With that in mind, my goal for this project is to build a comprehensive **end-to
 
 The core of this solution is built around an **event-driven** architecture that utilizes a **pub/sub** pattern, enabling the creation of a **distributed system**. However, as with many systems, a **hybrid** approach is necessary. This includes employing **point-to-point** communication for interactions with the sensor cluster via a command-line tool which communicates with an API, allowing controlled interactions with both the **database** and the **message broker**.
 
+A key reason for choosing RabbitMQ as the broker for this project is its strong [interoperability between protocols](https://www.rabbitmq.com/blog/2021/10/07/rabbitmq-streams-interoperability). As of 2025, with the introduction of stream queues and the stream plugin, we can leverage multiple protocols in one same RabbitMQ instance: AMQP for inter-service communication, MQTT for sensor data publishing, and the stream protocol for measurements ingestion into a database, taking full advantage of the [performance benefits offered by the plugin over the core stream implementation](https://www.rabbitmq.com/docs/stream-core-plugin-comparison).
+
+
 ### The services defined in the project are the following:
 <dl>
   <dt><code>iotctl</code></dt>
