@@ -4,9 +4,10 @@
 ### iot-measurement-ingester
 - [x] use [stream plugin](https://www.rabbitmq.com/docs/stream-core-plugin-comparison)
 - [x] [stream plugin client in go](https://github.com/rabbitmq/rabbitmq-stream-go-client)
-- [] one stream queue per sensor for measurements consumption
-- [] single active consumer feature for streams (con instancias de backup esperando por si ese consumer falla)
+- [x] single active consumer feature for streams
+- [] superstreams
 - [] stream x-max-age parameter
+### iot-api
 - [] tls
 - [] sqlc
 - [] goose (migrations just for tables. Keep DBA for roles, extensionsn and the alike). Maybe think thourough how would it be in a timescaledb cloud scenario (one database instead of multiple)
