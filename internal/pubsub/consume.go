@@ -7,9 +7,9 @@ import (
 	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	_ "github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"    // amqp 1.0 package to encode messages
-	_ "github.com/rabbitmq/rabbitmq-stream-go-client/pkg/message" // messages interface package, you may not need to import it directly
-	_ "github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"  // Main package
+	amqpForStream "github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"
+	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/ha"
+	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
 )
 
 type QueueDurability int
@@ -38,6 +38,30 @@ const (
 	NackDiscard
 	NackRequeue
 )
+
+func SubscribeStreamJSON[T any](
+	env *stream.Environment,
+	streamName string,
+	streamOptions *stream.ConsumerOptions,
+	handler func(T) AckType,
+) (*ha.ReliableConsumer, error) {
+	fmt.Println("subscribing to stream json")
+	consumer, err := ha.NewReliableConsumer(
+		env,
+		streamName,
+		streamOptions,
+		func(consumerContext stream.ConsumerContext, message *amqpForStream.Message) {
+			fmt.Println("unmarshalling stream data")
+			var target T
+			err := json.Unmarshal(message.GetData(), &target)
+			if err != nil {
+				fmt.Printf("could not unmarshal message: %v\n", err)
+			}
+			handler(target)
+		},
+	)
+	return consumer, err
+}
 
 func SubscribeJSON[T any](
 	conn *amqp.Connection,
