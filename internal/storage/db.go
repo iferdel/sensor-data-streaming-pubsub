@@ -14,7 +14,7 @@ var (
 )
 
 type DB struct {
-	dbpool *pgxpool.Pool
+	pool *pgxpool.Pool
 }
 
 func NewDBPool(connString string) (*DB, error) {
@@ -26,10 +26,10 @@ func NewDBPool(connString string) (*DB, error) {
 	}
 
 	return &DB{
-		dbpool: dbpool,
+		pool: dbpool,
 	}, nil
 }
 
 func (db *DB) Close() {
-	db.dbpool.Close()
+	db.pool.Close()
 }

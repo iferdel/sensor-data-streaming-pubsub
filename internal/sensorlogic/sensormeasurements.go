@@ -12,7 +12,7 @@ import (
 func HandleMeasurements(ctx context.Context, db *storage.DB, dtos []routing.SensorMeasurement) error {
 	for _, dto := range dtos {
 		// inneficient query
-		sensorID, err := storage.GetSensorIDBySerialNumber(dto.SerialNumber)
+		sensorID, err := db.GetSensorIDBySerialNumber(ctx, dto.SerialNumber)
 		if err != nil {
 			return fmt.Errorf("failed to get sensor ID: %v", err)
 		}

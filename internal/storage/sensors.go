@@ -11,13 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func GetSensorIDBySerialNumber(serialNumber string) (sensorID int, err error) {
-	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, PostgresConnString)
-	if err != nil {
-		return 0, fmt.Errorf("unable to connect to database: %v", err)
-	}
-	defer dbpool.Close()
+func (db *DB) GetSensorIDBySerialNumber(ctx context.Context, serialNumber string) (sensorID int, err error) {
 
 	queryGetSensor := `
 		SELECT id 
@@ -25,7 +19,7 @@ func GetSensorIDBySerialNumber(serialNumber string) (sensorID int, err error) {
 		WHERE serial_number = ($1)
 	;`
 
-	err = dbpool.QueryRow(ctx, queryGetSensor, serialNumber).Scan(&sensorID)
+	err = db.pool.QueryRow(ctx, queryGetSensor, serialNumber).Scan(&sensorID)
 	if err != nil {
 		return 0, fmt.Errorf("unable to query sensor ID: %v", err)
 	}

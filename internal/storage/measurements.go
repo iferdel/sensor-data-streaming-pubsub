@@ -18,7 +18,7 @@ func (DB *DB) WriteMeasurement(ctx context.Context, measurement SensorMeasuremen
 
 	queryInsertTimeseriesData := `INSERT INTO sensor_measurement (time, sensor_id, measurement) VALUES ($1, $2, $3);`
 
-	_, err := DB.dbpool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SensorID, measurement.Measurement)
+	_, err := DB.pool.Exec(ctx, queryInsertTimeseriesData, measurement.Timestamp, measurement.SensorID, measurement.Measurement)
 	if err != nil {
 		return fmt.Errorf("unable to insert sample into Timescale %v", err)
 	}
