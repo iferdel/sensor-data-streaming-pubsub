@@ -12,7 +12,7 @@ The project is currently deployed in my [homelab](https://github.com/iferdel/hom
 
 > [!NOTE]
 > I think that a design like this serves as a solid starting point for a larger project involving real sensor hardware, including data and GPS transmission via Wi-Fi or GSM in both mobile vehicles and static machinery, as well as in civil infrastructure. 
-> RabbitMQ is quite flexible and powerfull with its routing strategy, recenlty featured stream queues. 
+> RabbitMQ is quite flexible and powerfull with its routing strategy, interoperability between messaging protocols, monitoring options, recenlty featured stream queues, to say de least. 
 > Similarly, TimescaleDB bridges a significant paradigm gap, making SQL a competitive option for time-series solutions, which were traditionally dominated by NoSQL databases. 
 > The project is written in Go. Go is pretty dope.
 
@@ -31,7 +31,7 @@ With that in mind, my goal for this project is to build a comprehensive **end-to
 
 The core of this solution is built around an **event-driven** architecture that utilizes a **pub/sub** pattern, enabling the creation of a **distributed system**. However, as with many systems, a **hybrid** approach is necessary. This includes employing **point-to-point** communication for interactions with the sensor cluster via a command-line tool which communicates with an API, allowing controlled interactions with both the **database** and the **message broker**.
 
-A key reason for choosing RabbitMQ as the broker for this project is its strong [interoperability between protocols](https://www.rabbitmq.com/blog/2021/10/07/rabbitmq-streams-interoperability). As of 2025, with the introduction of stream queues and the stream plugin, we can leverage multiple protocols in one same RabbitMQ instance: AMQP for inter-service communication, MQTT for sensor data publishing, and the stream protocol for measurements ingestion into a database, taking full advantage of the [performance benefits offered by the plugin over the core stream implementation](https://www.rabbitmq.com/docs/stream-core-plugin-comparison).
+A key reason for choosing RabbitMQ as the broker for this project is its strong [interoperability between protocols](https://www.rabbitmq.com/blog/2021/10/07/rabbitmq-streams-interoperability). As of 2025, with the introduction of stream queues and the stream plugin, we can now leverage an append-only log for messages along with its own rabbitmq-stream protocol. Having said that, its feasible to utilize multiple protocols in one same RabbitMQ instance, in this project's case: AMQP for inter-service communication, MQTT for sensor data publishing, and the stream protocol for measurements consumption, taking full advantage of the [performance benefits offered by the plugin over the core stream implementation](https://www.rabbitmq.com/docs/stream-core-plugin-comparison).
 
 
 ### The services defined in the project are the following:
@@ -56,16 +56,17 @@ A key reason for choosing RabbitMQ as the broker for this project is its strong 
 <details>
 <summary><strong>:mag: Key Architectural Points</strong></summary>
 
-- **Data Transfer**: The solution is intended to use Protobuf as a data serialization format to match real scenarios with embedded C or C++. However, for the initial setup (POC), the Go encoding/gob serializer is in use to ease development.
-- **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD. The only service that's out from the cluster is the command line tool which is intended to be used within a remote machine that needs to authenticate in order to interact with the sensor cluster.
-- **CI/CD**: For CI/CD, I’m using a private Jenkins server and Docker Hub for image storage, while the GitHub repository hosts the source code. The whole CD would be handled with FluxCD.
+- **Data Transfer**: The solution is designed to use MQTT for publishing sensor measurements. Currently, JSON is used for serialization, although Protobuf appears particularly suitable for real-world scenarios involving embedded C or C++. *As a side note*: the initial deployment of the project uses Go's encoding/gob serializer to simplify development.
+- **Infrastructure**: This project integrates with my [homelab](https://github.com/iferdel/homelab), which simulates a cloud-like environment on bare metal using TalosOS and GitOps with FluxCD. The only service that's out from the cluster is the command line tool which is intended to be used within a remote machine that needs to authenticate in order to interact with the sensor cluster by means of api keys for auth.
+- **CI/CD**: For CI I’m using a private Jenkins server and Docker Hub for image storage, while the GitHub repository hosts the source code. The whole CD is handled with FluxCD in a GitOps approach.
 - **Secrets**: I’m using Azure Key Vault for secrets in the homelab. 
 - **Database**: The solution uses PostgreSQL with [TimeScaleDB](https://www.timescale.com/), an extension optimized for time-series data. In a real scenario, the paid cloud tier would be in use, but for this project I’m storaging everything on bare metal.
 - **Data Management**: TimeScaleDB’s policies handle data expiration and compression, preventing storage overflow and improving performance.
 - **Visualization**: Grafana is used for near real-time dashboards, leveraging its querying capabilities to visualize time-series data stored as well as stats from the database itself by means of wrapping the stats from pg_stat_statements and pg_stat_kcache with postgres CTEs and procedures. Last by not least, to query logs (e.g. sensor boot logs) from sources like Loki.
 - **Alarms**: *...*  
 - **Communication Protocols**:
-    - *Sensor communication uses MQTT with streaming queues.*
+    - *Sensor communicates with the Message Broker using MQTT protocol into a stream queue.*
+    - *Measurements consumer service consumes from the stream queue by means of the custom RabbitMQ streaming protocol using single active consumer feature.*
     - *Inter-service communication uses AMQP with RabbitMQ, employing quorum queues.*
     - *Alarm service communication uses gRPC for low-latency communication with the machine where the sensor to affect behaviour*
 
@@ -85,9 +86,16 @@ A key reason for choosing RabbitMQ as the broker for this project is its strong 
 *I like the structure that became manifest while developing the project. That's why I'm attaching the filetree since it reads nicely.*
 ```
 .
-├── IDEAS.md
 ├── LICENSE
+├── Makefile
 ├── README.md
+├── ROADMAP.md
+├── bin
+│   ├── iot-api
+│   ├── iot-logs-ingester
+│   ├── iot-measurements-ingester
+│   ├── iot-sensor-registry
+│   └── iot-sensor-simulation
 ├── cmd
 │   ├── iot-api
 │   │   ├── Dockerfile
@@ -99,7 +107,8 @@ A key reason for choosing RabbitMQ as the broker for this project is its strong 
 │   │   ├── handler_targets_create.go
 │   │   ├── handler_targets_get.go
 │   │   ├── json.go
-│   │   └── main.go
+│   │   ├── main.go
+│   │   └── version.txt
 │   ├── iotctl
 │   │   ├── cmd
 │   │   │   ├── awake.go
@@ -109,29 +118,33 @@ A key reason for choosing RabbitMQ as the broker for this project is its strong 
 │   │   │   ├── login.go
 │   │   │   ├── logout.go
 │   │   │   ├── root.go
-│   │   │   ├── sensorstatus.go
 │   │   │   └── sleep.go
-│   │   └── main.go
+│   │   ├── main.go
+│   │   └── version.txt
 │   ├── sensor-logs-ingester
 │   │   ├── Dockerfile
 │   │   ├── air.toml
 │   │   ├── handlers.go
-│   │   └── main.go
+│   │   ├── main.go
+│   │   └── version.txt
 │   ├── sensor-measurements-ingester
 │   │   ├── Dockerfile
 │   │   ├── air.toml
 │   │   ├── handlers.go
-│   │   └── main.go
+│   │   ├── main.go
+│   │   └── version.txt
 │   ├── sensor-registry
 │   │   ├── Dockerfile
 │   │   ├── air.toml
 │   │   ├── handlers.go
-│   │   └── main.go
+│   │   ├── main.go
+│   │   └── version.txt
 │   └── sensor-simulation
 │       ├── Dockerfile
 │       ├── air.toml
 │       ├── handlers.go
-│       └── main.go
+│       ├── main.go
+│       └── version.txt
 ├── compose.yaml
 ├── dependencies
 │   ├── alloy
@@ -144,7 +157,8 @@ A key reason for choosing RabbitMQ as the broker for this project is its strong 
 │   │       │   ├── dashboards.yaml
 │   │       │   ├── iot.json
 │   │       │   ├── queries.sql
-│   │       │   └── rabbitmq-overview.json
+│   │       │   ├── rabbitmq-overview.json
+│   │       │   └── rabbitmq-stream.json
 │   │       ├── datasources
 │   │       │   └── datasources.yaml
 │   │       └── plugins
@@ -168,14 +182,15 @@ A key reason for choosing RabbitMQ as the broker for this project is its strong 
 │   │   └── auth.go
 │   ├── pubsub
 │   │   ├── consume.go
+│   │   ├── consume_test.go
 │   │   └── publish.go
 │   ├── routing
 │   │   ├── models.go
 │   │   └── routing.go
 │   ├── sensorlogic
 │   │   ├── awake.go
-│   │   ├── commands.go
 │   │   ├── changesamplefrequency.go
+│   │   ├── commands.go
 │   │   ├── sensor.go
 │   │   ├── sensorlogs.go
 │   │   ├── sensormeasurements.go
@@ -225,18 +240,16 @@ Postgres manages access permissions using the [`ROLE`](https://www.postgresql.or
 Some notes worth the time:
 stream queues are append-only, and thus stored on disk. Also, by their append-only nature streams are like a 'fanout' kind of distribution of their message. They consume the same data from the queue since messages are not being deleted in the rabbitmq environment after consumption and ack (of course, there are retention policies around, so is not strictly like that). This situation infers that having more than one consumer at the same time concurrently consuming the same data is troublesome in terms of consistency and in throughput. Thats why using a [single active consumer for streams](https://www.rabbitmq.com/blog/2022/07/05/rabbitmq-3-11-feature-preview-single-active-consumer-for-streams) comes into play as it was released in RabbitMQ 3.1.
 
-UPDATE over protocols used in publishers and consumers. Maybe picture similar to the one showed in this [blog post](https://www.rabbitmq.com/blog/2021/10/07/rabbitmq-streams-interoperability)
-
 **Exchange:**  
 - Type: `Topic`  
 - Name: `iot`  
 
 **Queues**  
 Queues follow the `entity.id.consumer.type` pattern:  
-- `sensor.all.measurements.db_writer`  
-- `sensor.<sensor.serial_number>.commands`  
-- `sensor.all.registry.created`  
-- `sensor.all.logs`  
+- `sensor.all.measurements.db_writer`  - Stream
+- `sensor.<sensor.serial_number>.commands`  - Quorum
+- `sensor.all.registry.created` - Quorum
+- `sensor.all.logs` - Quorum
 
 **Routing Keys**  
 Keys are used by publishers with specific values and by consumers with wildcards:
