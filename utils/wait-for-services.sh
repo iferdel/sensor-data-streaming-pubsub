@@ -2,8 +2,8 @@
 # wait-for-rabbitmq-postgresql.sh
 
 # Extract RabbitMQ host and port from the connection string
-RABBITMQ_HOST=$(echo $RABBIT_CONN_STRING | awk -F[@:/] '{print $6}')
-RABBITMQ_PORT=$(echo $RABBIT_CONN_STRING | awk -F[@:/] '{print $7}')
+RABBITMQ_HOST=$(echo $RABBIT_AMQP_CONN_STRING | awk -F[@:/] '{print $6}')
+RABBITMQ_PORT=$(echo $RABBIT_AMQP_CONN_STRING | awk -F[@:/] '{print $7}')
 
 # Extract PostgreSQL host and port from the connection string
 POSTGRES_HOST=$(echo $POSTGRES_CONN_STRING | awk -F[@:/] '{print $6}')

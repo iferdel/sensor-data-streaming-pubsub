@@ -4,9 +4,14 @@ import "os"
 
 // PubSub Broker
 var (
-	RabbitConnString       = os.Getenv("RABBIT_CONN_STRING")
+	RabbitConnString       = os.Getenv("RABBIT_AMQP_CONN_STRING")
 	RabbitMQTTConnString   = os.Getenv("RABBIT_MQTT_CONN_STRING")
 	RabbitStreamConnString = os.Getenv("RABBIT_STREAM_CONN_STRING")
+)
+
+// Streams
+const (
+	StreamConsumerName = "iot"
 )
 
 // Exchange

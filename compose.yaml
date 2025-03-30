@@ -126,7 +126,7 @@ services:
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
       - SENSOR_SAMPLE_FREQUENCY=35.0
-      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - RABBIT_AMQP_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - RABBIT_MQTT_CONN_STRING=mqtt://guest:guest@iot-rabbitmq:1883/
       - RABBIT_STREAM_CONN_STRING=rabbitmq-stream://guest:guest@iot-rabbitmq:5552/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
@@ -137,7 +137,9 @@ services:
     environment:
       - SENSOR_SERIAL_NUMBER=BBB-3423
       - SENSOR_SAMPLE_FREQUENCY=10.0
-      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - RABBIT_AMQP_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - RABBIT_MQTT_CONN_STRING=mqtt://guest:guest@iot-rabbitmq:1883/
+      - RABBIT_STREAM_CONN_STRING=rabbitmq-stream://guest:guest@iot-rabbitmq:5552/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
 
   iot-api:
@@ -160,7 +162,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - RABBIT_AMQP_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
 
   sensor-logs-ingester:
@@ -173,7 +175,7 @@ services:
       target: dev
     container_name: iot-sensor-logs-ingester
     environment:
-      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - RABBIT_AMQP_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
     volumes:
       - volume_iot_log:/app/log  
@@ -204,7 +206,7 @@ services:
       - ./go.mod:/app/go.mod                  # Track Go dependencies
       - ./go.sum:/app/go.sum
     environment:
-      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - RABBIT_AMQP_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - RABBIT_MQTT_CONN_STRING=mqtt://guest:guest@iot-rabbitmq:1883/
       - RABBIT_STREAM_CONN_STRING=rabbitmq-stream://guest:guest@iot-rabbitmq:5552/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
@@ -227,7 +229,7 @@ services:
       target: dev
     container_name: iot-sensor-registry
     environment:
-      - RABBIT_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+      - RABBIT_AMQP_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
     volumes:
       # go-air dependant
