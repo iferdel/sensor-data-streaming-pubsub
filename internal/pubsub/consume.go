@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"encoding/gob"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	amqp "github.com/rabbitmq/amqp091-go"
-	amqpForStream "github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"
+	amqpEncodeStreamMessage "github.com/rabbitmq/rabbitmq-stream-go-client/pkg/amqp"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/ha"
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
 )
@@ -39,18 +40,30 @@ const (
 	NackRequeue
 )
 
+func DeclareAndBindStream(env *stream.Environment, streamName string) error {
+	err := env.DeclareStream(streamName, stream.NewStreamOptions().SetMaxLengthBytes(stream.ByteCapacity{}.GB(2)))
+	return err
+}
+
 func SubscribeStreamJSON[T any](
 	env *stream.Environment,
 	streamName string,
 	streamOptions *stream.ConsumerOptions,
 	handler func(T) AckType,
 ) (*ha.ReliableConsumer, error) {
+
+	err := DeclareAndBindStream(env, streamName)
+	if err != nil && !errors.Is(err, stream.StreamAlreadyExists) {
+		fmt.Printf("Error declaring stream: %v\n", err)
+		return nil, err
+	}
+
 	fmt.Println("subscribing to stream json")
 	consumer, err := ha.NewReliableConsumer(
 		env,
 		streamName,
 		streamOptions,
-		func(consumerContext stream.ConsumerContext, message *amqpForStream.Message) {
+		func(consumerContext stream.ConsumerContext, message *amqpEncodeStreamMessage.Message) {
 			fmt.Println("unmarshalling stream data")
 			var target T
 			err := json.Unmarshal(message.GetData(), &target)
@@ -126,7 +139,7 @@ func subscribe[T any](
 	handler func(T) AckType,
 	unmarshaller func([]byte) (T, error),
 ) error {
-	ch, queue, err := DeclareAndBind(
+	ch, queue, err := DeclareAndBindAMQP(
 		conn,
 		exchange,
 		queueName,
@@ -173,7 +186,7 @@ func subscribe[T any](
 
 }
 
-func DeclareAndBind(
+func DeclareAndBindAMQP(
 	conn *amqp.Connection,
 	exchange,
 	queueName,

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"os/signal"
@@ -34,19 +33,11 @@ func main() {
 		fmt.Printf("Error creating stream environment: %v\n", err)
 		return
 	}
+	defer env.Close()
 
-	// create stream
-	streamName := "sensor.all.measurements.db_writer"
-	err = env.DeclareStream(streamName, stream.NewStreamOptions().SetMaxLengthBytes(stream.ByteCapacity{}.GB(2)))
-	if err != nil && !errors.Is(err, stream.StreamAlreadyExists) {
-		fmt.Printf("Error declaring stream: %v\n", err)
-		return
-	}
-
-	consumerName := "iot"
-	consumerUpdate := func(streamName string, isActive bool) stream.OffsetSpecification {
+	singleActiveConsumerUpdate := func(streamName string, isActive bool) stream.OffsetSpecification {
 		fmt.Printf("[%s] - Consumer promoted for: %s. Active status: %t\n", time.Now().Format(time.TimeOnly), streamName, isActive)
-		offset, err := env.QueryOffset(consumerName, streamName)
+		offset, err := env.QueryOffset(routing.StreamConsumerName, routing.QueueSensorMeasurements)
 		if err != nil {
 			// If the offset is not found, we start from the beginning
 			return stream.OffsetSpecification{}.First()
@@ -56,11 +47,11 @@ func main() {
 
 	consumer, err := pubsub.SubscribeStreamJSON(
 		env,
-		streamName,
+		routing.QueueSensorMeasurements,
 		stream.NewConsumerOptions().
 			SetOffset(stream.OffsetSpecification{}.First()).
-			SetConsumerName(consumerName).
-			SetSingleActiveConsumer(stream.NewSingleActiveConsumer(consumerUpdate)),
+			SetConsumerName(routing.StreamConsumerName).
+			SetSingleActiveConsumer(stream.NewSingleActiveConsumer(singleActiveConsumerUpdate)),
 		handlerMeasurements(db, ctx),
 	)
 	if err != nil {
@@ -68,7 +59,6 @@ func main() {
 	}
 
 	defer consumer.Close()
-	defer env.Close()
 
 	// Graceful shutdown handling
 	sigs := make(chan os.Signal, 1)
