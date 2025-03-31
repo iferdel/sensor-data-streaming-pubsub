@@ -179,15 +179,18 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64)
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
 
 	// batchTimer is the ticker that will trigger the publish of the packet of data
-	batchTime := time.Second * 1
+	batchTime := time.Millisecond * 500
 	batchTimer := time.NewTicker(batchTime)
 	defer batchTimer.Stop()
 
 	sineWaves := []sensorlogic.SineWave{
 		{Amplitude: 1.0, Frequency: 5.0, Phase: 0.0},
 		{Amplitude: 0.6, Frequency: 2.5, Phase: 0.0},
+		{Amplitude: 0.5, Frequency: 10.0, Phase: 0.0},
 		{Amplitude: 0.3, Frequency: 60.0, Phase: 0.3},
 		{Amplitude: 0.16, Frequency: 120.0, Phase: 0.3},
+		{Amplitude: 0.86, Frequency: 190.0, Phase: 0.0},
+		{Amplitude: 0.36, Frequency: 550.0, Phase: 0.0},
 	}
 	startTime := time.Now()
 	var measurements []routing.SensorMeasurement
