@@ -1,7 +1,7 @@
 {
   "product_name": "RabbitMQ",
 	"global_parameters": [
-    {"name": "cluster_name", "value": "rabbitmq-overview"}
+    {"name": "cluster_name", "value": "rabbitmq-iot"}
   ],
   "users": [
     {
@@ -56,25 +56,76 @@
   ],
 	"queues": [
 		{
-			"name":"sensor.all.measurements.db_writer",
-			"vhost":"/",
-			"durable":true,
-			"auto_delete":false,
+			"name": "sensor.AAD-1123.commands",
+			"vhost": "/",
+			"durable": true,
+			"auto_delete": false,
 			"arguments": {
-				"x-max-length-bytes":2000000000,
-				"x-queue-leader-locator":"least-leaders",
-				"x-queue-type":"stream"
+					"x-queue-type": "classic"
+			}
+		},
+		{
+			"name": "sensor.all.logs",
+			"vhost": "/",
+			"durable": true,
+			"auto_delete": false,
+			"arguments": {
+					"x-queue-type": "quorum"
+			}
+		},
+		{
+			"name": "sensor.all.measurements.db_writer",
+			"vhost": "/",
+			"durable": true,
+			"auto_delete": false,
+			"arguments": {
+					"x-max-length-bytes": 2000000000,
+					"x-queue-leader-locator": "least-leaders",
+					"x-queue-type": "stream"
+			}
+		},
+		{
+			"name": "sensor.all.registry.created",
+			"vhost": "/",
+			"durable": true,
+			"auto_delete": false,
+			"arguments": {
+				"x-queue-type": "classic"
 			}
 		}
 	],
 	"bindings": [
-		{
-			"source":"iot",
-			"vhost":"/",
-			"destination":"sensor.all.measurements.db_writer",
-			"destination_type":"queue",
-			"routing_key":"sensor.*.measurements.#",
-			"arguments":{}
-		}
-	]
+    {
+      "source": "iot",
+      "vhost": "/",
+      "destination": "sensor.all.logs",
+      "destination_type": "queue",
+      "routing_key": "sensor.*.logs.#",
+      "arguments": {}
+    },
+    {
+      "source": "iot",
+      "vhost": "/",
+      "destination": "sensor.all.measurements.db_writer",
+      "destination_type": "queue",
+      "routing_key": "sensor.*.measurements.#",
+      "arguments": {}
+    },
+    {
+      "source": "iot",
+      "vhost": "/",
+      "destination": "sensor.all.registry.created",
+      "destination_type": "queue",
+      "routing_key": "sensor.*.registry.#",
+      "arguments": {}
+    },
+    {
+      "source": "iot",
+      "vhost": "/",
+      "destination": "sensor.AAD-1123.commands",
+      "destination_type": "queue",
+      "routing_key": "sensor.AAD-1123.commands.#",
+      "arguments": {}
+    }
+  ]
 }
