@@ -3,14 +3,12 @@ package main
 import (
 	"log"
 	"net/http"
-
-	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 )
 
 func (cfg *apiConfig) handlerSensorsGet(w http.ResponseWriter, req *http.Request) {
 
 	sensorSerialNumber := req.PathValue("sensorSerialNumber")
-	sensor, err := storage.GetSensorBySerialNumber(sensorSerialNumber)
+	sensor, err := cfg.db.GetSensorBySerialNumber(cfg.ctx, sensorSerialNumber)
 
 	if err != nil {
 		log.Printf("Could not retrieve sensor %v: %s", sensorSerialNumber, err)
@@ -22,7 +20,7 @@ func (cfg *apiConfig) handlerSensorsGet(w http.ResponseWriter, req *http.Request
 
 func (cfg *apiConfig) handlerSensorsRetrieve(w http.ResponseWriter, req *http.Request) {
 
-	sensors, err := storage.GetSensor()
+	sensors, err := cfg.db.GetSensor(cfg.ctx)
 	if err != nil {
 		log.Printf("Could not retrieve sensors: %s", err)
 		w.WriteHeader(500)

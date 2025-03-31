@@ -7,8 +7,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func (db *DB) GetSensorIDBySerialNumber(ctx context.Context, serialNumber string) (sensorID int, err error) {
@@ -27,13 +25,7 @@ func (db *DB) GetSensorIDBySerialNumber(ctx context.Context, serialNumber string
 	return sensorID, nil
 }
 
-func GetSensorBySerialNumber(serialNumber string) (sensor SensorRecord, err error) {
-	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, PostgresConnString)
-	if err != nil {
-		return SensorRecord{}, fmt.Errorf("unable to connect to database: %v", err)
-	}
-	defer dbpool.Close()
+func (db *DB) GetSensorBySerialNumber(ctx context.Context, serialNumber string) (sensor SensorRecord, err error) {
 
 	queryGetSensor := `
 		SELECT serial_number, sample_frequency 
@@ -41,7 +33,7 @@ func GetSensorBySerialNumber(serialNumber string) (sensor SensorRecord, err erro
 		WHERE serial_number = ($1)
 	;`
 
-	err = dbpool.QueryRow(ctx, queryGetSensor, serialNumber).Scan(
+	err = db.pool.QueryRow(ctx, queryGetSensor, serialNumber).Scan(
 		&sensor.SerialNumber,
 		&sensor.SampleFrequency,
 	)
@@ -52,21 +44,14 @@ func GetSensorBySerialNumber(serialNumber string) (sensor SensorRecord, err erro
 	return sensor, nil
 }
 
-func GetSensor() ([]SensorRecord, error) {
-	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, PostgresConnString)
-	if err != nil {
-		return nil, fmt.Errorf("unable to connect to database: %v", err)
-	}
-	defer dbpool.Close()
-
+func (db *DB) GetSensor(ctx context.Context) ([]SensorRecord, error) {
 	/********************************************/
 	/* SELECT from relational table             */
 	/********************************************/
 
 	queryGetMetadata := `SELECT serial_number FROM sensor;`
 
-	rows, err := dbpool.Query(ctx, queryGetMetadata)
+	rows, err := db.pool.Query(ctx, queryGetMetadata)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get sensors: %v", err)
 	}
@@ -89,15 +74,8 @@ func GetSensor() ([]SensorRecord, error) {
 	return sensors, nil
 }
 
-func WriteSensor(sr SensorRecord) error {
+func (db *DB) WriteSensor(ctx context.Context, sr SensorRecord) error {
 	// TODO: Implement Mutex RW
-
-	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, PostgresConnString)
-	if err != nil {
-		return fmt.Errorf("unable to connect to database: %v", err)
-	}
-	defer dbpool.Close()
 
 	/********************************************/
 	/* INSERT into relational table             */
@@ -109,7 +87,7 @@ func WriteSensor(sr SensorRecord) error {
 	);`
 
 	var rowExists bool
-	err = dbpool.QueryRow(ctx, queryCheckIfExists, sr.SerialNumber).Scan(&rowExists)
+	err := db.pool.QueryRow(ctx, queryCheckIfExists, sr.SerialNumber).Scan(&rowExists)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -121,7 +99,7 @@ func WriteSensor(sr SensorRecord) error {
 
 	queryInsertMetadata := `INSERT INTO sensor (serial_number, sample_frequency) VALUES ($1, $2);`
 
-	_, err = dbpool.Exec(ctx, queryInsertMetadata, sr.SerialNumber, sr.SampleFrequency)
+	_, err = db.pool.Exec(ctx, queryInsertMetadata, sr.SerialNumber, sr.SampleFrequency)
 	if err != nil {
 		return fmt.Errorf("unable to insert sensor metadata into database: %v", err)
 	}
@@ -130,14 +108,7 @@ func WriteSensor(sr SensorRecord) error {
 	return nil
 }
 
-func DeleteSensor(serialNumber string) error {
-
-	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, PostgresConnString)
-	if err != nil {
-		return fmt.Errorf("unable to connect to database: %v", err)
-	}
-	defer dbpool.Close()
+func (db *DB) DeleteSensor(ctx context.Context, serialNumber string) error {
 
 	/********************************************/
 	/* DELETE relational table             			*/
@@ -149,7 +120,7 @@ func DeleteSensor(serialNumber string) error {
 	);`
 
 	var rowExists bool
-	err = dbpool.QueryRow(ctx, queryCheckIfExists, serialNumber).Scan(&rowExists)
+	err := db.pool.QueryRow(ctx, queryCheckIfExists, serialNumber).Scan(&rowExists)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -161,7 +132,7 @@ func DeleteSensor(serialNumber string) error {
 
 	queryDeleteMetadata := `DELETE FROM sensor WHERE serial_number = ($1);`
 
-	_, err = dbpool.Exec(ctx, queryDeleteMetadata, serialNumber)
+	_, err = db.pool.Exec(ctx, queryDeleteMetadata, serialNumber)
 	if err != nil {
 		return fmt.Errorf("unable to delete sensor metadata from database: %v", err)
 	}

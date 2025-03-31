@@ -1,27 +1,37 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
+	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type apiConfig struct {
+	ctx        context.Context
 	rabbitConn *amqp.Connection
+	db         *storage.DB
 }
 
 func NewApiConfig() (*apiConfig, error) {
+	ctx := context.Background()
+
 	conn, err := amqp.Dial(routing.RabbitConnString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
 	}
 
+	db, err := storage.NewDBPool(storage.PostgresConnString)
+
 	return &apiConfig{
+		ctx:        ctx,
 		rabbitConn: conn,
+		db:         db,
 	}, nil
 }
 
@@ -41,6 +51,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer apiCfg.rabbitConn.Close()
+	defer apiCfg.db.Close()
 
 	// api endpoints
 	// router.HandleFunc("POST /api/v1/register", apiCfg.handlerAccountRegister)

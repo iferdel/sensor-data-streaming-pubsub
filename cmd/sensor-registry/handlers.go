@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
@@ -8,7 +9,7 @@ import (
 	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 )
 
-func handlerSensorRegistry() func(dto routing.Sensor) pubsub.AckType {
+func handlerSensorRegistry(ctx context.Context, db *storage.DB) func(dto routing.Sensor) pubsub.AckType {
 	return func(dto routing.Sensor) pubsub.AckType {
 		// placeholder
 		fmt.Println("==========================================")
@@ -19,7 +20,7 @@ func handlerSensorRegistry() func(dto routing.Sensor) pubsub.AckType {
 			SampleFrequency: dto.SampleFrequency,
 		}
 
-		err := storage.WriteSensor(record)
+		err := db.WriteSensor(ctx, record)
 		if err != nil {
 			fmt.Printf("error writing sensor instance: %v\n", err)
 			return pubsub.NackRequeue
