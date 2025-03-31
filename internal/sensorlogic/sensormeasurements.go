@@ -10,11 +10,17 @@ import (
 
 // method from sensorstate maybe
 func HandleMeasurements(ctx context.Context, db *storage.DB, dtos []routing.SensorMeasurement) error {
+
+	sensorMap, err := db.GetSensorIDBySerialNumberMap(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to fetch sensor IDs: %v", err)
+	}
+
 	for _, dto := range dtos {
-		// inneficient query
-		sensorID, err := db.GetSensorIDBySerialNumber(ctx, dto.SerialNumber)
-		if err != nil {
-			return fmt.Errorf("failed to get sensor ID: %v", err)
+
+		sensorID, exists := sensorMap[dto.SerialNumber]
+		if !exists {
+			return fmt.Errorf("sensor serial number not found: %s", dto.SerialNumber)
 		}
 
 		// Map DTO -to- DB Record

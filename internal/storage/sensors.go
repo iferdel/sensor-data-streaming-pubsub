@@ -74,6 +74,35 @@ func (db *DB) GetSensor(ctx context.Context) ([]SensorRecord, error) {
 	return sensors, nil
 }
 
+func (db *DB) GetSensorIDBySerialNumberMap(ctx context.Context) (map[string]int, error) {
+	sensorMap := make(map[string]int)
+
+	query := `SELECT serial_number, id FROM sensor`
+
+	rows, err := db.pool.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch sensor IDs: %v", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var serialNumber string
+		var sensorID int
+
+		if err := rows.Scan(&serialNumber, &sensorID); err != nil {
+			return nil, fmt.Errorf("failed to scan row: %v", err)
+		}
+
+		sensorMap[serialNumber] = sensorID
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating rows: %v", err)
+	}
+
+	return sensorMap, nil
+}
+
 func (db *DB) WriteSensor(ctx context.Context, sr SensorRecord) error {
 	// TODO: Implement Mutex RW
 
