@@ -131,16 +131,16 @@ services:
       - RABBIT_STREAM_CONN_STRING=rabbitmq-stream://guest:guest@iot-rabbitmq:5552/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
 
-  sensor-simulation-1:
-    << : *sensor-simulation
-    container_name: iot-sensor-simulation-1
-    environment:
-      - SENSOR_SERIAL_NUMBER=BBB-3423
-      - SENSOR_SAMPLE_FREQUENCY=10.0
-      - RABBIT_AMQP_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
-      - RABBIT_MQTT_CONN_STRING=mqtt://guest:guest@iot-rabbitmq:1883/
-      - RABBIT_STREAM_CONN_STRING=rabbitmq-stream://guest:guest@iot-rabbitmq:5552/
-      - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
+  # sensor-simulation-1:
+  #   << : *sensor-simulation
+  #   container_name: iot-sensor-simulation-1
+  #   environment:
+  #     - SENSOR_SERIAL_NUMBER=BBB-3423
+  #     - SENSOR_SAMPLE_FREQUENCY=10.0
+  #     - RABBIT_AMQP_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
+  #     - RABBIT_MQTT_CONN_STRING=mqtt://guest:guest@iot-rabbitmq:1883/
+  #     - RABBIT_STREAM_CONN_STRING=rabbitmq-stream://guest:guest@iot-rabbitmq:5552/
+  #     - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-1:5432/iot
 
   iot-api:
     depends_on:
