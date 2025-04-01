@@ -179,7 +179,7 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64)
 	defer ticker.Stop() // stop Ticker on return so no more ticks will be sent and thus freeing resources
 
 	// batchTimer is the ticker that will trigger the publish of the packet of data
-	batchTime := time.Millisecond * 500
+	batchTime := time.Second * 1
 	batchTimer := time.NewTicker(batchTime)
 	defer batchTimer.Stop()
 
