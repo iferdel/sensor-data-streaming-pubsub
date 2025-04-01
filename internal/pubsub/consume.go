@@ -58,13 +58,11 @@ func SubscribeStreamJSON[T any](
 		return nil, err
 	}
 
-	fmt.Println("subscribing to stream json")
 	consumer, err := ha.NewReliableConsumer(
 		env,
 		streamName,
 		streamOptions,
 		func(consumerContext stream.ConsumerContext, message *amqpEncodeStreamMessage.Message) {
-			fmt.Println("unmarshalling stream data")
 			var target T
 			err := json.Unmarshal(message.GetData(), &target)
 			if err != nil {
