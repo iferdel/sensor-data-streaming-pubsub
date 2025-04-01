@@ -44,7 +44,7 @@ func (DB *DB) BatchWriteMeasurement(ctx context.Context, measurements []SensorMe
 	}
 
 	query += strings.Join(valueStrings, ", ")
-	query += ";"
+	query += ` ON CONFLICT (time, sensor_id) DO NOTHING;`
 
 	_, err := DB.pool.Exec(ctx, query, args...)
 	if err != nil {
