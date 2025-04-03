@@ -4,7 +4,7 @@
 
 ## General Description
 
-This project implements an end-to-end real-time monitoring solution for IoT devices, designed to measure parameters like acceleration (or others such as temperature, strain, or humidity) in mechanical equipment or civil structures, with real-time geospatial tracking.
+This project implements an end-to-end real-time monitoring solution for IIoT devices, designed to measure parameters like acceleration (or others such as temperature, strain, or humidity) in mechanical equipment or civil structures, with real-time geospatial tracking.
 
 The project is currently deployed in my [homelab](https://github.com/iferdel/homelab) on a **Kubernetes** cluster powered by **GitOps**.
 
