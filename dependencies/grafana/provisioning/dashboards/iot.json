@@ -112,7 +112,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT sensor_measurement.time, sensor_measurement.measurement, sensor.serial_number\r\nFROM sensor_measurement INNER JOIN sensor\r\n  ON sensor_measurement.sensor_id = sensor.id\r\nWHERE sensor.serial_number in ($serial_number)\r\nORDER BY time DESC\r\nLIMIT 500000",
+          "rawSql": "SELECT sensor_measurement.time, sensor_measurement.measurement, sensor.serial_number\r\nFROM sensor_measurement INNER JOIN sensor\r\n  ON sensor_measurement.sensor_id = sensor.id\r\nWHERE sensor.serial_number in ($serial_number)\r\nORDER BY time DESC \r\nLIMIT 100000",
           "refId": "A",
           "sql": {
             "columns": [
@@ -284,8 +284,8 @@
     ]
   },
   "time": {
-    "from": "now-10s",
-    "to": "now+10s"
+    "from": "now-15s",
+    "to": "now+20s"
   },
   "timepicker": {
     "refresh_intervals": [
