@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 func (DB *DB) WriteMeasurement(ctx context.Context, measurement SensorMeasurementRecord) error {
@@ -51,6 +53,28 @@ func (DB *DB) BatchWriteMeasurement(ctx context.Context, measurements []SensorMe
 		return fmt.Errorf("unable to insert batch of sensor measurements into Timescale %v", err)
 	}
 	fmt.Printf("%v - Successfully inserted batches of %v into `measurement` hypertable", time.Now(), len(measurements))
+
+	return nil
+}
+
+func (DB *DB) CopyWriteMeasurement(ctx context.Context, measurements []SensorMeasurementRecord) error {
+	copyCount, err := DB.pool.CopyFrom(
+		ctx,
+		pgx.Identifier{"sensor_measurement"},
+		[]string{"time", "sensor_id", "measurement"},
+		pgx.CopyFromSlice(
+			len(measurements), func(i int) ([]interface{}, error) {
+				return []interface{}{
+					measurements[i].Timestamp,
+					measurements[i].SensorID,
+					measurements[i].Measurement,
+				}, nil
+			}),
+	)
+	if err != nil {
+		return fmt.Errorf("unable to COPY sensor measurements into Timescale %v", err)
+	}
+	fmt.Printf("%v - Successfully COPY (%d) points into `measurement` hypertable", time.Now(), copyCount)
 
 	return nil
 }

@@ -16,9 +16,8 @@ func HandleMeasurements(ctx context.Context, db *storage.DB, dtos []routing.Sens
 		return fmt.Errorf("failed to fetch sensor IDs: %v", err)
 	}
 
-	records := []storage.SensorMeasurementRecord{}
-
-	for _, dto := range dtos {
+	records := make([]storage.SensorMeasurementRecord, len(dtos))
+	for i, dto := range dtos {
 
 		sensorID, exists := sensorMap[dto.SerialNumber]
 		if !exists {
@@ -26,13 +25,11 @@ func HandleMeasurements(ctx context.Context, db *storage.DB, dtos []routing.Sens
 		}
 
 		// Map DTO -to- DB Record
-		record := storage.SensorMeasurementRecord{
+		records[i] = storage.SensorMeasurementRecord{
 			Timestamp:   dto.Timestamp,
 			SensorID:    sensorID,
 			Measurement: dto.Value,
 		}
-
-		records = append(records, record)
 
 	}
 
