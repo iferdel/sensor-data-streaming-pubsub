@@ -81,7 +81,8 @@
 			"arguments": {
 					"x-max-length-bytes": 2000000000,
 					"x-queue-leader-locator": "least-leaders",
-					"x-queue-type": "stream"
+					"x-queue-type": "stream",
+					"x-max-age": "1h"
 			}
 		},
 		{
