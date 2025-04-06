@@ -57,6 +57,57 @@ func (DB *DB) BatchWriteMeasurement(ctx context.Context, measurements []SensorMe
 	return nil
 }
 
+func (DB *DB) BatchArrayWriteMeasurement(ctx context.Context, measurements []SensorMeasurementRecord) error {
+
+	if len(measurements) == 0 {
+		return nil
+	}
+
+	timeSlice := make([]time.Time, len(measurements))
+	sensorIDSlice := make([]int, len(measurements))
+	measurementSlice := make([]float64, len(measurements))
+
+	for i, measurement := range measurements {
+		timeSlice[i] = measurement.Timestamp
+		sensorIDSlice[i] = measurement.SensorID
+		measurementSlice[i] = measurement.Measurement
+	}
+
+	query := `
+		INSERT INTO sensor_measurement (time, sensor_id, measurement)
+			SELECT * 
+			FROM unnest(
+				$1::timestamptz[],
+				$2::int[],
+				$3::double precision[]
+			) AS t(time, sensor_id, measurement)
+			ON CONFLICT DO NOTHING;
+		`
+
+	batchSize := 25_000
+	total := len(measurements)
+
+	for start := 0; start < total; start += batchSize {
+		end := start + batchSize
+		if end > total {
+			end = total
+		}
+
+		timeBatch := timeSlice[start:end]
+		sensorIDBatch := sensorIDSlice[start:end]
+		measurementBatch := measurementSlice[start:end]
+
+		_, err := DB.pool.Exec(ctx, query, timeBatch, sensorIDBatch, measurementBatch)
+		if err != nil {
+			return fmt.Errorf("failed inserting batch [%d:%d]: %w", start, end, err)
+		}
+	}
+
+	fmt.Printf("%v - Successfully inserted batches of %v into `measurement` hypertable", time.Now(), len(measurements))
+
+	return nil
+}
+
 func (DB *DB) CopyWriteMeasurement(ctx context.Context, measurements []SensorMeasurementRecord) error {
 	copyCount, err := DB.pool.CopyFrom(
 		ctx,
