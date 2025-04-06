@@ -60,6 +60,19 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     -- 2. Databases
     --------------------------------------------------------------------------------------------
 
+    /*
+     * -- Monitoring Database --
+     * 
+     * pg_stat_statements logs queries for the entire
+     * PostgreSQL cluster. To avoid the monitoring queries also
+     * showing up as part of the overall monitoring under normal
+     * operations, it is advisable to create a separate monitoring
+     * database within the cluster and filter that 'dbid' out in the 
+     * monitoring queries. At the end of the day, what is sayid is that 
+     * pg_stat_statements queries, if not filtered, would appear in the 
+     * monitoring, and as such be only noise.
+     * 
+    */
     -- 2.1 Create a monitoring database
     CREATE DATABASE monitoring OWNER iot_monitoring;
 
@@ -191,6 +204,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 		    ON DELETE CASCADE
 	);
     COMMENT ON COLUMN sensor_measurement.measurement IS 'double precision is best for this kind of data since we dont need exact-like precision covered by NUMERIC, as rounding errors can be tolerated';
+
     SELECT create_hypertable('sensor_measurement', by_range('time'));
 
     CREATE TABLE target_location(
@@ -214,3 +228,4 @@ EOSQL
 #--------------------------------------------------------------------------------
 # CREATE TABLES/SCHEMA monitoring DATABASE
 #--------------------------------------------------------------------------------
+# psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -d monitoring -f /scripts/monitoring_database_setup.sql
