@@ -2,11 +2,8 @@
 ### iot-sensor-simluation
 - [] protobuf payload instead of json since real scenario
 ### iot-measurement-ingester
-- [x] use [stream plugin](https://www.rabbitmq.com/docs/stream-core-plugin-comparison)
-- [x] [stream plugin client in go](https://github.com/rabbitmq/rabbitmq-stream-go-client)
-- [x] single active consumer feature for streams
 - [] superstreams
-- [] stream x-max-age parameter
+- [] read replica of database so we can separate concerns of database for writing (this service) and reading (any other service)
 ### iot-api
 - [] tls
 - [] sqlc
@@ -22,10 +19,13 @@
 - [] TUI in iotctl that enables these kind of changes
 - [] one can 'get' the status of all sensors registered, thus being able to see which ones are 'waiting for target association'
 ### dependencies-db
+- [] [timescale create_hypertable docs](https://docs.timescale.com/api/latest/hypertable/create_hypertable/)
+- [] add compression and policies to hypertable with measurements
 - [] review of db schema
 - [] Add geolocalization
 - [] Add target association
-- [] Add CTEs for monitoring with timescaledb and pg_stat_statements
+- [] Add CTEs for monitoring with timescaledb and pg_stat_statements (ths way we can ensure the upsert, for example in measurements ingester service is not slowing down everything substantially)
+- [] [docs for pg stat statements](https://www.postgresql.org/docs/current/monitoring-stats.html)
 ### general
 - [] add logging for each systems (sent through rabbitmq). Nowadays is just sending sensor simulation logs, this can be improved a lot.
 - [] When a new sensor is turned on and no target is assigned (default), no measurement is made (it is registered though), until in iotctl TUI someone assign it to a target with a form. 
@@ -33,7 +33,6 @@
 - [] deadletter exchange and queue for debugging purposes
 - [] rabbitmq docs + plugins docs + docs
 - [] improvement over nack and ack
-- [] measure I/O in stream queue somehow. Nowadays is a bit uncertain since stream queues are stored on disk as a append only logs
 ### documentation
 - [] For architecture diagram: socket svg is not as api as othe symbol could be
 - [] Update database schema
