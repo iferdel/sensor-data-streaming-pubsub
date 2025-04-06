@@ -33,7 +33,7 @@ func HandleMeasurements(ctx context.Context, db *storage.DB, dtos []routing.Sens
 
 	}
 
-	if err := db.BatchWriteMeasurement(ctx, records); err != nil {
+	if err := db.BatchArrayWriteMeasurement(ctx, records); err != nil {
 		return fmt.Errorf("failed to write measurement: %v", err)
 	}
 
