@@ -101,6 +101,8 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     -- 3.6. Grant read_all_data predefined role to iot_readonly.
     GRANT pg_read_all_data, pg_read_all_stats TO iot_readonly;
 
+    \connect monitoring
+
     -- 3.7 Grant monitor role to iot_monitoring.
     GRANT pg_monitor TO iot_monitoring;
 
@@ -228,4 +230,4 @@ EOSQL
 #--------------------------------------------------------------------------------
 # CREATE TABLES/SCHEMA monitoring DATABASE
 #--------------------------------------------------------------------------------
-# psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -d monitoring -f /scripts/monitoring_database_setup.sql
+psql -v ON_ERROR_STOP=1 --username iot_monitoring -d monitoring -f /scripts/monitoring_database_setup.sql

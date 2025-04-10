@@ -26,20 +26,19 @@ CREATE TABLE IF NOT EXISTS statements_history.snapshots (
     local_blks_written bigint NOT NULL,
     temp_blks_read bigint NOT NULL,
     temp_blks_written bigint NOT NULL,
-    blk_read_time double precision NOT NULL,
-    blk_write_time double precision NOT NULL,
     wal_records bigint NOT NULL,
     wal_fpi bigint NOT NULL,
     wal_bytes numeric NOT NULL,
-    wal_position bigint NOT NULL,
-    stats_reset timestamp with time zone NOT NULL,
+		stats_reset timestamp with time zone NOT NULL,
     PRIMARY KEY (created)
 );
 
 COMMENT ON TABLE statements_history.snapshots IS
 $$This table contains a full aggregate of the pg_stat_statements view
+'https://www.postgresql.org/docs/current/pgstatstatements.html#PGSTATSTATEMENTS'
 at the time of the snapshot. This allows for very fast queries that require
-a very high level overview$$;
+a very high level overview. It also contains other 
+'https://www.postgresql.org/docs/current/monitoring-stats.html'$$;
 
 /*
  * To reduce the storage requirement of saving query statistics
@@ -83,8 +82,6 @@ CREATE TABLE IF NOT EXISTS statements_history.statements (
     local_blks_written bigint NOT NULL,
     temp_blks_read bigint NOT NULL,
     temp_blks_written bigint NOT NULL,
-    blk_read_time double precision NOT NULL,
-    blk_write_time double precision NOT NULL,
     wal_records bigint NOT NULL,
     wal_fpi bigint NOT NULL,
     wal_bytes numeric NOT NULL,
@@ -200,13 +197,10 @@ BEGIN
             sum(local_blks_written) AS local_blks_written,
             sum(temp_blks_read) AS temp_blks_read,
             sum(temp_blks_written) AS temp_blks_written,
-            sum(blk_read_time) AS blk_read_time,
-            sum(blk_write_time) AS blk_write_time,
             sum(wal_records) AS wal_records,
             sum(wal_fpi) AS wal_fpi,
             sum(wal_bytes) AS wal_bytes,
-            pg_wal_lsn_diff(pg_current_wal_lsn(), '0/0'),
-            pg_postmaster_start_time()
+						pg_postmaster_start_time()
         FROM
             statements
     )
@@ -234,15 +228,14 @@ BEGIN
         local_blks_written,
         temp_blks_read,
         temp_blks_written,
-        blk_read_time,
-        blk_write_time,
         wal_records,
         wal_fpi,
         wal_bytes,
         rolname,
         datname
     FROM
-        statements;
+        statements
+		ON CONFLICT DO NOTHING;
 
 END;
 $function$;
