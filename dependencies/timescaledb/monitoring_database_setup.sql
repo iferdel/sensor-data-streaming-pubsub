@@ -16,6 +16,12 @@ CREATE TABLE IF NOT EXISTS statements_history.snapshots (
     total_plan_time double precision NOT NULL,
     total_exec_time double precision NOT NULL,
     rows bigint NOT NULL,
+		exec_writes bigint NOT NULL,
+		exec_reads bigint NOT NULL,
+		exec_user_time double precision NOT NULL,
+		exec_system_time double precision NOT NULL,
+		exec_majflts bigint NOT NULL,
+		exec_minflts bigint NOT NULL,
     shared_blks_hit bigint NOT NULL,
     shared_blks_read bigint NOT NULL,
     shared_blks_dirtied bigint NOT NULL,
@@ -72,6 +78,12 @@ CREATE TABLE IF NOT EXISTS statements_history.statements (
     calls bigint NOT NULL,
     total_exec_time double precision NOT NULL,
     rows bigint NOT NULL,
+		exec_writes bigint NOT NULL,
+		exec_reads bigint NOT NULL,
+		exec_user_time double precision NOT NULL,
+		exec_system_time double precision NOT NULL,
+		exec_majflts bigint NOT NULL,
+		exec_minflts bigint NOT NULL,
     shared_blks_hit bigint NOT NULL,
     shared_blks_read bigint NOT NULL,
     shared_blks_dirtied bigint NOT NULL,
@@ -102,7 +114,7 @@ SELECT * FROM create_hypertable(
     'statements_history.statements',
     'created',
     create_default_indexes => false,
-    chunk_time_interval => interval '1 week',
+    chunk_time_interval => interval '1 day',
     migrate_data => true
 );
 
@@ -119,7 +131,7 @@ ALTER TABLE statements_history.statements SET (
 
 SELECT add_compression_policy(
     'statements_history.statements',
-    compress_after => interval '1 week',
+    compress_after => interval '1 hour',
     if_not_exists => true
 );
 
@@ -148,14 +160,48 @@ BEGIN
 	 */
     WITH statements AS (
         SELECT
-            *
+    			s.queryid,
+    			s.userid,
+    			s.dbid,
+    			s.query,
+    			s.plans,
+    			s.total_plan_time,
+    			s.calls,
+    			s.total_exec_time,
+    			s.rows,
+    			s.shared_blks_hit,
+    			s.shared_blks_read,
+    			s.shared_blks_dirtied,
+    			s.shared_blks_written,
+    			s.local_blks_hit,
+    			s.local_blks_read,
+    			s.local_blks_dirtied,
+    			s.local_blks_written,
+    			s.temp_blks_read,
+    			s.temp_blks_written,
+    			s.wal_records,
+    			s.wal_fpi,
+    			s.wal_bytes,
+    			k.exec_reads,
+    			k.exec_writes,
+					k.exec_user_time,
+					k.exec_system_time,
+					k.exec_majflts,
+					k.exec_minflts,
+					pg_roles.rolname,
+					pg_database.datname
         FROM
-            pg_stat_statements(true)
+            pg_stat_statements(true) s
         JOIN
-            pg_roles ON (userid=pg_roles.oid)
+						pg_stat_kcache() k
+							ON s.userid = k.userid
+							AND s.dbid = k.dbid
+							AND s.queryid = k.queryid
+				JOIN		
+            pg_roles ON s.userid = pg_roles.oid
         JOIN
-            pg_database ON (dbid=pg_database.oid)
-    ), 
+            pg_database ON s.dbid = pg_database.oid
+		),
     /*
      * We then get the individual queries out of the result
      * and store the text and queryid separately to avoid
@@ -187,6 +233,12 @@ BEGIN
             sum(total_plan_time) AS total_plan_time,
             sum(total_exec_time) AS total_exec_time,
             sum(rows) AS rows,
+						sum(exec_writes) AS exec_writes,
+						sum(exec_reads) AS exec_reads,
+						sum(exec_user_time) AS exec_user_time,
+						sum(exec_system_time) AS exec_system_time,
+						sum(exec_majflts) AS exec_majflts,
+						sum(exec_minflts) AS exec_minflts,
             sum(shared_blks_hit) AS shared_blks_hit,
             sum(shared_blks_read) AS shared_blks_read,
             sum(shared_blks_dirtied) AS shared_blks_dirtied,
@@ -218,6 +270,12 @@ BEGIN
         calls,
         total_exec_time,
         rows,
+				exec_writes,
+				exec_reads,
+				exec_user_time,
+				exec_system_time,
+				exec_majflts,
+				exec_minflts,
         shared_blks_hit,
         shared_blks_read,
         shared_blks_dirtied,
@@ -259,7 +317,7 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM statements_history.statements;
  */
 SELECT add_job(
     'statements_history.create_snapshot',
-    interval '1 minutes'
+    interval '15 seconds'
 )
 WHERE NOT EXISTS (
     SELECT
