@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 3,
   "links": [],
   "panels": [
     {
@@ -144,12 +144,12 @@
       "title": "Acceleration $serial_number",
       "type": "timeseries"
     },
-		{
+    {
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "de9iten8jjqiof"
       },
-      "description": "Disk writes over time, broken down by:\n- shared_mbps: Main data writes from shared buffer cache to disk\n- local_mbps: Writes from temporary or unlogged tables (often zero unless such tables are used)\n- temp_mbps: Writes of temporary files created during query execution (e.g., for sorts or hashes)\n- wal_generated_mbps: Write-ahead log data generated, not necessarily flushed immediately to disk — depends on system settings and buffering.",
+      "description": "Disk and buffer writes over time, broken down by:\n- writes_mbps – Total physical disk writes performed by PostgreSQL backends during query execution, as seen by the OS. This is the most accurate view of actual I/O load (from pg_stat_kcache.exec_writes).\n- shared_buffer_mbps – Data flushed from PostgreSQL’s shared buffer cache to disk. These are typically managed by checkpoints or the background writer.\n- local_buffer_mbps – Writes to local (non-shared) buffers, often related to unlogged or temporary tables. These are buffered but not part of shared memory.\n- temp_buffer_mbps – Buffer writes for temporary data during execution, such as sorting or hashing operations that spill to disk.\n- wal_generated_mbps – Volume of WAL (Write-Ahead Log) data generated. This doesn’t reflect immediate disk writes — WAL data is first written to memory and may be flushed asynchronously depending on parameters like wal_writer_delay and commit_delay.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -251,7 +251,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "WITH deltas AS (\n    SELECT\n        created,\n        extract('epoch' from created - lag(d.created) OVER (w)) AS delta_seconds,\n        d.shared_blks_written - lag(d.shared_blks_written) OVER (w) AS delta_shared_blks_written,\n        d.local_blks_written - lag(d.local_blks_written) OVER (w) AS delta_local_blks_written,\n        d.temp_blks_written - lag(d.temp_blks_written) OVER (w) AS delta_temp_blks_written,\n        d.wal_bytes - lag(d.wal_bytes) OVER (w) AS delta_wal_bytes,\n        stats_reset\n    FROM\n        statements_history.snapshots AS d\n    WHERE\n        created > now() - INTERVAL '2 hours'\n    WINDOW\n        w AS (PARTITION BY stats_reset ORDER BY created ASC)\n)\nSELECT\n    created AS \"time\",\n    (delta_shared_blks_written * 8.0) / 1024 / delta_seconds AS shared_mbps,\n    (delta_local_blks_written * 8.0) / 1024 / delta_seconds AS local_mbps,\n    (delta_temp_blks_written * 8.0) / 1024 / delta_seconds AS temp_mbps,\n    delta_wal_bytes / 1024 / 1024 / delta_seconds AS wal_generated_mbps\nFROM\n    deltas\nORDER BY\n    created ASC;",
+          "rawSql": "WITH deltas AS (\n    SELECT\n        created,\n        extract('epoch' from created - lag(d.created) OVER (w)) AS delta_seconds,\n        d.exec_writes - lag(d.exec_writes) OVER (w) AS delta_exec_writes,\n        d.shared_blks_written - lag(d.shared_blks_written) OVER (w) AS delta_shared_blks_written,\n        d.local_blks_written - lag(d.local_blks_written) OVER (w) AS delta_local_blks_written,\n        d.temp_blks_written - lag(d.temp_blks_written) OVER (w) AS delta_temp_blks_written,\n        d.wal_bytes - lag(d.wal_bytes) OVER (w) AS delta_wal_bytes,\n        stats_reset\n    FROM\n        statements_history.snapshots AS d\n    WHERE\n        created > now() - INTERVAL '2 hours'\n    WINDOW\n        w AS (PARTITION BY stats_reset ORDER BY created ASC)\n)\nSELECT\n    created AS \"time\",\n    delta_exec_writes / 1024 / 1024 / delta_seconds AS writes_mbps,\n    (delta_shared_blks_written * 8.0) / 1024 / delta_seconds AS shared_buffer_mbps,\n    (delta_local_blks_written * 8.0) / 1024 / delta_seconds AS local_buffer_mbps,\n    (delta_temp_blks_written * 8.0) / 1024 / delta_seconds AS temp_buffer_mbps,\n    delta_wal_bytes / 1024 / 1024 / delta_seconds AS wal_generated_mbps\nFROM\n    deltas\nORDER BY\n    created ASC;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -273,11 +273,11 @@
         }
       ],
       "timeFrom": "15m",
-      "title": "Writes to Disk + WAL Generation",
+      "title": "Writes to Disk and Buffer Flushes",
       "transparent": true,
       "type": "timeseries"
     },
-		{
+    {
       "datasource": {
         "type": "grafana-postgresql-datasource",
         "uid": "de9iten8jjqiof"
@@ -366,7 +366,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 5
+        "y": 7
       },
       "id": 4,
       "options": {
@@ -417,7 +417,7 @@
       "transparent": true,
       "type": "timeseries"
     },
-		{
+    {
       "datasource": {
         "uid": "P8E80F9AEF21F6940"
       },
@@ -430,7 +430,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 13
       },
       "hideTimeOverride": false,
       "id": 2,
@@ -441,7 +441,7 @@
         "showCommonLabels": false,
         "showLabels": false,
         "showTime": false,
-        "sortOrder": "Ascending",
+        "sortOrder": "Descending",
         "wrapLogMessage": false
       },
       "pluginVersion": "11.4.0",
@@ -457,7 +457,7 @@
       "title": "Logs $serial_number",
       "transparent": true,
       "type": "logs"
-		}
+    }
   ],
   "preload": false,
   "refresh": "auto",
@@ -539,13 +539,13 @@
             "AAD-1123"
           ]
         },
-				"datasource": {
+        "datasource": {
           "type": "grafana-postgresql-datasource",
           "uid": "be9ijnandyz9ce"
         },
         "definition": "SELECT serial_number FROM sensor",
-				"multi": true,
         "includeAll": false,
+        "multi": true,
         "name": "serial_number",
         "options": [],
         "query": "SELECT serial_number FROM sensor",
@@ -554,7 +554,7 @@
         "sort": 1,
         "type": "query"
       },
-			{
+      {
         "current": {
           "text": "INSERT INTO sensor_measurement (time, sensor_id, measurement)\n\t\t\tSELECT * \n\t\t\tFROM unnest(\n\t\t\t\t$1::timestamptz[],\n\t\t\t\t$2::int[],\n\t\t\t\t$3::double precision[]\n\t\t\t) AS t(time, sensor_id, measurement)\n\t\t\tON CONFLICT DO NOTHING",
           "value": "INSERT INTO sensor_measurement (time, sensor_id, measurement)\n\t\t\tSELECT * \n\t\t\tFROM unnest(\n\t\t\t\t$1::timestamptz[],\n\t\t\t\t$2::int[],\n\t\t\t\t$3::double precision[]\n\t\t\t) AS t(time, sensor_id, measurement)\n\t\t\tON CONFLICT DO NOTHING"
@@ -586,6 +586,6 @@
   "timezone": "browser",
   "title": "IoT",
   "uid": "de9iu4i6taf40f",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
