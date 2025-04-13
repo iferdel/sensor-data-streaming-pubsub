@@ -1,5 +1,7 @@
 FROM timescale/timescaledb-ha:pg17
 
+COPY ./.psqlrc ./.psqlrc
+
 COPY ./init.sh /docker-entrypoint-initdb.d/init.sh
 
 COPY ./iot_database_app_setup.sql /scripts/iot_database_app_setup.sql
