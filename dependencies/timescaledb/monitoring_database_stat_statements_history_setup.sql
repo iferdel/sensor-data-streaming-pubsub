@@ -201,6 +201,7 @@ BEGIN
             pg_roles ON s.userid = pg_roles.oid
         JOIN
             pg_database ON s.dbid = pg_database.oid
+				WHERE pg_database.datname = 'iot'
 		),
     /*
      * We then get the individual queries out of the result
