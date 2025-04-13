@@ -1,7 +1,7 @@
 \set QUIET 1
 
 \x auto 
-\pset NULL '[NULL]'
+\pset null '[NULL]'
 \set VERBOSITY verbose
 \set HISTFILE ~/.psql_history- :DBNAME
 \set HISTCONTROL ignoredups
