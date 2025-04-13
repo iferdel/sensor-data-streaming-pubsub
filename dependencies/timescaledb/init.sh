@@ -125,6 +125,15 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     -- * Activate the pg_stat_kcache extension
     CREATE EXTENSION pg_stat_kcache;
 
+--    -- * Activate the postgres_fdw extension so we can query stats by sensor when possible
+--    CREATE EXTENSION postgres_fdw;
+--    CREATE SERVER iot_server 
+--	FOREIGN DATA WRAPPER postgres_fdw
+--	OPTIONS (host 'localhost', port '5432', dbname 'iot');
+--    CREATE USER MAPPING for iot_readonly
+--	SERVER iot_server
+--	OPTIONS (user 'iot_readonly', password '${iot_readonly_password}');
+--
     --------------------------------------------------------------------------------------------
     -- 2. Geospatial extensions
     --------------------------------------------------------------------------------------------
@@ -206,8 +215,21 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 		    ON DELETE CASCADE
 	);
     COMMENT ON COLUMN sensor_measurement.measurement IS 'double precision is best for this kind of data since we dont need exact-like precision covered by NUMERIC, as rounding errors can be tolerated';
-
-    SELECT create_hypertable('sensor_measurement', by_range('time'));
+    
+    -- If you call SELECT * FROM create_hypertable(...) the return value is formatted as a table with column headings.
+    SELECT * FROM create_hypertable(
+	'sensor_measurement', 
+	'time', 
+	chunk_time_interval=>'5 minutes'::interval
+	);
+--    SELECT enable_chunk_skipping('sensor_measurement', 'sensor_id');
+--    ALTER TABLE sensor_measurement SET (
+--      timescaledb.compress,
+--      timescaledb.compress_orderby = 'time DESC',
+--      timescaledb.compress_segmentby = 'sensor_id'
+--    );
+--    SELECT compress_chunk(show_chunks('sensor_measurement'));
+--    SELECT add_compression_policy('sensor_measurement', INTERVAL '5 minutes');
 
     CREATE TABLE target_location(
 	time TIMESTAMPTZ NOT NULL,
@@ -230,4 +252,11 @@ EOSQL
 #--------------------------------------------------------------------------------
 # CREATE TABLES/SCHEMA monitoring DATABASE
 #--------------------------------------------------------------------------------
-psql -v ON_ERROR_STOP=1 --username iot_monitoring -d monitoring -f /scripts/monitoring_database_setup.sql
+psql -v ON_ERROR_STOP=1 --username iot_monitoring -d monitoring -f /scripts/monitoring_database_statements_history_setup.sql
+
+
+#--------------------------------------------------------------------------------
+# CREATE pg_total_relation_size table in iot database for monitoring purposes (using fdw)
+#--------------------------------------------------------------------------------
+
+psql -v ON_ERROR_TOP=1 --username iot_app -d iot -f /scripts/iot_database_hypertable_size_history_setup.sql
