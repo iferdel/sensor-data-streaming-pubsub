@@ -125,15 +125,18 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
     -- * Activate the pg_stat_kcache extension
     CREATE EXTENSION pg_stat_kcache;
 
---    -- * Activate the postgres_fdw extension so we can query stats by sensor when possible
---    CREATE EXTENSION postgres_fdw;
---    CREATE SERVER iot_server 
---	FOREIGN DATA WRAPPER postgres_fdw
---	OPTIONS (host 'localhost', port '5432', dbname 'iot');
---    CREATE USER MAPPING for iot_readonly
---	SERVER iot_server
---	OPTIONS (user 'iot_readonly', password '${iot_readonly_password}');
---
+    -- * Activate the postgres_fdw extension so we can query stats by sensor when possible
+    CREATE EXTENSION postgres_fdw;
+    CREATE SERVER iot_server 
+	FOREIGN DATA WRAPPER postgres_fdw
+	OPTIONS (host 'localhost', port '5432', dbname 'iot');
+    CREATE USER MAPPING for iot_monitoring
+	SERVER iot_server
+	OPTIONS (user 'iot_readonly');
+    ALTER USER MAPPING FOR iot_monitoring SERVER iot_server
+	OPTIONS (ADD password_required 'false');
+    GRANT USAGE ON FOREIGN SERVER iot_server TO iot_monitoring;
+
     --------------------------------------------------------------------------------------------
     -- 2. Geospatial extensions
     --------------------------------------------------------------------------------------------
@@ -250,13 +253,20 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 EOSQL
 
 #--------------------------------------------------------------------------------
-# CREATE TABLES/SCHEMA monitoring DATABASE
+# create tables/schema monitoring database
 #--------------------------------------------------------------------------------
-psql -v ON_ERROR_STOP=1 --username iot_monitoring -d monitoring -f /scripts/monitoring_database_statements_history_setup.sql
+psql -v on_error_stop=1 --username iot_monitoring -d monitoring -f /scripts/monitoring_database_statements_history_setup.sql
 
 
 #--------------------------------------------------------------------------------
-# CREATE pg_total_relation_size table in iot database for monitoring purposes (using fdw)
+# create hypertable_size's table in iot database for monitoring purposes (using fdw)
 #--------------------------------------------------------------------------------
 
-psql -v ON_ERROR_TOP=1 --username iot_app -d iot -f /scripts/iot_database_hypertable_size_history_setup.sql
+psql -v on_error_top=1 --username iot_app -d iot -f /scripts/iot_database_hypertables_size_history_setup.sql
+
+
+#--------------------------------------------------------------------------------
+# create hypertable_size's schema and Foreign Data Wrapper (FDW) as a one-time job
+#--------------------------------------------------------------------------------
+
+psql -v on_error_top=1 --username iot_monitoring -d monitoring -f /scripts/monitoring_database_fdw_setup.sql
