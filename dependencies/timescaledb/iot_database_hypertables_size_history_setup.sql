@@ -1,83 +1,72 @@
 CREATE SCHEMA IF NOT EXISTS hypertables_size_history;
 
-CREATE table hypertables_size_history.snapshots (
+CREATE table hypertables_size_history.detailed (
 	created TIMESTAMP with time zone NOT NULL,
 	hypertable_name TEXT NOT NULL,
-	size BIGINT NOT NULL,
-	stats_reset timestamp with time zone NOT NULL,
-	PRIMARY KEY (created, hypertable_name)
-);
-
-CREATE table hypertables_size_history.statements (
-	created TIMESTAMP with time zone NOT NULL,
-	hypertable_name TEXT NOT NULL,
-	size BIGINT NOT NULL,
+	table_bytes BIGINT NOT NULL,
+	index_bytes BIGINT NOT NULL,
+	toast_bytes BIGINT NOT NULL,
+	total_size BIGINT NOT NULL,
+	node_name TEXT,
 	PRIMARY KEY (created, hypertable_name)
 );
 
 SELECT * FROM create_hypertable(
-    'hypertables_size_history.statements',
+    'hypertables_size_history.detailed',
     'created',
     create_default_indexes => false,
     chunk_time_interval => interval '1 day',
     migrate_data => true
 );
 
-ALTER TABLE hypertables_size_history.statements SET (
+ALTER TABLE hypertables_size_history.detailed SET (
   timescaledb.compress,
   timescaledb.compress_orderby = 'created',
 	timescaledb.compress_segmentby = 'hypertable_name'
 );
 
 SELECT add_compression_policy(
-    'hypertables_size_history.statements',
+    'hypertables_size_history.detailed',
     compress_after => interval '1 hour',
     if_not_exists => true
 );
 
-
-CREATE OR REPLACE PROCEDURE hypertables_size_history.create_snapshot(
+CREATE OR REPLACE PROCEDURE hypertables_size_history.add_hypertables_size_record(
     job_id int,
     config jsonb
 )
 LANGUAGE plpgsql AS
 $function$
 DECLARE
-    snapshot_time timestamp with time zone := now();
+    record_time timestamp with time zone := now();
 BEGIN
-    WITH statements AS (
+    WITH detailed AS (
         SELECT
 					hypertable_name,
-					hypertable_size(format('%I.%I', hypertable_schema, hypertable_name)) AS size
+					s.table_bytes,
+					s.index_bytes,
+					s.toast_bytes,
+					s.total_bytes,
+					s.node_name
         FROM
         	timescaledb_information.hypertables
+				CROSS JOIN LATERAL
+					hypertable_detailed_size(format('%I.%I', hypertable_schema, hypertable_name)) as s
 				WHERE
-					hypertable_name != 'statements'
-		),
-    snapshot AS (
-        INSERT INTO
-            hypertables_size_history.snapshots
-        SELECT
-            now(),
-            hypertable_name,
-						size,
-						pg_postmaster_start_time()
-        FROM
-            statements
-    )
-    /*
-     * And finally, we store the individual pg_stat_statement 
-     * aggregated results for each query, for each snapshot time.
-     */
+					hypertable_name != 'detailed'
+		)
     INSERT INTO
-        hypertables_size_history.statements
+        hypertables_size_history.detailed
     SELECT
-        snapshot_time,
+        record_time,
 				hypertable_name,
-				size
+				table_bytes,
+				index_bytes,
+				toast_bytes,
+				total_bytes,
+				node_name
     FROM
-        statements
-		ON CONFLICT DO NOTHING;
+        detailed;
 
 END;
 $function$;
@@ -85,13 +74,12 @@ $function$;
 /*
 * Check that the stored procedure works as expected
 */
-CALL hypertables_size_history.create_snapshot(null, null);
+CALL hypertables_size_history.add_hypertables_size_record(null, null);
 
-EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM hypertables_size_history.statements;
-
+EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM hypertables_size_history.detailed;
 
 SELECT add_job(
-    'hypertables_size_history.create_snapshot',
+    'hypertables_size_history.add_hypertables_size_record',
     interval '15 seconds'
 )
 WHERE NOT EXISTS (
@@ -99,7 +87,7 @@ WHERE NOT EXISTS (
     FROM
         timescaledb_information.jobs
     WHERE
-        proc_name='create_snapshot'
+        proc_name='add_hypertables_size_record'
         AND proc_schema='hypertables_size_history'
 );
 
