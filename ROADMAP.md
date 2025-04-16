@@ -24,8 +24,17 @@
 - [] review of db schema
 - [] Add geolocalization
 - [] Add target association
-- [] Add CTEs for monitoring with timescaledb and pg_stat_statements (ths way we can ensure the upsert, for example in measurements ingester service is not slowing down everything substantially)
-- [] [docs for pg stat statements](https://www.postgresql.org/docs/current/monitoring-stats.html)
+- [x] Add CTEs for monitoring with timescaledb and pg_stat_statements (ths way we can ensure the upsert, for example in measurements ingester service is not slowing down everything substantially)
+- [x] [docs for pg stat statements](https://www.postgresql.org/docs/current/monitoring-stats.html)
+- [x] [docs for pg stat kcache](https://github.com/powa-team/pg_stat_kcache) 
+- [x] add Writes to Disk graph from pg stat statements in iot dashboard.
+- [] add stream graph into iot dashboard
+- [x] add transactions or calls from pg_stat_statements into iot dashboard.
+- [x] reduce timing for running cron job procedure using timescale functionalities.
+- [] filter writes to disk and buffer flushes to only the measurement insert query + sensorid
+- [] track io_timing in on
+- [] pg_stat_kcache track cpu usage
+- [] track shared blocks for dirtied
 ### general
 - [] add logging for each systems (sent through rabbitmq). Nowadays is just sending sensor simulation logs, this can be improved a lot.
 - [] When a new sensor is turned on and no target is assigned (default), no measurement is made (it is registered though), until in iotctl TUI someone assign it to a target with a form. 
