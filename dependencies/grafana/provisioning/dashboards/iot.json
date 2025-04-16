@@ -251,7 +251,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "WITH deltas AS (\n    SELECT\n        created,\n        extract('epoch' from created - lag(d.created) OVER (w)) AS delta_seconds,\n        d.exec_writes - lag(d.exec_writes) OVER (w) AS delta_exec_writes,\n        d.shared_blks_written - lag(d.shared_blks_written) OVER (w) AS delta_shared_blks_written,\n        d.local_blks_written - lag(d.local_blks_written) OVER (w) AS delta_local_blks_written,\n        d.temp_blks_written - lag(d.temp_blks_written) OVER (w) AS delta_temp_blks_written,\n        d.wal_bytes - lag(d.wal_bytes) OVER (w) AS delta_wal_bytes,\n        stats_reset\n    FROM\n        statements_history.snapshots AS d\n    WHERE\n        created > now() - INTERVAL '2 hours'\n    WINDOW\n        w AS (PARTITION BY stats_reset ORDER BY created ASC)\n)\nSELECT\n    created AS \"time\",\n    delta_exec_writes / 1024 / 1024 / delta_seconds AS writes_MBps,\n    (delta_shared_blks_written * 8.0) / 1024 / delta_seconds AS shared_buffer_MBps,\n    (delta_local_blks_written * 8.0) / 1024 / delta_seconds AS local_buffer_MBps,\n    (delta_temp_blks_written * 8.0) / 1024 / delta_seconds AS temp_buffer_MBps,\n    delta_wal_bytes / 1024 / 1024 / delta_seconds AS wal_generated_MBps\nFROM\n    deltas\nORDER BY\n    created ASC;",
+          "rawSql": "WITH deltas AS (\n    SELECT\n        created,\n        extract('epoch' from created - lag(d.created) OVER (w)) AS delta_seconds,\n        d.shared_blks_written - lag(d.shared_blks_written) OVER (w) AS delta_shared_blks_written,\n        d.local_blks_written - lag(d.local_blks_written) OVER (w) AS delta_local_blks_written,\n        d.temp_blks_written - lag(d.temp_blks_written) OVER (w) AS delta_temp_blks_written,\n        d.wal_bytes - lag(d.wal_bytes) OVER (w) AS delta_wal_bytes,\n        stats_reset\n    FROM\n        statements_history.snapshots AS d\n    WHERE\n        created > now() - INTERVAL '2 hours'\n    WINDOW\n        w AS (PARTITION BY stats_reset ORDER BY created ASC)\n)\nSELECT\n    created AS \"time\",\n    (delta_shared_blks_written * 8.0) / 1024 / delta_seconds AS shared_buffer_MBps,\n    (delta_local_blks_written * 8.0) / 1024 / delta_seconds AS local_buffer_MBps,\n    (delta_temp_blks_written * 8.0) / 1024 / delta_seconds AS temp_buffer_MBps,\n    delta_wal_bytes / 1024 / 1024 / delta_seconds AS wal_generated_MBps\nFROM\n    deltas\nORDER BY\n    created ASC;",
           "refId": "A",
           "sql": {
             "columns": [
@@ -273,7 +273,7 @@
         }
       ],
       "timeFrom": "15m",
-      "title": "Writes to Disk and Buffer Flushes",
+      "title": "Buffer & WAL Writes Over Time",
       "transparent": true,
       "type": "timeseries"
     },
@@ -474,7 +474,7 @@
         "type": "grafana-postgresql-datasource",
         "uid": "de9iten8jjqiof"
       },
-      "description": "",
+      "description": "Total size and decomposition of total size in terms of table itself, indexes and TOAST",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -503,12 +503,12 @@
               "fill": "solid"
             },
             "lineWidth": 1,
-            "pointSize": 5,
+            "pointSize": 2,
             "scaleDistribution": {
               "type": "linear"
             },
             "showPoints": "always",
-            "spanNulls": false,
+            "spanNulls": true,
             "stacking": {
               "group": "A",
               "mode": "none"
@@ -568,7 +568,7 @@
         ],
         "tooltip": {
           "mode": "multi",
-          "sort": "none"
+          "sort": "desc"
         }
       },
       "pluginVersion": "11.4.0",
@@ -581,7 +581,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT\n    created,\n    size\nFROM\n    hypertables_size_history.statements\nWHERE hypertable_name = 'sensor_measurement'; ",
+          "rawSql": "SELECT\n    created,\n    table_bytes,\n    index_bytes,\n    toast_bytes,\n    total_size\nFROM\n    hypertables_size_history.detailed\nWHERE hypertable_name = 'sensor_measurement'; ",
           "refId": "A",
           "sql": {
             "columns": [
@@ -919,6 +919,6 @@
   "timezone": "browser",
   "title": "IoT",
   "uid": "de9iu4i6taf40f",
-  "version": 4,
+  "version": 6,
   "weekStart": ""
 }
