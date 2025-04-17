@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -993,7 +993,7 @@
     ]
   },
   "time": {
-    "from": "now-15s",
+    "from": "now-1m",
     "to": "now+20s"
   },
   "timepicker": {
