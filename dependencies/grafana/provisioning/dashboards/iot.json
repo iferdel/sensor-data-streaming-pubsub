@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 2,
   "links": [],
   "panels": [
     {
@@ -85,7 +85,7 @@
       },
       "gridPos": {
         "h": 7,
-        "w": 10,
+        "w": 9,
         "x": 0,
         "y": 0
       },
@@ -142,6 +142,372 @@
         }
       ],
       "title": "Acceleration $serial_number",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "Total size and decomposition of total size in terms of table itself, indexes and TOAST",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisGridShow": false,
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 13,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 2,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "always",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "decimals": 1,
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 7,
+        "x": 9,
+        "y": 0
+      },
+      "id": 7,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "hypertable size",
+          "url": "https://docs.timescale.com/api/latest/hypertable/hypertable_size/"
+        },
+        {
+          "targetBlank": true,
+          "title": "hypertable_detailed_size",
+          "url": "https://docs.timescale.com/api/latest/hypertable/hypertable_detailed_size/"
+        }
+      ],
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "timezone": [
+          "browser"
+        ],
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT\n    created,\n    table_bytes as table_size,\n    index_bytes as index_size,\n    toast_bytes as toast_size,\n    total_size\nFROM\n    hypertables_size_history.detailed\nWHERE hypertable_name = 'sensor_measurement'; ",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "timeFrom": "15m",
+      "title": "'sensor_measurement' Table Size",
+      "transparent": true,
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 3,
+        "x": 16,
+        "y": 0
+      },
+      "id": 8,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "hypertable size",
+          "url": "https://docs.timescale.com/api/latest/hypertable/hypertable_size/"
+        },
+        {
+          "targetBlank": true,
+          "title": "hypertable_detailed_size",
+          "url": "https://docs.timescale.com/api/latest/hypertable/hypertable_detailed_size/"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH deltas AS (\n    SELECT\n        created,\n        EXTRACT(epoch FROM created - LAG(created) OVER w) AS delta_s,\n        table_bytes - LAG(table_bytes) OVER w AS delta_table_bytes,\n        index_bytes - LAG(index_bytes) OVER w AS delta_index_bytes,\n        toast_bytes - LAG(toast_bytes) OVER w AS delta_toast_bytes,\n        total_size  - LAG(total_size)  OVER w AS delta_total_bytes\n    FROM hypertables_size_history.detailed\n\t\t\tWHERE hypertable_name = 'sensor_measurement' AND created > NOW() - INTERVAL '2 hours'\n    WINDOW w AS (PARTITION BY hypertable_name ORDER BY created)\n)\nSELECT\n    created AS \"time\",\n    delta_table_bytes / NULLIF(delta_s,0)  AS table_bps,\n    delta_index_bytes / NULLIF(delta_s,0)  AS index_bps,\n    delta_toast_bytes / NULLIF(delta_s,0)  AS toast_bps,\n    delta_total_bytes / NULLIF(delta_s,0)  AS total_bps\nFROM deltas\nWHERE delta_s IS NOT NULL\nORDER BY created;\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "timeFrom": "15m",
+      "title": "'sensor_measurement' Write Rates",
+      "transparent": true,
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "de9iten8jjqiof"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMin": 0,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "rows_per_query"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": []
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 5,
+        "x": 19,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH deltas AS (\n    SELECT\n        st.created,\n        st.queryid,\n        st.rolname,\n        st.datname,\n        s.stats_reset,\n        q.query,\n        st.calls - lag(st.calls) OVER (query_w) AS delta_calls,\n        st.rows - lag(st.rows) OVER (query_w) AS delta_rows\n    FROM\n        statements_history.statements AS st\n    JOIN\n        statements_history.queries AS q USING (queryid, datname, rolname)\n    JOIN\n        statements_history.snapshots AS s USING (created)\n    WHERE\n        st.created > now() - interval '15 minutes'\n        AND st.created < now() + interval '15 minutes'\n        AND q.query ILIKE 'insert into sensor_measurement%'\n    WINDOW\n        query_w AS (PARTITION BY st.datname, st.rolname, st.queryid, s.stats_reset ORDER BY st.created)\n)\nSELECT\n    created AS \"time\",\n    query,\n    delta_rows / NULLIF(delta_calls, 0) AS rows_per_query\nFROM\n    deltas\nWHERE\n    delta_calls > 0\nORDER BY\n    created ASC;\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "timeFrom": "15m",
+      "title": "Avg Rows/Query",
+      "transparent": true,
       "type": "timeseries"
     },
     {
@@ -215,8 +581,8 @@
       "gridPos": {
         "h": 7,
         "w": 7,
-        "x": 10,
-        "y": 0
+        "x": 9,
+        "y": 7
       },
       "id": 3,
       "links": [
@@ -323,9 +689,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 6,
-        "x": 17,
-        "y": 0
+        "w": 8,
+        "x": 16,
+        "y": 7
       },
       "id": 6,
       "options": {
@@ -398,10 +764,6 @@
               {
                 "color": "green",
                 "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
               }
             ]
           },
@@ -411,16 +773,16 @@
       },
       "gridPos": {
         "h": 4,
-        "w": 7,
-        "x": 17,
-        "y": 3
+        "w": 8,
+        "x": 16,
+        "y": 10
       },
       "id": 4,
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "orientation": "vertical",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
@@ -430,6 +792,10 @@
           "values": false
         },
         "showPercentChange": false,
+        "text": {
+          "titleSize": 16,
+          "valueSize": 24
+        },
         "textMode": "auto",
         "wideLayout": true
       },
@@ -471,287 +837,6 @@
     },
     {
       "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "de9iten8jjqiof"
-      },
-      "description": "Total size and decomposition of total size in terms of table itself, indexes and TOAST",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisGridShow": false,
-            "axisLabel": "",
-            "axisPlacement": "left",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 13,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 1,
-            "pointSize": 2,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "always",
-            "spanNulls": true,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "decimals": 1,
-          "fieldMinMax": false,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "decbytes"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 7,
-        "x": 10,
-        "y": 7
-      },
-      "id": 7,
-      "links": [
-        {
-          "targetBlank": true,
-          "title": "hypertable size",
-          "url": "https://docs.timescale.com/api/latest/hypertable/hypertable_size/"
-        },
-        {
-          "targetBlank": true,
-          "title": "hypertable_detailed_size",
-          "url": "https://docs.timescale.com/api/latest/hypertable/hypertable_detailed_size/"
-        }
-      ],
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "timezone": [
-          "browser"
-        ],
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "de9iten8jjqiof"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "SELECT\n    created,\n    table_bytes,\n    index_bytes,\n    toast_bytes,\n    total_size\nFROM\n    hypertables_size_history.detailed\nWHERE hypertable_name = 'sensor_measurement'; ",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "timeFrom": "15m",
-      "title": "'sensor_measurement' Table Size",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "grafana-postgresql-datasource",
-        "uid": "de9iten8jjqiof"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineStyle": {
-              "fill": "solid"
-            },
-            "lineWidth": 2,
-            "pointSize": 4,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "rows_per_query"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 7,
-        "x": 17,
-        "y": 7
-      },
-      "id": 5,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": false
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "grafana-postgresql-datasource",
-            "uid": "de9iten8jjqiof"
-          },
-          "editorMode": "code",
-          "format": "table",
-          "rawQuery": true,
-          "rawSql": "WITH deltas AS (\n    SELECT\n        st.created,\n        st.queryid,\n        st.rolname,\n        st.datname,\n        s.stats_reset,\n        q.query,\n        st.calls - lag(st.calls) OVER (query_w) AS delta_calls,\n        st.rows - lag(st.rows) OVER (query_w) AS delta_rows\n    FROM\n        statements_history.statements AS st\n    JOIN\n        statements_history.queries AS q USING (queryid, datname, rolname)\n    JOIN\n        statements_history.snapshots AS s USING (created)\n    WHERE\n        st.created > now() - interval '15 minutes'\n        AND st.created < now() + interval '15 minutes'\n        AND q.query ILIKE 'insert into sensor_measurement%'\n    WINDOW\n        query_w AS (PARTITION BY st.datname, st.rolname, st.queryid, s.stats_reset ORDER BY st.created)\n)\nSELECT\n    created AS \"time\",\n    query,\n    delta_rows / NULLIF(delta_calls, 0) AS rows_per_query\nFROM\n    deltas\nWHERE\n    delta_calls > 0\nORDER BY\n    created ASC;\n",
-          "refId": "A",
-          "sql": {
-            "columns": [
-              {
-                "parameters": [],
-                "type": "function"
-              }
-            ],
-            "groupBy": [
-              {
-                "property": {
-                  "type": "string"
-                },
-                "type": "groupBy"
-              }
-            ],
-            "limit": 50
-          }
-        }
-      ],
-      "timeFrom": "15m",
-      "title": "Average Inserted Rows Per Query",
-      "transparent": true,
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
         "uid": "P8E80F9AEF21F6940"
       },
       "description": "",
@@ -763,7 +848,7 @@
         "h": 5,
         "w": 24,
         "x": 0,
-        "y": 13
+        "y": 14
       },
       "hideTimeOverride": false,
       "id": 2,
@@ -919,6 +1004,6 @@
   "timezone": "browser",
   "title": "IoT",
   "uid": "de9iu4i6taf40f",
-  "version": 6,
+  "version": 1,
   "weekStart": ""
 }
