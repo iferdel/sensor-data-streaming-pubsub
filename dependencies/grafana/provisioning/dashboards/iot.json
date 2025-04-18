@@ -112,7 +112,7 @@
           "editorMode": "code",
           "format": "table",
           "rawQuery": true,
-          "rawSql": "SELECT sensor_measurement.time, sensor_measurement.measurement, sensor.serial_number\r\nFROM sensor_measurement INNER JOIN sensor\r\n  ON sensor_measurement.sensor_id = sensor.id\r\nWHERE sensor.serial_number in ($serial_number)\r\nORDER BY time DESC \r\nLIMIT 100000",
+          "rawSql": "SELECT sm.time, sm.measurement\r\nFROM sensor_measurement sm\r\nWHERE sm.sensor_id = (\r\n\tSELECT id FROM sensor WHERE serial_number = ($serial_number)\r\n) AND sm.time > now() - INTERVAL '30 seconds'",
           "refId": "A",
           "sql": {
             "columns": [
@@ -509,6 +509,101 @@
       "title": "Avg Rows/Query",
       "transparent": true,
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-postgresql-datasource",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "decimals": 1,
+          "fieldMinMax": false,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "GB/day"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 9,
+        "x": 0,
+        "y": 7
+      },
+      "id": 9,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "best practices for time partitioning based on write rates",
+          "url": "https://docs.timescale.com/use-timescale/latest/hypertables/about-hypertables/#best-practices-for-time-partitioning"
+        }
+      ],
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "text": {},
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-postgresql-datasource",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "WITH deltas AS (\n    SELECT\n        created,\n        EXTRACT(epoch FROM created - LAG(created) OVER w) AS delta_s,\n        total_size  - LAG(total_size)  OVER w AS delta_total_bytes\n    FROM hypertables_size_history.detailed\n\t\t\tWHERE hypertable_name = 'sensor_measurement' AND created > NOW() - INTERVAL '2 hours'\n    WINDOW w AS (PARTITION BY hypertable_name ORDER BY created)\n)\nSELECT\n    created AS \"time\",\n    ((delta_total_bytes / NULLIF(delta_s,0)) * 60 * 60 * 24) / power(1024, 3)   AS total_bps\nFROM deltas\nWHERE delta_s IS NOT NULL\nORDER BY created;\n",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "timeFrom": "15m",
+      "title": "'sensor_measurement' Daily Write Rate",
+      "transparent": true,
+      "type": "stat"
     },
     {
       "datasource": {
@@ -993,7 +1088,7 @@
     ]
   },
   "time": {
-    "from": "now-1m",
+    "from": "now-30s",
     "to": "now+20s"
   },
   "timepicker": {
@@ -1004,6 +1099,6 @@
   "timezone": "browser",
   "title": "IoT",
   "uid": "de9iu4i6taf40f",
-  "version": 1,
+  "version": 5,
   "weekStart": ""
 }
