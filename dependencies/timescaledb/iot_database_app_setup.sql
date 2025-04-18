@@ -41,7 +41,6 @@ CREATE TABLE sensor_measurement (
 	time TIMESTAMPTZ NOT NULL,
 	sensor_id INTEGER NOT NULL,
 	measurement DOUBLE PRECISION NOT NULL,
-	UNIQUE (time, sensor_id),
 	CONSTRAINT fk_sensor 
 	  FOREIGN KEY (sensor_id) 
 			REFERENCES sensor(id) 
@@ -49,12 +48,14 @@ CREATE TABLE sensor_measurement (
 	);
   COMMENT ON COLUMN sensor_measurement.measurement IS 'double precision is best for this kind of data since we dont need exact-like precision covered by NUMERIC, as rounding errors can be tolerated';
     
--- If you call SELECT * FROM create_hypertable(...) the return value is formatted as a table with column headings.
 SELECT * FROM create_hypertable(
 	'sensor_measurement', 
 	'time', 
 	chunk_time_interval=>'5 minutes'::interval
 	);
+SELECT add_dimension('sensor_measurement', by_hash('sensor_id', 4)); -- add sensor_id as partitioning column
+SELECT add_retention_policy('sensor_measurement', drop_after => INTERVAL '30 minutes');
+CREATE UNIQUE INDEX idx_sensorid_time ON sensor_measurement(sensor_id, time);
 --    SELECT enable_chunk_skipping('sensor_measurement', 'sensor_id');
 --    ALTER TABLE sensor_measurement SET (
 --      timescaledb.compress,
