@@ -56,14 +56,13 @@ SELECT * FROM create_hypertable(
 SELECT add_dimension('sensor_measurement', by_hash('sensor_id', 4)); -- add sensor_id as partitioning column
 SELECT add_retention_policy('sensor_measurement', drop_after => INTERVAL '30 minutes');
 CREATE UNIQUE INDEX idx_sensorid_time ON sensor_measurement(sensor_id, time);
---    SELECT enable_chunk_skipping('sensor_measurement', 'sensor_id');
---    ALTER TABLE sensor_measurement SET (
---      timescaledb.compress,
---      timescaledb.compress_orderby = 'time DESC',
---      timescaledb.compress_segmentby = 'sensor_id'
---    );
---    SELECT compress_chunk(show_chunks('sensor_measurement'));
---    SELECT add_compression_policy('sensor_measurement', INTERVAL '5 minutes');
+ALTER TABLE sensor_measurement SET (
+  timescaledb.compress,
+  timescaledb.compress_orderby = 'time DESC',
+  timescaledb.compress_segmentby = 'sensor_id'
+);
+SELECT add_compression_policy('sensor_measurement', INTERVAL '15 minutes');
+SELECT enable_chunk_skipping('sensor_measurement', 'sensor_id');
 
 CREATE TABLE target_location(
 	time TIMESTAMPTZ NOT NULL,
