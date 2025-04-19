@@ -56,13 +56,14 @@ SELECT * FROM create_hypertable(
 SELECT add_dimension('sensor_measurement', by_hash('sensor_id', 4)); -- add sensor_id as partitioning column
 SELECT add_retention_policy('sensor_measurement', drop_after => INTERVAL '30 minutes');
 CREATE UNIQUE INDEX idx_sensorid_time ON sensor_measurement(sensor_id, time);
-ALTER TABLE sensor_measurement SET (
-  timescaledb.compress,
-  timescaledb.compress_orderby = 'time DESC',
-  timescaledb.compress_segmentby = 'sensor_id',
-	timescaledb.enable_columnstore = true
-);
-CALL add_columnstore_policy('sensor_measurement', INTERVAL '15 minutes');
+ALTER TABLE sensor_measurement 
+	SET (
+		timescaledb.enable_columnstore,
+		timescaledb.orderby = 'time DESC',
+		timescaledb.segmentby = 'sensor_id'
+	);
+ALTER TABLE sensor_measurement SET ACCESS METHOD hypercore;
+CALL add_columnstore_policy('sensor_measurement', INTERVAL '15 minutes'); -- this creates a job that automatically moves chunks in a hypertable to the columnstore after a specific time interval.
 SELECT enable_chunk_skipping('sensor_measurement', 'sensor_id');
 
 CREATE TABLE target_location(
