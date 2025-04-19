@@ -18,18 +18,10 @@
 - [] TUI in iotctl that enables these kind of changes
 - [] one can 'get' the status of all sensors registered, thus being able to see which ones are 'waiting for target association'
 ### dependencies-db
-- [x] [timescale create_hypertable docs](https://docs.timescale.com/api/latest/hypertable/create_hypertable/)
-- [x] add compression and policies to hypertable with measurements
 - [] review of db schema
 - [] Add geolocalization
 - [] Add target association
-- [x] Add CTEs for monitoring with timescaledb and pg_stat_statements (ths way we can ensure the upsert, for example in measurements ingester service is not slowing down everything substantially)
-- [x] [docs for pg stat statements](https://www.postgresql.org/docs/current/monitoring-stats.html)
-- [x] [docs for pg stat kcache](https://github.com/powa-team/pg_stat_kcache) 
-- [x] add Writes to Disk graph from pg stat statements in iot dashboard.
 - [] add stream graph into iot dashboard
-- [x] add transactions or calls from pg_stat_statements into iot dashboard.
-- [x] reduce timing for running cron job procedure using timescale functionalities.
 - [] read replica of database so we can separate concerns of database for writing (this service) and reading (any other service)
 - [] select * from hypertable_compression_stats('sensor_measurement');
 - [] filter writes to disk and buffer flushes to only the measurement insert query + sensorid
