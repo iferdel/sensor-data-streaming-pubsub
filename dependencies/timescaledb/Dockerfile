@@ -1,4 +1,4 @@
-FROM timescale/timescaledb-ha:pg17
+FROM timescale/timescaledb-ha:pg17.4-ts2.19.3
 
 COPY ./.psqlrc ./.psqlrc
 
