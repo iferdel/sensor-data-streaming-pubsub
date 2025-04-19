@@ -59,9 +59,10 @@ CREATE UNIQUE INDEX idx_sensorid_time ON sensor_measurement(sensor_id, time);
 ALTER TABLE sensor_measurement SET (
   timescaledb.compress,
   timescaledb.compress_orderby = 'time DESC',
-  timescaledb.compress_segmentby = 'sensor_id'
+  timescaledb.compress_segmentby = 'sensor_id',
+	timescaledb.enable_columnstore = true
 );
-SELECT add_compression_policy('sensor_measurement', INTERVAL '15 minutes');
+CALL add_columnstore_policy('sensor_measurement', INTERVAL '15 minutes');
 SELECT enable_chunk_skipping('sensor_measurement', 'sensor_id');
 
 CREATE TABLE target_location(
