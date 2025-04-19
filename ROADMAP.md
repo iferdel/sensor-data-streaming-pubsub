@@ -3,7 +3,6 @@
 - [] protobuf payload instead of json since real scenario
 ### iot-measurement-ingester
 - [] superstreams
-- [] read replica of database so we can separate concerns of database for writing (this service) and reading (any other service)
 ### iot-api
 - [] tls
 - [] sqlc
@@ -19,8 +18,8 @@
 - [] TUI in iotctl that enables these kind of changes
 - [] one can 'get' the status of all sensors registered, thus being able to see which ones are 'waiting for target association'
 ### dependencies-db
-- [] [timescale create_hypertable docs](https://docs.timescale.com/api/latest/hypertable/create_hypertable/)
-- [] add compression and policies to hypertable with measurements
+- [x] [timescale create_hypertable docs](https://docs.timescale.com/api/latest/hypertable/create_hypertable/)
+- [x] add compression and policies to hypertable with measurements
 - [] review of db schema
 - [] Add geolocalization
 - [] Add target association
@@ -31,6 +30,8 @@
 - [] add stream graph into iot dashboard
 - [x] add transactions or calls from pg_stat_statements into iot dashboard.
 - [x] reduce timing for running cron job procedure using timescale functionalities.
+- [] read replica of database so we can separate concerns of database for writing (this service) and reading (any other service)
+- [] select * from hypertable_compression_stats('sensor_measurement');
 - [] filter writes to disk and buffer flushes to only the measurement insert query + sensorid
 - [] track io_timing in on
 - [] pg_stat_kcache track cpu usage
