@@ -81,7 +81,7 @@ func (DB *DB) BatchArrayWriteMeasurement(ctx context.Context, measurements []Sen
 				$2::int[],
 				$3::double precision[]
 			) AS t(time, sensor_id, measurement)
-			ON CONFLICT DO NOTHING;
+			ON CONFLICT (sensor_id, time) DO NOTHING;
 		`
 
 	batchSize := 25_000
