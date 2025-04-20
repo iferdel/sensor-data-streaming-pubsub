@@ -15,7 +15,7 @@ services:
       RABBITMQ_LOG: debug,+color
 
   timescaledb:
-    build: dependencies/timescaledb/
+    build: dependencies/timescaledb/primary/
     container_name: iot-timescaledb-primary
     depends_on:
       - rabbitmq
@@ -29,11 +29,11 @@ services:
       - IOT_APP_PASSWORD=iot_app
       - IOT_READONLY_PASSWORD=iot_readonly
     volumes:
-      - ./dependencies/timescaledb/postgresql.conf:/etc/postgresql.conf
+      - ./dependencies/timescaledb/primary/postgresql.conf:/etc/postgresql.conf
     command: postgres -c config_file=/etc/postgresql.conf
 
   timescaledb-replica:
-    image: timescale/timescaledb-ha:pg17.4-ts2.19.3
+    build: dependencies/timescaledb/replica/
     container_name: iot-timescaledb-replica
     depends_on:
       - timescaledb
@@ -41,10 +41,19 @@ services:
       - "25432:5432"
     environment:
       - POSTGRES_PASSWORD=postgres
-    volumes:
-      - ./dependencies/timescaledb/postgresql.replication.conf:/etc/postgresql.conf
-      - ./dependencies/timescaledb/init-replication.sh:/scripts/init-replication.sh
-    entrypoint: ["/scripts/init-replication.sh"]
+      - PGUSER=iot_replication
+      - PGPASSWORD=iot_replication 
+    command: |
+      bash -c "
+      until pg_basebackup --pgdata=/home/postgres/pgdata/data -R --slot=replica_1_slot --host=iot-timescaledb-primary --port=5432
+      do
+      echo 'Waiting for primary to connect...'
+      sleep 1s
+      done
+      echo 'Backup done, starting replica...'
+      chmod 0700 /home/postgres/pgdata/data
+      postgres
+      "
 
   alloy:
     image: grafana/alloy:latest
@@ -76,6 +85,7 @@ services:
       - "9090:9090"
 
   node-exporter:
+    container_name: iot-node-exporter
     command:
       - '--path.procfs=/host/proc'
       - '--path.rootfs=/rootfs'
@@ -90,6 +100,7 @@ services:
       - /sys:/host/sys:ro
       - /:/rootfs:ro
   cadvisor:
+    container_name: iot-cadvisor
     expose:
       - 8000
     # https://hub.docker.com/r/google/cadvisor/tags
