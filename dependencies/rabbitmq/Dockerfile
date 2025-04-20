@@ -1,4 +1,4 @@
-FROM rabbitmq:4.0-management
+FROM rabbitmq:4.1.0-management
 RUN rabbitmq-plugins enable rabbitmq_mqtt
 RUN rabbitmq-plugins enable rabbitmq_stream
 RUN rabbitmq-plugins enable rabbitmq_stream_management
