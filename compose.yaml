@@ -37,10 +37,14 @@ services:
     container_name: iot-timescaledb-replica
     depends_on:
       - timescaledb
-    environment:
-      - POSTGRES_PASSWORD=postgres
     ports:
       - "25432:5432"
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - ./dependencies/timescaledb/postgresql.replication.conf:/etc/postgresql.conf
+      - ./dependencies/timescaledb/init-replication.sh:/scripts/init-replication.sh
+    entrypoint: ["/scripts/init-replication.sh"]
 
   alloy:
     image: grafana/alloy:latest

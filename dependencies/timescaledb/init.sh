@@ -177,7 +177,7 @@ psql -v on_error_stop=1 --username iot_monitoring -d monitoring -f /scripts/moni
 #--------------------------------------------------------------------------------
 psql -v on_error_stop=1 --username iot_replication -d iot -f /scripts/replication.sql
 if [ -f "$PGDATA/pg_hba.conf" ]; then
-  echo "host replication iot_replication 0.0.0.0/0 trust" >> "$PGDATA/pg_hba.conf"
+  echo "host replication iot_replication 172.18.0.0/16 md5" >> "$PGDATA/pg_hba.conf"
 else
   echo "pg_hba.conf not found, skipping update"
 fi
