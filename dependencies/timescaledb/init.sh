@@ -172,3 +172,7 @@ psql -v on_error_top=1 --username iot_monitoring -d monitoring -f /scripts/monit
 #--------------------------------------------------------------------------------
 psql -v on_error_stop=1 --username iot_monitoring -d monitoring -f /scripts/monitoring_database_stat_statements_history_setup.sql
 
+#--------------------------------------------------------------------------------
+# REPLICATION SETUP
+#--------------------------------------------------------------------------------
+psql -v on_error_stop=1 --username iot_replication -d iot -f /scripts/replication.sql
