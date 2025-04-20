@@ -37,6 +37,8 @@ services:
     container_name: iot-timescaledb-replica
     depends_on:
       - timescaledb
+    environment:
+      - POSTGRES_PASSWORD=postgres
     ports:
       - "25432:5432"
 
