@@ -45,12 +45,17 @@ services:
       - PGPASSWORD=iot_replication 
     command: |
       bash -c "
-      until pg_basebackup --pgdata=/home/postgres/pgdata/data -R --slot=replica_1_slot --host=iot-timescaledb-primary --port=5432
-      do
-      echo 'Waiting for primary to connect...'
-      sleep 1s
-      done
-      echo 'Backup done, starting replica...'
+      if [ ! -s /home/postgres/pgdata/data/PG_VERSION ]; then
+        echo 'Initializing replica with pg_basebackup...'
+        until pg_basebackup --pgdata=/home/postgres/pgdata/data -R --slot=replica_1_slot --host=iot-timescaledb-primary --port=5432
+        do
+          echo 'Waiting for primary to connect...'
+          sleep 1s
+        done
+        echo 'Backup done, setting permissions...'
+      else
+        echo 'Data directory already exists, skipping pg_basebackup...'
+      fi
       chmod 0700 /home/postgres/pgdata/data
       postgres
       "
