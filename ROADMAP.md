@@ -35,6 +35,7 @@
 - [] deadletter exchange and queue for debugging purposes
 - [] rabbitmq docs + plugins docs + docs
 - [] improvement over nack and ack
+- [] pgroute for analysis of geolocation with [graph capabilities](https://www.timescale.com/learn/postgresql-extensions-pgrouting)
 ### documentation
 - [] For architecture diagram: socket svg is not as api as othe symbol could be
 - [] Update database schema
