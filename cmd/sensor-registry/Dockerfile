@@ -1,7 +1,7 @@
 # ---------------------------------------
 # Base Stage
 # ---------------------------------------
-FROM golang:1.23-alpine AS base
+FROM golang:1.24-alpine AS base
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ RUN go build -o sensor-registry ./cmd/sensor-registry
 # ---------------------------------------
 # Development Build
 # ---------------------------------------
-FROM golang:1.23-alpine AS dev
+FROM golang:1.24-alpine AS dev
 
 WORKDIR /app
 
