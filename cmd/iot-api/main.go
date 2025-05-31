@@ -54,6 +54,7 @@ func main() {
 	defer apiCfg.db.Close()
 
 	// api endpoints
+	router.HandleFunc("GET /api/v1/readyz", apiCfg.HandlerReadiness)
 	// router.HandleFunc("POST /api/v1/register", apiCfg.handlerAccountRegister)
 	// router.HandleFunc("POST /api/v1/regenerate-key", apiCfg.handlerAccountRegenerateKey)
 	router.HandleFunc("GET /api/v1/sensors", apiCfg.handlerSensorsRetrieve)
