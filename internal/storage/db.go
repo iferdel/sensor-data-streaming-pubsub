@@ -33,3 +33,7 @@ func NewDBPool(connString string) (*DB, error) {
 func (db *DB) Close() {
 	db.pool.Close()
 }
+
+func (db *DB) Ping(ctx context.Context) error {
+	return db.pool.Ping(ctx)
+}
