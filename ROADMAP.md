@@ -1,6 +1,7 @@
 ## ROADMAP
 ### iot-sensor-simluation
 - [] protobuf payload instead of json since real scenario
+- [] using getpid para randomizar each new iteration? quizás sirva para que cada vez que corra el simulador tenga algo variable
 ### iot-measurement-ingester
 - [] superstreams
 ### iot-api
