@@ -8,8 +8,6 @@ import (
 	"github.com/iferdel/sensor-data-streaming-server/cmd/iotctl/cmd"
 )
 
-const url = "http://localhost:8080/api/v1/"
-
 //go:embed version.txt
 var version string
 
