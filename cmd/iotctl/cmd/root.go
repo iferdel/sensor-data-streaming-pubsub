@@ -26,6 +26,7 @@ Every command has some flags such as sensor id or parameters related to the comm
 }
 
 // Execute executes the root command.
+// this is being run in main.go for the cli
 func Execute(currentVersion string) error {
 	rootCmd.Version = currentVersion
 	info := version.FetchUpdateInfo(currentVersion)
@@ -37,17 +38,6 @@ func Execute(currentVersion string) error {
 func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.iot.yaml")
-}
-
-func readViperConfig(paths []string) error {
-	for _, path := range paths {
-		_, err := os.Stat(path)
-		if err != nil {
-			continue
-		}
-		viper.SetConfigFile(path)
-	}
-	return viper.ReadInConfig()
 }
 
 func initConfig() {
@@ -77,9 +67,19 @@ func initConfig() {
 			cobra.CheckErr(err)
 		}
 	}
+	viper.SetEnvPrefix("iot") // used under the hood
+	viper.AutomaticEnv()      // read in environment variables that match
+}
 
-	viper.SetEnvPrefix("iot")
-	viper.AutomaticEnv() // read in environment variables that match
+func readViperConfig(paths []string) error {
+	for _, path := range paths {
+		_, err := os.Stat(path)
+		if err != nil {
+			continue
+		}
+		viper.SetConfigFile(path)
+	}
+	return viper.ReadInConfig()
 }
 
 // chain multiple commands together
