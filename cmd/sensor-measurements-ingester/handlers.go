@@ -20,3 +20,14 @@ func handlerMeasurements(db *storage.DB, ctx context.Context) func(m []routing.S
 		return pubsub.Ack
 	}
 }
+
+func handlerMeasurementsWithCache(cache *sensorlogic.SensorCache, db *storage.DB, ctx context.Context) func(m []routing.SensorMeasurement) pubsub.AckType {
+	return func(m []routing.SensorMeasurement) pubsub.AckType {
+		err := sensorlogic.HandleMeasurementsWithCache(ctx, cache, db, m)
+		if err != nil {
+			fmt.Printf("error writing sensor measurement instance: %v\n", err)
+			return pubsub.NackRequeue
+		}
+		return pubsub.Ack
+	}
+}

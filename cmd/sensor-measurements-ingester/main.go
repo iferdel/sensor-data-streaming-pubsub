@@ -10,12 +10,16 @@ import (
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
 	"github.com/iferdel/sensor-data-streaming-server/internal/routing"
+	"github.com/iferdel/sensor-data-streaming-server/internal/sensorlogic"
 	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
 )
 
 func main() {
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	db, err := storage.NewDBPool(storage.PostgresConnString)
 	if err != nil {
@@ -24,7 +28,14 @@ func main() {
 		return
 	}
 	defer db.Close()
-	ctx := context.Background()
+
+	sensorCache, err := sensorlogic.NewSensorCache(ctx, db)
+	if err != nil {
+		fmt.Printf("Failed to initialize sensor cache: %v\n", err)
+		return
+	}
+
+	go sensorCache.StartRefreshLoop(ctx)
 
 	env, err := stream.NewEnvironment(
 		stream.NewEnvironmentOptions().SetUri(routing.RabbitStreamConnString),
@@ -53,6 +64,7 @@ func main() {
 			SetConsumerName(routing.StreamConsumerName).
 			SetSingleActiveConsumer(stream.NewSingleActiveConsumer(singleActiveConsumerUpdate)),
 		handlerMeasurements(db, ctx),
+		// handlerMeasurementsWithCache(sensorCache, db, ctx),
 	)
 	if err != nil {
 		fmt.Println("error un subscribe stream json")
@@ -66,5 +78,8 @@ func main() {
 
 	fmt.Println("Waiting for messages. Press Ctrl+C to exit.")
 	<-sigs
-	fmt.Println("Shutting down gracefully.")
+	fmt.Println("Shutting down gracefully...")
+	cancel()                           // This stops the refresh loop
+	time.Sleep(100 * time.Millisecond) // Give goroutines time to clean up
+	fmt.Println("Shutdown complete.")
 }
