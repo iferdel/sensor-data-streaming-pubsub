@@ -176,8 +176,13 @@ psql -v on_error_stop=1 --username iot_monitoring -d monitoring -f /scripts/moni
 # REPLICATION SETUP
 #--------------------------------------------------------------------------------
 psql -v on_error_stop=1 --username iot_replication -d iot -f /scripts/replication.sql
+
+# Use environment variable with fallback
+REPLICATION_SUBNET="${REPLICATION_SUBNET:-172.16.0.0/12}"
+
 if [ -f "$PGDATA/pg_hba.conf" ]; then
-  echo "host replication iot_replication 172.18.0.0/16 md5" >> "$PGDATA/pg_hba.conf"
+  echo "host replication iot_replication $REPLICATION_SUBNET md5" >> "$PGDATA/pg_hba.conf"
+  echo "Configured replication for subnet: $REPLICATION_SUBNET"
 else
   echo "pg_hba.conf not found, skipping update"
 fi

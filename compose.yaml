@@ -22,12 +22,13 @@ services:
     ports:
       - "15432:5432"
     environment:
-      - POSTGRES_PASSWORD=postgres 
+      - POSTGRES_PASSWORD=postgres
       - IOT_PASSWORD=iot
       - IOT_REPLICATION_PASSWORD=iot_replication
       - IOT_MONITORING_PASSWORD=iot_monitoring
       - IOT_APP_PASSWORD=iot_app
       - IOT_READONLY_PASSWORD=iot_readonly
+      - REPLICATION_SUBNET=172.16.0.0/12  # Covers all Docker bridge networks (172.16-172.31)
     volumes:
       - ./dependencies/timescaledb/primary/postgresql.conf:/etc/postgresql.conf
     command: postgres -c config_file=/etc/postgresql.conf
