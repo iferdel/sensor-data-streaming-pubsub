@@ -41,7 +41,7 @@ func MQTTCreateClientOptions(clientId, raw string) *mqtt.ClientOptions {
 	return opts
 }
 
-func NewConfig() (*Config, error) {
+func NewConfig(clientID string) (*Config, error) {
 	// amqp
 	conn, err := amqp.Dial(routing.RabbitConnString)
 	if err != nil {
@@ -49,7 +49,7 @@ func NewConfig() (*Config, error) {
 	}
 
 	// mqtt
-	mqttOpts := MQTTCreateClientOptions("publisher", routing.RabbitMQTTConnString)
+	mqttOpts := MQTTCreateClientOptions(clientID, routing.RabbitMQTTConnString)
 	mqttClient := mqtt.NewClient(mqttOpts)
 	token := mqttClient.Connect()
 	token.Wait()
@@ -65,14 +65,6 @@ func NewConfig() (*Config, error) {
 
 func main() {
 
-	cfg, err := NewConfig()
-	if err != nil {
-		log.Fatalf("Could not create rabbitMQ connection: %v", err)
-	}
-	fmt.Println("Connection to msg broker succeeded")
-	defer cfg.rabbitConn.Close()
-	defer cfg.mqttClient.Disconnect(200 * uint(time.Millisecond))
-
 	// environment variables
 	serialNumber := os.Getenv("SENSOR_SERIAL_NUMBER")
 	if serialNumber == "" {
@@ -84,6 +76,14 @@ func main() {
 	if err != nil {
 		log.Fatal("non valid sample frequency: it is empty")
 	}
+
+	cfg, err := NewConfig(serialNumber)
+	if err != nil {
+		log.Fatalf("Could not create rabbitMQ connection: %v", err)
+	}
+	fmt.Println("Connection to msg broker succeeded")
+	defer cfg.rabbitConn.Close()
+	defer cfg.mqttClient.Disconnect(200 * uint(time.Millisecond))
 
 	cfg.sensorOperation(serialNumber, sampleFrequency)
 }
