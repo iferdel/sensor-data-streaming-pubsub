@@ -3,8 +3,8 @@ services:
     build: dependencies/rabbitmq/
     container_name: iot-rabbitmq
     ports:
-      - "5672:5672"   # RabbitMQ main port
-      - "15692:15692"   # RabbitMQ exposes the metrics on a dedicated TCP port, 15692 by default.
+      - "5672:5672" # RabbitMQ main port
+      - "15692:15692" # RabbitMQ exposes the metrics on a dedicated TCP port, 15692 by default.
       - "15672:15672" # Management UI port
       - "1883:1883" # MQTT
       - "5552:5552" # Stream plugin
@@ -28,7 +28,7 @@ services:
       - IOT_MONITORING_PASSWORD=iot_monitoring
       - IOT_APP_PASSWORD=iot_app
       - IOT_READONLY_PASSWORD=iot_readonly
-      - REPLICATION_SUBNET=172.16.0.0/12  # Covers all Docker bridge networks (172.16-172.31)
+      - REPLICATION_SUBNET=172.16.0.0/12 # Covers all Docker bridge networks (172.16-172.31)
     volumes:
       - ./dependencies/timescaledb/primary/postgresql.conf:/etc/postgresql.conf
     command: postgres -c config_file=/etc/postgresql.conf
@@ -43,7 +43,7 @@ services:
     environment:
       - POSTGRES_PASSWORD=postgres
       - PGUSER=iot_replication
-      - PGPASSWORD=iot_replication 
+      - PGPASSWORD=iot_replication
     command: |
       bash -c "
       if [ ! -s /home/postgres/pgdata/data/PG_VERSION ]; then
@@ -93,10 +93,10 @@ services:
   node-exporter:
     container_name: iot-node-exporter
     command:
-      - '--path.procfs=/host/proc'
-      - '--path.rootfs=/rootfs'
-      - '--path.sysfs=/host/sys'
-      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)'
+      - "--path.procfs=/host/proc"
+      - "--path.rootfs=/rootfs"
+      - "--path.sysfs=/host/sys"
+      - "--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|etc)($$|/)"
     expose:
       - 9100
     # https://hub.docker.com/r/prom/node-exporter/tags
@@ -136,23 +136,23 @@ services:
       - GF_DASHBOARDS_MIN_REFRESH_INTERVAL=1s
     volumes:
       - ./dependencies/grafana/provisioning:/etc/grafana/provisioning
-  
+
   sensor-simulation-0: &sensor-simulation
     depends_on:
       - rabbitmq
       - timescaledb
     build:
-      context: .          
+      context: .
       dockerfile: ./cmd/sensor-simulation/Dockerfile
       target: dev
     container_name: iot-sensor-simulation-0
     volumes:
       # go-air dependant
-      - ./cmd/sensor-simulation:/app/cmd/sensor-simulation        # Mount the specific service's code
-      - ./internal:/app/internal              # Mount shared internal code
-      - ./assets:/app/assets                  # Mount assets if needed by the API
-      - ./utils:/app/utils                    # Mount utilities like scripts
-      - ./go.mod:/app/go.mod                  # Track Go dependencies
+      - ./cmd/sensor-simulation:/app/cmd/sensor-simulation # Mount the specific service's code
+      - ./internal:/app/internal # Mount shared internal code
+      - ./assets:/app/assets # Mount assets if needed by the API
+      - ./utils:/app/utils # Mount utilities like scripts
+      - ./go.mod:/app/go.mod # Track Go dependencies
       - ./go.sum:/app/go.sum
     environment:
       - SENSOR_SERIAL_NUMBER=AAD-1123
@@ -178,17 +178,17 @@ services:
       - rabbitmq
       - timescaledb
     build:
-      context: .          
+      context: .
       dockerfile: ./cmd/iot-api/Dockerfile
       target: dev
     container_name: iot-api
     volumes:
       # go-air dependant
-      - ./cmd/iot-api:/app/cmd/iot-api        # Mount the specific service's code
-      - ./internal:/app/internal              # Mount shared internal code
-      - ./assets:/app/assets                  # Mount assets if needed by the API
-      - ./utils:/app/utils                    # Mount utilities like scripts
-      - ./go.mod:/app/go.mod                  # Track Go dependencies
+      - ./cmd/iot-api:/app/cmd/iot-api # Mount the specific service's code
+      - ./internal:/app/internal # Mount shared internal code
+      - ./assets:/app/assets # Mount assets if needed by the API
+      - ./utils:/app/utils # Mount utilities like scripts
+      - ./go.mod:/app/go.mod # Track Go dependencies
       - ./go.sum:/app/go.sum
     ports:
       - "8080:8080"
@@ -201,7 +201,7 @@ services:
       - rabbitmq
       - timescaledb
     build:
-      context: .          
+      context: .
       dockerfile: ./cmd/sensor-logs-ingester/Dockerfile
       target: dev
     container_name: iot-sensor-logs-ingester
@@ -209,13 +209,13 @@ services:
       - RABBIT_AMQP_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-primary:5432/iot
     volumes:
-      - volume_iot_log:/app/log  
+      - volume_iot_log:/app/log
       # go-air dependant
-      - ./cmd/sensor-logs-ingester:/app/cmd/sensor-logs-ingester        # Mount the specific service's code
-      - ./internal:/app/internal              # Mount shared internal code
-      - ./assets:/app/assets                  # Mount assets if needed by the API
-      - ./utils:/app/utils                    # Mount utilities like scripts
-      - ./go.mod:/app/go.mod                  # Track Go dependencies
+      - ./cmd/sensor-logs-ingester:/app/cmd/sensor-logs-ingester # Mount the specific service's code
+      - ./internal:/app/internal # Mount shared internal code
+      - ./assets:/app/assets # Mount assets if needed by the API
+      - ./utils:/app/utils # Mount utilities like scripts
+      - ./go.mod:/app/go.mod # Track Go dependencies
       - ./go.sum:/app/go.sum
 
   sensor-measurements-ingester-0: &sensor-measurements-ingester
@@ -223,18 +223,18 @@ services:
       - rabbitmq
       - timescaledb
     build:
-      context: .          
+      context: .
       dockerfile: ./cmd/sensor-measurements-ingester/Dockerfile
       target: dev
     container_name: iot-sensor-measurements-ingester-0
     restart: unless-stopped
     volumes:
       # go-air dependant
-      - ./cmd/sensor-measurements-ingester:/app/cmd/sensor-measurements-ingester        # Mount the specific service's code
-      - ./internal:/app/internal              # Mount shared internal code
-      - ./assets:/app/assets                  # Mount assets if needed by the API
-      - ./utils:/app/utils                    # Mount utilities like scripts
-      - ./go.mod:/app/go.mod                  # Track Go dependencies
+      - ./cmd/sensor-measurements-ingester:/app/cmd/sensor-measurements-ingester # Mount the specific service's code
+      - ./internal:/app/internal # Mount shared internal code
+      - ./assets:/app/assets # Mount assets if needed by the API
+      - ./utils:/app/utils # Mount utilities like scripts
+      - ./go.mod:/app/go.mod # Track Go dependencies
       - ./go.sum:/app/go.sum
     environment:
       - RABBIT_AMQP_CONN_STRING=amqp://guest:guest@iot-rabbitmq:5672/
@@ -243,11 +243,11 @@ services:
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-primary:5432/iot
 
   sensor-measurements-ingester-1:
-    << : *sensor-measurements-ingester
+    <<: *sensor-measurements-ingester
     container_name: iot-sensor-measurements-ingester-1
-  
+
   sensor-measurements-ingester-2:
-    << : *sensor-measurements-ingester
+    <<: *sensor-measurements-ingester
     container_name: iot-sensor-measurements-ingester-2
 
   sensor-registry:
@@ -255,7 +255,7 @@ services:
       - rabbitmq
       - timescaledb
     build:
-      context: .          
+      context: .
       dockerfile: ./cmd/sensor-registry/Dockerfile
       target: dev
     container_name: iot-sensor-registry
@@ -264,11 +264,11 @@ services:
       - POSTGRES_CONN_STRING=postgres://postgres:postgres@iot-timescaledb-primary:5432/iot
     volumes:
       # go-air dependant
-      - ./cmd/sensor-registry:/app/cmd/sensor-registry        # Mount the specific service's code
-      - ./internal:/app/internal              # Mount shared internal code
-      - ./assets:/app/assets                  # Mount assets if needed by the API
-      - ./utils:/app/utils                    # Mount utilities like scripts
-      - ./go.mod:/app/go.mod                  # Track Go dependencies
+      - ./cmd/sensor-registry:/app/cmd/sensor-registry # Mount the specific service's code
+      - ./internal:/app/internal # Mount shared internal code
+      - ./assets:/app/assets # Mount assets if needed by the API
+      - ./utils:/app/utils # Mount utilities like scripts
+      - ./go.mod:/app/go.mod # Track Go dependencies
       - ./go.sum:/app/go.sum
 
 volumes:
