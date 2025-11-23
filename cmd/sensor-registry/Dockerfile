@@ -1,7 +1,7 @@
 # ---------------------------------------
 # Base Stage
 # ---------------------------------------
-FROM golang:1.24-alpine AS base
+FROM golang:1.25-alpine AS base
 
 WORKDIR /app
 
@@ -17,13 +17,13 @@ RUN go build -o sensor-registry ./cmd/sensor-registry
 # ---------------------------------------
 # Development Build
 # ---------------------------------------
-FROM golang:1.24-alpine AS dev
+FROM golang:1.25-alpine AS dev
 
 WORKDIR /app
 
 # Install Air and other necessary tools
 RUN apk add --no-cache gcc musl-dev && \
-    go install github.com/air-verse/air@latest
+    go install github.com/air-verse/air@v1.63.1
 
 # Copy air config
 COPY ./cmd/sensor-registry/air.toml .
