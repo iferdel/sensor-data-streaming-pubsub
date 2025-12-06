@@ -1,5 +1,7 @@
 ## ROADMAP
 
+
+- [ ] https://programmingpercy.tech/blog/using-rabbitmq-streams-in-go/
 - [] user %w en Errorf formatting para mejor output del error message
 - [] ver uso de type definitions. Ej.
 ```
@@ -67,6 +69,9 @@ type Repository[T Entity] interface {
     Save(T) error
     FindByID(id string) (T, error)
 }
+```
+
+
 - [] [minuto 43.00, 45.00, 52.00, 1.14.00](https://www.youtube.com/watch?v=sSpULGNHyoI&t=73s)
 - [] ver y proponer en discord bootdev con [este caso](https://www.linkedin.com/feed/update/urn:li:activity:7358398815307034624?utm_source=share&utm_medium=member_desktop&rcm=ACoAABxzBsMBs2WZMohbXp4qCmWrj0AV4UUVuLE)
 - [] dashboard de active sensors con locations y cosas así...
