@@ -1,7 +1,49 @@
 apiVersion: 1
 
+# =============================================================================
+# CONNECTION POOL SETTINGS EXPLANATION
+# =============================================================================
+# maxOpenConns and maxIdleConns define a connection pool that is:
+#   - GLOBAL per Grafana instance (not per user)
+#   - SHARED across all dashboards, panels, and users viewing them
+#   - PER DATASOURCE (each datasource has its own independent pool)
+#
+# How it works:
+#   1. When a panel needs data, Grafana takes a connection from the pool
+#   2. Query executes (typically 10-100ms for simple queries)
+#   3. Connection is returned to the pool for reuse
+#
+# Sizing formula:
+#   Connections needed ≈ (queries/sec) × (avg query time in seconds)
+#   Example: 6 panels × 10 users / 5s refresh × 0.05s query = ~0.6 connections avg
+#
+# maxOpenConns: Maximum simultaneous connections to the database
+# maxIdleConns: Connections kept open when idle (avoids reconnection overhead)
+# connMaxLifetime: Seconds before a connection is recycled (14400 = 4 hours)
+#
+# Architecture:
+#
+#   ┌─────────────────────────────────────────────────────────────┐
+#   │                    Grafana Instance                          │
+#   │                                                             │
+#   │   User A ──┐                                                │
+#   │   User B ──┼──► All share the same connection pools         │
+#   │   User C ──┘                                                │
+#   │                                                             │
+#   │   ┌─────────────────────┐    ┌─────────────────────┐        │
+#   │   │ IoT Measurements    │    │ DB Stat Monitoring  │        │
+#   │   │ Pool: 25 max / 10   │    │ Pool: 10 max / 5    │        │
+#   │   │       idle          │    │       idle          │        │
+#   │   └──────────┬──────────┘    └──────────┬──────────┘        │
+#   └──────────────┼──────────────────────────┼───────────────────┘
+#                  ▼                          ▼
+#           iot database              monitoring database
+#           (replica)                    (replica)
+#
+# =============================================================================
+
 datasources:
-  - name: IoT Measurements
+  - name: IoT Real-Time Measurements -- Readonly Replica
     type: postgres
     access: proxy
     uid: be9ijnandyz9ce
@@ -16,13 +58,15 @@ datasources:
       postgresVersion: 1700
       database: iot
       sslmode: disable
-      maxOpenConns: 100 # Grafana v5.4+
-      maxIdleConns: 100 # Grafana v5.4+
+      # Higher limits for sensor data queries which may be heavier
+      # (time_bucket aggregations, JOINs, larger result sets)
+      maxOpenConns: 25
+      maxIdleConns: 10
       maxIdleConnsAuto: true # Grafana v9.5.1+
-      connMaxLifetime: 14400 # Grafana v5.4+
+      connMaxLifetime: 14400
       timescaledb: true
 
-  - name: IoT DB Monitoring
+  - name: DB Stat Monitoring
     type: postgres
     access: proxy
     uid: de9iten8jjqiof
@@ -37,21 +81,25 @@ datasources:
       postgresVersion: 1700
       database: monitoring
       sslmode: disable
-      maxOpenConns: 100 # Grafana v5.4+
-      maxIdleConns: 100 # Grafana v5.4+
+      # Conservative limits - monitoring queries are simple and fast
+      # 6 panels × ~50ms queries = minimal connection usage
+      maxOpenConns: 10
+      maxIdleConns: 5
       maxIdleConnsAuto: true # Grafana v9.5.1+
-      connMaxLifetime: 14400 # Grafana v5.4+
+      connMaxLifetime: 14400
       timescaledb: true
 
   - name: Loki
     type: loki
     access: proxy
     uid: P8E80F9AEF21F6940
-    url: http://loki:3100    
+    url: http://loki:3100
 
   - name: prometheus
     # <string, required> datasource type. Required
     type: prometheus
+    # <string> unique identifier for the datasource
+    uid: prometheus
     # <string, required> access mode. direct or proxy. Required
     access: proxy
     # <int> org id. will default to orgId 1 if not specified

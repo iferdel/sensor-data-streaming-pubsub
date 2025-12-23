@@ -36,3 +36,9 @@ scrape_configs:
     static_configs:
       - targets:
           - 'iot-rabbitmq:15692'
+  - job_name: 'sensor-measurements-ingester'
+    static_configs:
+      - targets:
+          - 'iot-sensor-measurements-ingester-0:9091'
+          - 'iot-sensor-measurements-ingester-1:9091'
+          - 'iot-sensor-measurements-ingester-2:9091'
