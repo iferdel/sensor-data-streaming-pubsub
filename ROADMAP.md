@@ -10,6 +10,7 @@
 - [ ] superstreams
 - [ ] este servicio maneja muchos requests a la base de datos (real time monitoring) así que caching es clave y debería estar pensado desde el momento inicial.
 - [ ] concurrency (goroutines)
+- [ ] https://programmingpercy.tech/blog/using-rabbitmq-streams-in-go/
 ### iot-log-ingester
 - [ ] File I/O per log message - revisar si el log file se está abriendo y cerrando por cada log message. Si ese es el caso debería haber una manera más 'elegante' de hacerlo.
 ### iot-api
