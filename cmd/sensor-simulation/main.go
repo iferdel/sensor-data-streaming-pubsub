@@ -157,6 +157,7 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64)
 
 	// subscribe to sensor command queue
 	err = pubsub.SubscribeGob(
+		context.Background(),
 		cfg.rabbitConn,
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.QueueSensorCommandsFormat, serialNumber),       // queue name

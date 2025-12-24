@@ -2,6 +2,7 @@ package pubsub
 
 import (
 	"bytes"
+	"context"
 	"encoding/gob"
 	"encoding/json"
 	"errors"
@@ -75,6 +76,7 @@ func SubscribeStreamJSON[T any](
 }
 
 func SubscribeJSON[T any](
+	ctx context.Context,
 	conn *amqp.Connection,
 	exchange,
 	queueName,
@@ -84,6 +86,7 @@ func SubscribeJSON[T any](
 	handler func(T) AckType,
 ) error {
 	return subscribe[T](
+		ctx,
 		conn,
 		exchange,
 		queueName,
@@ -100,6 +103,7 @@ func SubscribeJSON[T any](
 }
 
 func SubscribeGob[T any](
+	ctx context.Context,
 	conn *amqp.Connection,
 	exchange,
 	queueName,
@@ -109,6 +113,7 @@ func SubscribeGob[T any](
 	handler func(T) AckType,
 ) error {
 	return subscribe[T](
+		ctx,
 		conn,
 		exchange,
 		queueName,
@@ -128,6 +133,7 @@ func SubscribeGob[T any](
 }
 
 func subscribe[T any](
+	ctx context.Context,
 	conn *amqp.Connection,
 	exchange,
 	queueName,
@@ -169,14 +175,23 @@ func subscribe[T any](
 
 	go func() {
 		defer ch.Close()
-		for msg := range msgs {
-			target, err := unmarshaller(msg.Body)
-			if err != nil {
-				fmt.Printf("could not unmarshal message: %v\n", err)
-				continue
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case msg, ok := <-msgs:
+				if !ok {
+					return
+				}
+				target, err := unmarshaller(msg.Body)
+				if err != nil {
+					fmt.Printf("could not unmarshal message: %v\n", err)
+					// TODO: check if we should nack here
+					continue
+				}
+				handler(target)
+				msg.Ack(false)
 			}
-			handler(target)
-			msg.Ack(false)
 		}
 	}()
 

@@ -16,14 +16,11 @@ import (
 )
 
 type apiConfig struct {
-	ctx        context.Context
 	rabbitConn *amqp.Connection
 	db         *storage.DB
 }
 
 func NewApiConfig() (*apiConfig, error) {
-	ctx := context.Background()
-
 	conn, err := amqp.Dial(routing.RabbitConnString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
@@ -32,13 +29,15 @@ func NewApiConfig() (*apiConfig, error) {
 	db, err := storage.NewDBPool(storage.PostgresConnString)
 
 	return &apiConfig{
-		ctx:        ctx,
 		rabbitConn: conn,
 		db:         db,
 	}, nil
 }
 
 func main() {
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
 	apiCfg, err := NewApiConfig()
 	if err != nil {
@@ -49,13 +48,14 @@ func main() {
 
 	// consume sensor registration
 	err = pubsub.SubscribeGob(
+		ctx,
 		apiCfg.rabbitConn,
 		routing.ExchangeTopicIoT,
 		routing.QueueSensorRegistry,
 		fmt.Sprintf(routing.KeySensorRegistryFormat, "*")+"."+"#", // subscribeGob creates and bind a queue to an exchange in case it is not yet there. Thats why here we have binding key (and not just queue name)
 		pubsub.QueueDurable,
 		pubsub.QueueClassic,
-		handlerSensorRegistry(apiCfg.ctx, apiCfg.db), // consumption
+		handlerSensorRegistry(ctx, apiCfg.db), // consumption
 	)
 	if err != nil {
 		fmt.Println("Could not subscribe to registry:", err)
@@ -66,10 +66,7 @@ func main() {
 	// the broker can confirm the producer that the msg was received
 
 	// Graceful shutdown handling
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
 	fmt.Println("Waiting for messages. Press Ctrl+C to exit.")
-	<-sigs
+	<-ctx.Done()
 	fmt.Println("Shutting down gracefully.")
 }

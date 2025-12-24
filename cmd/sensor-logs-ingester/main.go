@@ -13,6 +13,9 @@ import (
 )
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
 	conn, err := amqp.Dial(routing.RabbitConnString)
 	if err != nil {
 		msg := fmt.Sprintf("could not connect to RabbitMQ: %v", err)
@@ -23,6 +26,7 @@ func main() {
 
 	// subscribe to Log queue
 	err = pubsub.SubscribeGob(
+		ctx,
 		conn,
 		routing.ExchangeTopicIoT,
 		routing.QueueSensorLogs,
@@ -36,10 +40,7 @@ func main() {
 	}
 
 	// Graceful shutdown handling
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
 	fmt.Println("Waiting for messages...")
-	<-sigs
+	<-ctx.Done()
 	fmt.Println("Shutting down gracefully...")
 }
