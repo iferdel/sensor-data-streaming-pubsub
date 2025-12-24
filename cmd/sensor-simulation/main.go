@@ -9,6 +9,7 @@ package main
 // RabbitMQ let you define an alternate exchange to apply logic to unroutable messages.
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -143,6 +144,7 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64)
 	// publish sensor for registration if not already
 	sensorState.LogsInfo <- "Sensor Auth..."
 	pubsub.PublishGob(
+		context.Background(),
 		publishCh,                // channel
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.KeySensorRegistryFormat, serialNumber)+"."+"created", // routing key
@@ -257,6 +259,7 @@ func (cfg *Config) sensorOperation(serialNumber string, sampleFrequency float64)
 
 func publishSensorLog(publishCh *amqp.Channel, sensorLog routing.SensorLog) error {
 	return pubsub.PublishGob(
+		context.Background(),
 		publishCh,                // channel
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.KeySensorLogsFormat, sensorLog.SerialNumber), // routing key

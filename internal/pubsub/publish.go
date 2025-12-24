@@ -10,7 +10,7 @@ import (
 )
 
 // publishers do not create queues since they work directly with exhances withot knowing even about queues
-func PublishGob[T any](ch *amqp.Channel, exchange, key string, val T) error {
+func PublishGob[T any](ctx context.Context, ch *amqp.Channel, exchange, key string, val T) error {
 	var buffer bytes.Buffer
 	enc := gob.NewEncoder(&buffer)
 	err := enc.Encode(val)
@@ -24,7 +24,7 @@ func PublishGob[T any](ch *amqp.Channel, exchange, key string, val T) error {
 	}
 
 	return ch.PublishWithContext(
-		context.Background(),
+		ctx,
 		exchange,
 		key,
 		false,

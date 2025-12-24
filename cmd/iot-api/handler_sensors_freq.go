@@ -15,7 +15,7 @@ func (cfg *apiConfig) handlerSensorsChangeSampleFrequency(w http.ResponseWriter,
 	// TODO: relation with database, how to keep state between sensor current sample frequency and db registered sample frequency.
 	// Maybe this last point (saving sample frequency in db) is redundant and useless
 
-	defer req.Body.Close()
+	ctx := req.Context()
 
 	sensorSerialNumber := req.PathValue("sensorSerialNumber")
 
@@ -34,6 +34,7 @@ func (cfg *apiConfig) handlerSensorsChangeSampleFrequency(w http.ResponseWriter,
 	defer publishCh.Close()
 
 	err = pubsub.PublishGob(
+		ctx,
 		publishCh,                // amqp.Channel
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.KeySensorCommandsFormat, sensorSerialNumber)+"."+"change_sample_frequency", // routing key

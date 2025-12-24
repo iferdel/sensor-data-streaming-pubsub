@@ -4,25 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
-
-	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func GetTarget() ([]TargetRecord, error) {
-	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, PostgresConnString)
-	if err != nil {
-		return nil, fmt.Errorf("unable to connect to database: %v", err)
-	}
-	defer dbpool.Close()
-
-	/********************************************/
-	/* SELECT from relational table             */
-	/********************************************/
+func (DB *DB) GetTarget(ctx context.Context) ([]TargetRecord, error) {
 
 	queryGetMetadata := `SELECT name FROM target;`
 
-	rows, err := dbpool.Query(ctx, queryGetMetadata)
+	rows, err := DB.pool.Query(ctx, queryGetMetadata)
 	if err != nil {
 		return nil, fmt.Errorf("unable to get targets: %v", err)
 	}
@@ -45,19 +33,8 @@ func GetTarget() ([]TargetRecord, error) {
 	return targets, nil
 }
 
-func WriteTarget(tr TargetRecord) error {
+func (DB *DB) WriteTarget(ctx context.Context, tr TargetRecord) error {
 	// TODO: Implement Mutex RW
-
-	ctx := context.Background()
-	dbpool, err := pgxpool.New(ctx, PostgresConnString)
-	if err != nil {
-		return fmt.Errorf("unable to connect to database: %v", err)
-	}
-	defer dbpool.Close()
-
-	/********************************************/
-	/* INSERT into relational table             */
-	/********************************************/
 
 	// if target exists, return log message with kind of 'target already registered'
 	queryCheckIfExists := `SELECT EXISTS (
@@ -65,7 +42,7 @@ func WriteTarget(tr TargetRecord) error {
 	);`
 
 	var rowExists bool
-	err = dbpool.QueryRow(ctx, queryCheckIfExists, tr.Name).Scan(&rowExists)
+	err := DB.pool.QueryRow(ctx, queryCheckIfExists, tr.Name).Scan(&rowExists)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,7 +54,7 @@ func WriteTarget(tr TargetRecord) error {
 
 	queryInsertMetadata := `INSERT INTO target (name) VALUES ($1);`
 
-	_, err = dbpool.Exec(ctx, queryInsertMetadata, tr.Name)
+	_, err = DB.pool.Exec(ctx, queryInsertMetadata, tr.Name)
 	if err != nil {
 		return fmt.Errorf("unable to insert target metadata into database: %v", err)
 	}

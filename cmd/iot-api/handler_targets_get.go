@@ -3,12 +3,11 @@ package main
 import (
 	"log"
 	"net/http"
-
-	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 )
 
 func (cfg *apiConfig) handlerTargetsGet(w http.ResponseWriter, req *http.Request) {
-	sensors, err := storage.GetTarget()
+	ctx := req.Context()
+	sensors, err := cfg.db.GetTarget(ctx)
 	if err != nil {
 		log.Printf("Could not retrieve targets: %s", err)
 		w.WriteHeader(500)

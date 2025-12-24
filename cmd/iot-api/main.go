@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,14 +12,11 @@ import (
 )
 
 type apiConfig struct {
-	ctx        context.Context
 	rabbitConn *amqp.Connection
 	db         *storage.DB
 }
 
 func NewApiConfig() (*apiConfig, error) {
-	ctx := context.Background()
-
 	conn, err := amqp.Dial(routing.RabbitConnString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to RabbitMQ: %w", err)
@@ -29,7 +25,6 @@ func NewApiConfig() (*apiConfig, error) {
 	db, err := storage.NewDBPool(storage.PostgresConnString)
 
 	return &apiConfig{
-		ctx:        ctx,
 		rabbitConn: conn,
 		db:         db,
 	}, nil

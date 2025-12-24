@@ -8,7 +8,7 @@ import (
 )
 
 func (cfg *apiConfig) handlerTargetsCreate(w http.ResponseWriter, req *http.Request) {
-	defer req.Body.Close()
+	ctx := req.Context()
 
 	decoder := json.NewDecoder(req.Body)
 	params := storage.TargetRecord{}
@@ -18,7 +18,7 @@ func (cfg *apiConfig) handlerTargetsCreate(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	err = storage.WriteTarget(params)
+	err = cfg.db.WriteTarget(ctx, params)
 	if err != nil {
 		respondWithError(w, 500, "Could not create new target", err)
 		return

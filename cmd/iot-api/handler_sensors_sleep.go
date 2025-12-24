@@ -11,6 +11,7 @@ import (
 )
 
 func (cfg *apiConfig) handlerSensorsSleep(w http.ResponseWriter, req *http.Request) {
+	ctx := req.Context()
 	sensorSerialNumber := req.PathValue("sensorSerialNumber")
 
 	publishCh, err := cfg.rabbitConn.Channel()
@@ -21,6 +22,7 @@ func (cfg *apiConfig) handlerSensorsSleep(w http.ResponseWriter, req *http.Reque
 	defer publishCh.Close()
 
 	err = pubsub.PublishGob(
+		ctx,
 		publishCh,                // amqp.Channel
 		routing.ExchangeTopicIoT, // exchange
 		fmt.Sprintf(routing.KeySensorCommandsFormat, sensorSerialNumber)+"."+"sleep", // routing key
