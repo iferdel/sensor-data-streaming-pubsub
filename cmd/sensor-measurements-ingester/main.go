@@ -3,9 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
+	"log"
 	"time"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
@@ -16,20 +14,34 @@ import (
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
 )
 
+type apiConfig struct {
+	db *storage.DB
+}
+
+func NewApiConfig() (*apiConfig, error) {
+	db, err := storage.NewDBPool(storage.PostgresConnString)
+	if err != nil {
+		// ideally this should be more flexible, similarly to what one sees in DDD approaches
+		return nil, fmt.Errorf("failed to connect to Postgres: %w", err)
+	}
+
+	return &apiConfig{
+		db: db,
+	}, nil
+}
+
 func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	db, err := storage.NewDBPool(storage.PostgresConnString)
+	apiCfg, err := NewApiConfig()
 	if err != nil {
-		msg := fmt.Sprintf("could not open pool connection to PostgreSQL: %v", err)
-		fmt.Println(msg)
-		return
+		log.Fatal(err)
 	}
-	defer db.Close()
+	defer apiCfg.db.Close()
 
-	sensorCache, err := sensorlogic.NewSensorCache(ctx, db)
+	sensorCache, err := sensorlogic.NewSensorCache(ctx, apiCfg.db)
 	if err != nil {
 		fmt.Printf("Failed to initialize sensor cache: %v\n", err)
 		return
@@ -63,23 +75,16 @@ func main() {
 			SetOffset(stream.OffsetSpecification{}.First()).
 			SetConsumerName(routing.StreamConsumerName).
 			SetSingleActiveConsumer(stream.NewSingleActiveConsumer(singleActiveConsumerUpdate)),
-		handlerMeasurements(db, ctx),
-		// handlerMeasurementsWithCache(sensorCache, db, ctx),
+		handlerMeasurements(ctx, apiCfg.db),
+		// handlerMeasurementsWithCache(ctx, sensorCache, db),
 	)
 	if err != nil {
 		fmt.Println("error un subscribe stream json")
 	}
-
 	defer consumer.Close()
 
 	// Graceful shutdown handling
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-
 	fmt.Println("Waiting for messages. Press Ctrl+C to exit.")
-	<-sigs
-	fmt.Println("Shutting down gracefully...")
-	cancel()                           // This stops the refresh loop
-	time.Sleep(100 * time.Millisecond) // Give goroutines time to clean up
+	<-ctx.Done()
 	fmt.Println("Shutdown complete.")
 }

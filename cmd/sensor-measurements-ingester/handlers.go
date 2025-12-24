@@ -10,7 +10,7 @@ import (
 	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 )
 
-func handlerMeasurements(db *storage.DB, ctx context.Context) func(m []routing.SensorMeasurement) pubsub.AckType {
+func handlerMeasurements(ctx context.Context, db *storage.DB) func(m []routing.SensorMeasurement) pubsub.AckType {
 	return func(m []routing.SensorMeasurement) pubsub.AckType {
 		err := sensorlogic.HandleMeasurements(ctx, db, m)
 		if err != nil {
@@ -21,7 +21,7 @@ func handlerMeasurements(db *storage.DB, ctx context.Context) func(m []routing.S
 	}
 }
 
-func handlerMeasurementsWithCache(cache *sensorlogic.SensorCache, db *storage.DB, ctx context.Context) func(m []routing.SensorMeasurement) pubsub.AckType {
+func handlerMeasurementsWithCache(ctx context.Context, cache *sensorlogic.SensorCache, db *storage.DB) func(m []routing.SensorMeasurement) pubsub.AckType {
 	return func(m []routing.SensorMeasurement) pubsub.AckType {
 		err := sensorlogic.HandleMeasurementsWithCache(ctx, cache, db, m)
 		if err != nil {

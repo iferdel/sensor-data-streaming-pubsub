@@ -23,6 +23,10 @@ func NewApiConfig() (*apiConfig, error) {
 	}
 
 	db, err := storage.NewDBPool(storage.PostgresConnString)
+	if err != nil {
+		// ideally this should be more flexible, similarly to what one sees in DDD approaches
+		return nil, fmt.Errorf("failed to connect to Postgres: %w", err)
+	}
 
 	return &apiConfig{
 		rabbitConn: conn,
