@@ -35,7 +35,6 @@ type Repository[T Entity] interface {
     Save(T) error
     FindByID(id string) (T, error)
 }
-<<<<<<< HEAD
 ```
 ### iot-cli
 - [ ] api key for auth
