@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
@@ -14,34 +13,19 @@ import (
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
 )
 
-type apiConfig struct {
-	db *storage.DB
-}
-
-func NewApiConfig() (*apiConfig, error) {
-	db, err := storage.NewDBPool(storage.PostgresConnString)
-	if err != nil {
-		// ideally this should be more flexible, similarly to what one sees in DDD approaches
-		return nil, fmt.Errorf("failed to connect to Postgres: %w", err)
-	}
-
-	return &apiConfig{
-		db: db,
-	}, nil
-}
-
 func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	apiCfg, err := NewApiConfig()
+	db, err := storage.NewDBPool(storage.PostgresConnString)
 	if err != nil {
-		log.Fatal(err)
+		// ideally this should be more flexible, similarly to what one sees in DDD approaches
+		return
 	}
-	defer apiCfg.db.Close()
+	defer db.Close()
 
-	sensorCache, err := sensorlogic.NewSensorCache(ctx, apiCfg.db)
+	sensorCache, err := sensorlogic.NewSensorCache(ctx, db)
 	if err != nil {
 		fmt.Printf("Failed to initialize sensor cache: %v\n", err)
 		return
@@ -75,7 +59,7 @@ func main() {
 			SetOffset(stream.OffsetSpecification{}.First()).
 			SetConsumerName(routing.StreamConsumerName).
 			SetSingleActiveConsumer(stream.NewSingleActiveConsumer(singleActiveConsumerUpdate)),
-		handlerMeasurements(ctx, apiCfg.db),
+		handlerMeasurements(ctx, db),
 		// handlerMeasurementsWithCache(ctx, sensorCache, db),
 	)
 	if err != nil {
