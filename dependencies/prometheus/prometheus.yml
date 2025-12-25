@@ -40,6 +40,6 @@ scrape_configs:
     scrape_interval: 10s
     static_configs:
       - targets:
-          - "iot-sensor-measurements-ingester-0:9091"
-          - "iot-sensor-measurements-ingester-1:9091"
-          - "iot-sensor-measurements-ingester-2:9091"
+          - "iot-sensor-measurements-ingester-0:2112"
+          - "iot-sensor-measurements-ingester-1:2113"
+          - "iot-sensor-measurements-ingester-2:2114"

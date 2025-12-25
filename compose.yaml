@@ -229,7 +229,7 @@ services:
     container_name: iot-sensor-measurements-ingester-0
     restart: unless-stopped
     ports:
-      - "9091:9091" # Prometheus metrics
+      - "2112:2112" # Prometheus metrics
     volumes:
       # go-air dependant
       - ./cmd/sensor-measurements-ingester:/app/cmd/sensor-measurements-ingester # Mount the specific service's code
@@ -248,13 +248,13 @@ services:
     <<: *sensor-measurements-ingester
     container_name: iot-sensor-measurements-ingester-1
     ports:
-      - "9092:9091" # Prometheus metrics
+      - "2113:2112" # Prometheus metrics
 
   sensor-measurements-ingester-2:
     <<: *sensor-measurements-ingester
     container_name: iot-sensor-measurements-ingester-2
     ports:
-      - "9093:9091" # Prometheus metrics
+      - "2114:2112" # Prometheus metrics
 
   sensor-registry:
     depends_on:

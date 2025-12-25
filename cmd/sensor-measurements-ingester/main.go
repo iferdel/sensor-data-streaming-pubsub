@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/iferdel/sensor-data-streaming-server/internal/pubsub"
@@ -11,6 +12,8 @@ import (
 	"github.com/iferdel/sensor-data-streaming-server/internal/storage"
 
 	"github.com/rabbitmq/rabbitmq-stream-go-client/pkg/stream"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 func main() {
@@ -59,13 +62,17 @@ func main() {
 			SetOffset(stream.OffsetSpecification{}.First()).
 			SetConsumerName(routing.StreamConsumerName).
 			SetSingleActiveConsumer(stream.NewSingleActiveConsumer(singleActiveConsumerUpdate)),
-		handlerMeasurements(ctx, db),
-		// handlerMeasurementsWithCache(ctx, sensorCache, db),
+		// handlerMeasurements(ctx, db),
+		handlerMeasurementsWithCache(ctx, sensorCache, db),
 	)
 	if err != nil {
 		fmt.Println("error un subscribe stream json")
 	}
 	defer consumer.Close()
+
+	// metrics endpoint for 'Instrumenting a Go application for Prometheus'
+	http.Handle("/metrics", promhttp.Handler())
+	http.ListenAndServe(":2112", nil)
 
 	// Graceful shutdown handling
 	fmt.Println("Waiting for messages. Press Ctrl+C to exit.")
