@@ -137,9 +137,6 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 	OPTIONS (ADD password_required 'false');
     GRANT USAGE ON FOREIGN SERVER iot_server TO iot_monitoring;
 
-    -- * Activate the dblink extension for querying the primary database on-demand. Is used to query dynamic system catalog views (pg_stat_user_tables, pg_stat_database, pg_stat_activity)
-    CREATE EXTENSION dblink;
-
     --------------------------------------------------------------------------------------------
     -- 2. Geospatial extensions
     --------------------------------------------------------------------------------------------
