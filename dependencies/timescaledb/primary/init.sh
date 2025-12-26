@@ -137,6 +137,9 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
 	OPTIONS (ADD password_required 'false');
     GRANT USAGE ON FOREIGN SERVER iot_server TO iot_monitoring;
 
+    -- * Activate the dblink extension for querying the primary database on-demand. Is used to query dynamic system catalog views (pg_stat_user_tables, pg_stat_database, pg_stat_activity)
+    CREATE EXTENSION dblink;
+
     --------------------------------------------------------------------------------------------
     -- 2. Geospatial extensions
     --------------------------------------------------------------------------------------------
@@ -171,6 +174,11 @@ psql -v on_error_top=1 --username iot_monitoring -d monitoring -f /scripts/monit
 # CREATE PG_STAT_STATEMENTS + PG_STAT_KCACHE MONITORING SCHEMA
 #--------------------------------------------------------------------------------
 psql -v on_error_stop=1 --username iot_monitoring -d monitoring -f /scripts/monitoring_database_stat_statements_history_setup.sql
+
+#--------------------------------------------------------------------------------
+# CREATE SYSTEM STATS HISTORY TABLES (table_stats, database_stats, connection_stats)
+#--------------------------------------------------------------------------------
+psql -v on_error_stop=1 --username iot_monitoring -d monitoring -f /scripts/monitoring_database_system_stats_history_setup.sql
 
 #--------------------------------------------------------------------------------
 # REPLICATION SETUP

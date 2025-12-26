@@ -144,7 +144,7 @@ SELECT add_compression_policy(
  * User Defined Actions. The inner SQL can be adapted for other
  * job scheduling sessions.
  */
-CREATE OR REPLACE PROCEDURE statements_history.create_snapshot(
+CREATE OR REPLACE PROCEDURE statements_history.create_statements_snapshot(
     job_id int,
     config jsonb
 )
@@ -302,7 +302,7 @@ $function$;
 /*
 * Check that the stored procedure works as expected
 */
-CALL statements_history.create_snapshot(null, null);
+CALL statements_history.create_statements_snapshot(null, null);
 
 EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM statements_history.statements;
 
@@ -317,7 +317,7 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM statements_history.statements;
  * adjust the interval in the statement below.
  */
 SELECT add_job(
-    'statements_history.create_snapshot',
+    'statements_history.create_statements_snapshot',
     interval '15 seconds'
 )
 WHERE NOT EXISTS (
@@ -325,7 +325,7 @@ WHERE NOT EXISTS (
     FROM
         timescaledb_information.jobs
     WHERE
-        proc_name='create_snapshot'
+        proc_name='create_statements_snapshot'
         AND proc_schema='statements_history'
 );
 
