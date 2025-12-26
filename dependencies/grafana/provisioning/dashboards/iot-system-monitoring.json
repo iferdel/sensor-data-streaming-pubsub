@@ -1,0 +1,2118 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "panels": [],
+      "title": "System Health Overview",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Cache Hit Ratio** measures the percentage of database reads served from memory (cache) versus disk.\n\n**Concept**: PostgreSQL maintains a shared buffer cache in RAM. When queries need data, PostgreSQL first checks the cache. A cache hit means data was found in memory; a cache miss requires a slower disk read.\n\n**Why Monitor**: \n- Values below 95% indicate insufficient memory or poor query patterns\n- Values above 99% are ideal for OLTP workloads\n- Sudden drops may indicate new query patterns or memory pressure\n\n**Action Items**:\n- < 95%: Consider increasing shared_buffers in postgresql.conf\n- < 90%: Investigate slow queries and missing indexes\n- Monitor along with dead tuples and bloat metrics\n\n**Data Source**: Snapshots from primary, replicated to replica (15-second intervals)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 90
+              },
+              {
+                "color": "yellow",
+                "value": 95
+              },
+              {
+                "color": "green",
+                "value": 99
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    created as time,\n    cache_hit_ratio\nFROM statements_history.database_stats\nWHERE datname = 'iot'\nORDER BY created DESC\nLIMIT 1;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Cache Hit Ratio",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Active Database Connections** shows the number of client connections to PostgreSQL grouped by state.\n\n**Concept**: PostgreSQL uses a process-per-connection model. Each connection consumes memory and resources. Connection states include:\n- `active`: Currently executing a query\n- `idle`: Connected but not running queries\n- `idle in transaction`: In a transaction but not executing (can block vacuuming)\n- `idle in transaction (aborted)`: Transaction failed but not rolled back\n\n**Why Monitor**:\n- High `idle in transaction` can prevent autovacuum from cleaning dead tuples\n- Too many connections can exhaust max_connections limit\n- Connection pool sizing: ensure your app isn't creating too many connections\n\n**Expected Values**:\n- Active: 1-10 for your current load (3 ingesters + API + registry)\n- Idle: Should be low if using connection pooling\n- Idle in transaction: Should be near 0 (indicates app bugs)\n\n**Action Items**:\n- High idle in transaction: Fix application transaction handling\n- Total > 50: Review connection pool settings in your Go applications\n\n**Data Source**: Snapshots from primary, replicated to replica (15-second intervals)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 9,
+        "x": 6,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    created as time,\n    state as metric,\n    connection_count as value\nFROM statements_history.connection_stats\nWHERE datname = 'iot'\n  AND $__timeFilter(created)\nORDER BY created;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Active Database Connections by State",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Dead Tuples Percentage** shows the ratio of obsolete rows to live rows in your database tables.\n\n**Concept**: In PostgreSQL's MVCC (Multi-Version Concurrency Control) model:\n- UPDATE creates a new row version and marks the old one as \"dead\"\n- DELETE marks rows as \"dead\" but doesn't remove them immediately\n- Dead tuples consume disk space and slow down queries\n- VACUUM reclaims space from dead tuples\n- AUTOVACUUM runs automatically when dead tuple threshold is reached\n\n**Why Monitor**:\n- High percentages (>10%) indicate vacuum isn't keeping up with churn\n- Table bloat degrades query performance and wastes disk space\n- For sensor_measurement with high insert rate, some dead tuples are normal\n\n**Expected Values**:\n- < 5%: Healthy (autovacuum keeping up)\n- 5-10%: Acceptable for high-write workloads\n- 10-20%: Action needed (tune autovacuum)\n- > 20%: Critical (immediate attention required)\n\n**Action Items**:\n- High values: Check last_autovacuum timestamp\n- Tune autovacuum_vacuum_scale_factor and autovacuum_vacuum_threshold\n- For TimescaleDB chunks, old chunks should have 0% (compressed/read-only)\n\n**Data Source**: Snapshots from primary, replicated to replica (15-second intervals)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "scheme",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "area"
+            }
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "orange",
+                "value": 10
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 9,
+        "x": 15,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    created as time,\n    relname as metric,\n    dead_tup_ratio as value\nFROM statements_history.table_stats\nWHERE schemaname = 'public' \n  AND relname IN ('sensor', 'sensor_measurement', 'target', 'api_key', 'account')\n  AND $__timeFilter(created)\nORDER BY created;",
+          "refId": "A",
+          "sql": {
+            "columns": [
+              {
+                "parameters": [],
+                "type": "function"
+              }
+            ],
+            "groupBy": [
+              {
+                "property": {
+                  "type": "string"
+                },
+                "type": "groupBy"
+              }
+            ],
+            "limit": 50
+          }
+        }
+      ],
+      "title": "Dead Tuples Percentage by Table",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 101,
+      "panels": [],
+      "title": "Write Performance & Throughput",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "be9ijnandyz9ce"
+      },
+      "description": "**Insert Rate per Sensor** measures the number of measurements being written to the database per second for each sensor.\n\n**Concept**: Your sensor-simulation services publish measurements in batches:\n- AAD-1123: Sample frequency of 25,000 Hz (25,000 measurements/second)\n- BBB-3423: Sample frequency of 10 Hz (10 measurements/second)\n- Batches are published every 1 second via MQTT\n- The ingester receives and writes batches to TimescaleDB\n\n**Why Monitor**:\n- Verify sensors are publishing at expected rates\n- Detect sensor failures (drop to 0 inserts/sec)\n- Identify backpressure issues (actual rate < expected rate)\n- Validate batch processing is working correctly\n\n**Expected Values**:\n- AAD-1123: ~25,000 inserts/second\n- BBB-3423: ~10 inserts/second\n- Values should be relatively constant\n\n**Action Items**:\n- Sudden drop to 0: Sensor or MQTT connection failed\n- Below expected rate: Check RabbitMQ stream consumer lag\n- Spikes/irregularity: Network issues or backpressure in the pipeline\n\n**Related Metrics**: Cross-reference with \"Sensor Data Lag\" to detect offline sensors",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Measurements/sec",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "last",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "be9ijnandyz9ce"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    time_bucket('10 seconds', time) as time,\n    s.serial_number as metric,\n    COUNT(*) / 10.0 as value\nFROM sensor_measurement sm\nJOIN sensor s ON sm.sensor_id = s.id\nWHERE $__timeFilter(time)\nGROUP BY 1, s.serial_number\nORDER BY 1;",
+          "refId": "A"
+        }
+      ],
+      "title": "Insert Rate per Sensor",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "be9ijnandyz9ce"
+      },
+      "description": "**Total Measurements Count** displays the cumulative number of measurements stored in the database for each sensor.\n\n**Concept**: This is the lifetime total of all sensor readings persisted to TimescaleDB:\n- Counts all rows in sensor_measurement table grouped by sensor\n- Includes both recent data and historical chunks\n- Subject to retention policy (currently 30 minutes)\n\n**Why Monitor**:\n- Validate data retention policy is working (count shouldn't grow indefinitely)\n- Estimate storage growth rate\n- Verify both sensors are accumulating data equally based on sample rates\n- Calculate data coverage periods\n\n**Expected Behavior**:\n- AAD-1123 should accumulate ~25,000 measurements/sec × 1,800 sec = ~45M rows max (at 30min retention)\n- BBB-3423 should accumulate ~10 measurements/sec × 1,800 sec = ~18K rows max\n- After retention policy kicks in, counts should stabilize\n- Ratio between sensors should match their sample frequency ratio (2500:1)\n\n**Action Items**:\n- Counts growing unbounded: Retention policy not working\n- One sensor significantly lower: Check for connection issues or publishing failures\n- Sudden drops: Possible manual deletion or retention policy changes",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "be9ijnandyz9ce"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    NOW() as time,\n    s.serial_number as metric,\n    COUNT(*) as value\nFROM sensor_measurement sm\nJOIN sensor s ON sm.sensor_id = s.id\nGROUP BY s.serial_number;",
+          "refId": "A"
+        }
+      ],
+      "title": "Total Measurements Count by Sensor",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 102,
+      "panels": [],
+      "title": "TimescaleDB Storage & Chunks",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "be9ijnandyz9ce"
+      },
+      "description": "**Chunk Count and Total Size** monitors TimescaleDB's chunk-based storage for the sensor_measurement hypertable.\n\n**Concept**: TimescaleDB partitions hypertables into chunks:\n- Your configuration: 5-minute time chunks (chunk_time_interval='5 minutes')\n- Hash partitioning on sensor_id with 4 partitions\n- Total chunks = time_chunks × hash_partitions\n- With 30min retention: max ~6 time chunks × 4 hash = ~24 chunks at steady state\n\n**Why Monitor**:\n- Excessive chunks degrade query planning performance\n- Chunk creation/deletion indicates retention policy is working\n- Chunk size helps estimate storage needs and compression effectiveness\n- Understand data distribution across partitions\n\n**Expected Values**:\n- Chunk count: 20-30 chunks (6 time periods × 4 hash partitions)\n- Total size: Depends on compression and data volume\n- Older chunks should be compressed (smaller size)\n- Size should stabilize after retention window fills\n\n**Action Items**:\n- Chunks growing unbounded: Retention policy not configured or failing\n- Individual chunks > 1GB: Consider smaller chunk_time_interval\n- Too many chunks (>100): Review partitioning strategy\n\n**Related Settings**:\n- Retention: 30 minutes (drop_after)\n- Compression policy: After 15 minutes\n- Columnstore (hypercore) enabled for efficient storage",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 16
+      },
+      "id": 6,
+      "options": {
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "be9ijnandyz9ce"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    chunk_name,\n    pg_size_pretty(pg_total_relation_size(format('%I.%I', chunk_schema, chunk_name))) as size_pretty,\n    pg_total_relation_size(format('%I.%I', chunk_schema, chunk_name)) as value\nFROM timescaledb_information.chunks\nWHERE hypertable_name = 'sensor_measurement'\nORDER BY range_start DESC\nLIMIT 20;",
+          "refId": "A"
+        }
+      ],
+      "title": "Chunk Size Distribution (Top 20 Recent)",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "be9ijnandyz9ce"
+      },
+      "description": "**Chunk Count Over Time** tracks the number of active chunks in the sensor_measurement hypertable.\n\n**Concept**: This shows how chunks are created and dropped:\n- New chunks created every 5 minutes (chunk_time_interval)\n- Old chunks dropped after 30 minutes (retention policy)\n- With 4 hash partitions, you get 4 new chunks every 5 minutes\n\n**Why Monitor**:\n- Verify retention policy is actively dropping old chunks\n- Detect if chunk creation is happening as expected\n- Steady-state should show relatively constant chunk count\n- Sudden increases may indicate retention policy failure\n\n**Expected Pattern**:\n- Should stabilize at ~24-28 chunks (30min retention ÷ 5min intervals × 4 hash partitions)\n- Stepped pattern: +4 chunks every 5 minutes, -4 chunks when retention expires\n- Graph should show a sawtooth pattern in steady state\n\n**Action Items**:\n- Continuously increasing: Retention policy not running or failing\n- Chunk count = 0: Hypertable issue or data not being written\n- Irregular patterns: Investigate retention job status",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Chunk Count",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "stepAfter",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 16
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "max",
+            "min"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "be9ijnandyz9ce"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    NOW() as time,\n    hypertable_name as metric,\n    COUNT(*)::numeric as value\nFROM timescaledb_information.chunks\nWHERE hypertable_name = 'sensor_measurement'\nGROUP BY hypertable_name;",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Chunk Count Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "be9ijnandyz9ce"
+      },
+      "description": "**Compressed Chunks Status** shows which chunks are compressed using Hypercore (columnstore).\n\n**Concept**: Your hypertable uses Hypercore (columnstore) compression:\n- Data is compressed after 15 minutes (compression policy)\n- Columnstore is optimized for time-series data with repeated patterns\n- Shows compression status (true/false) for each chunk\n\n**Why Monitor**:\n- Validate compression policy is running\n- Identify which chunks are compressed\n- Ensure old chunks are being compressed as expected\n\n**Expected Values**:\n- Chunks older than 15 minutes: should be compressed (true)\n- Recent chunks (< 15 min): uncompressed (false)\n\n**Action Items**:\n- Old chunks not compressed: Check compression policy job status\n- No compressed chunks: Verify compression policy is active\n\n**Note**: Detailed compression statistics (compression ratio, bytes saved) are not available for Hypercore in TimescaleDB 2.19.3. Use chunk size distribution to estimate storage efficiency.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "color-text"
+            },
+            "inspect": false
+          },
+          "mappings": [
+            {
+              "options": {
+                "false": {
+                  "color": "orange",
+                  "index": 1,
+                  "text": "Not Compressed"
+                },
+                "true": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Compressed"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "chunk_name"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 300
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "range_start"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "range_end"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 16
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "range_start"
+          }
+        ]
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "be9ijnandyz9ce"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    chunk_name,\n    range_start,\n    range_end,\n    is_compressed,\n    EXTRACT(EPOCH FROM (NOW() - range_start))/60 as age_minutes\nFROM timescaledb_information.chunks\nWHERE hypertable_name = 'sensor_measurement'\nORDER BY range_start DESC\nLIMIT 20;",
+          "refId": "A"
+        }
+      ],
+      "title": "Chunk Compression Status (Top 20 Recent)",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 103,
+      "panels": [],
+      "title": "Data Quality & Sensor Health",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "be9ijnandyz9ce"
+      },
+      "description": "**Sensor Data Lag** measures the time elapsed since each sensor's last recorded measurement.\n\n**Concept**: Real-time monitoring of sensor health:\n- Calculates: current_time - last_measurement_timestamp\n- Shows how \"fresh\" the data is for each sensor\n- Detects offline sensors, network issues, or publishing failures\n\n**Why Monitor**:\n- Critical for real-time systems where stale data is problematic\n- Early detection of sensor failures or connectivity issues\n- Distinguish between sensor failures vs. ingester failures\n- Alert on data staleness\n\n**Expected Values**:\n- < 5 seconds: Healthy (sensors publishing, ingesters processing)\n- 5-30 seconds: Warning (potential backpressure or batch delays)\n- 30-60 seconds: Critical (sensor likely disconnected)\n- > 60 seconds: Offline (sensor down or severe system issues)\n\n**Action Items**:\n- Sudden spike: Check sensor container logs (docker logs iot-sensor-simulation-X)\n- All sensors high lag: Check ingester or RabbitMQ issues\n- Single sensor high lag: Specific sensor or MQTT client ID conflict\n- Gradual increase: Consumer lag or database write bottleneck\n\n**Related Checks**:\n- Verify sensor containers are running: `docker ps`\n- Check MQTT connection: Ensure unique client IDs\n- Review ingester logs for errors",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 120,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "orange",
+                "value": 30
+              },
+              {
+                "color": "red",
+                "value": 60
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 25
+      },
+      "id": 9,
+      "options": {
+        "displayMode": "gradient",
+        "minVizHeight": 10,
+        "minVizWidth": 0,
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "valueMode": "color"
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "be9ijnandyz9ce"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    s.serial_number,\n    EXTRACT(EPOCH FROM (NOW() - MAX(sm.time)))::numeric as seconds_since_last_data\nFROM sensor s\nLEFT JOIN sensor_measurement sm ON s.id = sm.sensor_id\nGROUP BY s.serial_number\nORDER BY seconds_since_last_data DESC;",
+          "refId": "A"
+        }
+      ],
+      "title": "Sensor Data Lag (Time Since Last Measurement)",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "be9ijnandyz9ce"
+      },
+      "description": "**Last Measurement Timestamp** displays the exact time of the most recent measurement received from each sensor.\n\n**Concept**: Shows the timestamp of the latest data point:\n- Uses the measurement's `time` field (not ingestion time)\n- Reflects when the sensor created the measurement\n- Useful for troubleshooting timestamp-related issues\n\n**Why Monitor**:\n- Verify measurements have current timestamps (not backdated)\n- Detect clock skew between sensors and database\n- Confirm data is being written with correct timestamps\n- Useful alongside data lag metric\n\n**Expected Values**:\n- Should be within a few seconds of \"now\"\n- Both sensors should have recent, similar timestamps\n- No sensor should have timestamps in the future\n\n**Action Items**:\n- Timestamp far in past: Sensor offline or data replay\n- Timestamp in future: Clock skew on sensor or client\n- Timestamps not updating: Sensor stopped publishing\n\n**Note**: This shows measurement timestamp, not ingestion timestamp. There may be a small delay between measurement creation and database write.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_measurement"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 12,
+        "y": 25
+      },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "be9ijnandyz9ce"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    s.serial_number,\n    MAX(sm.time) as last_measurement,\n    COUNT(*) as total_measurements_last_hour\nFROM sensor s\nLEFT JOIN sensor_measurement sm ON s.id = sm.sensor_id\nWHERE sm.time > NOW() - INTERVAL '1 hour'\nGROUP BY s.serial_number\nORDER BY last_measurement DESC;",
+          "refId": "A"
+        }
+      ],
+      "title": "Last Measurement Timestamp by Sensor",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "id": 104,
+      "panels": [],
+      "title": "Autovacuum & Maintenance",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Autovacuum Activity** tracks when PostgreSQL's autovacuum last processed each table and chunk.\n\n**Concept**: PostgreSQL autovacuum is a background process that:\n- Reclaims space from dead tuples\n- Updates table statistics for query planner\n- Prevents transaction ID wraparound\n- Runs automatically based on thresholds:\n  - autovacuum_vacuum_threshold = 50 (base threshold)\n  - autovacuum_vacuum_scale_factor = 0.2 (20% of table size)\n  - Triggers when: dead_tuples > threshold + (scale_factor × total_rows)\n\n**Why Monitor**:\n- Ensure vacuum is running regularly on high-churn tables\n- Detect vacuum blocking (long-running transactions)\n- Correlate with dead tuple percentage\n- Identify tables that may need manual VACUUM\n\n**Expected Values**:\n- sensor_measurement chunks: Should vacuum every few minutes (high insert rate)\n- sensor table: May vacuum rarely (low update frequency)\n- last_autovacuum NULL: New table/chunk or very low activity\n\n**Action Items**:\n- No vacuum for >1 hour on active chunks: Check for blocking queries\n- autovacuum_count not increasing: Vacuum disabled or threshold not met\n- Hours_since_vacuum very high with high dead_percentage: Tune autovacuum settings\n\n**Tuning Parameters**:\n```sql\nALTER TABLE sensor_measurement SET (\n  autovacuum_vacuum_scale_factor = 0.01,  -- More aggressive\n  autovacuum_vacuum_threshold = 1000\n);\n```",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "color-text"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 2
+              },
+              {
+                "color": "red",
+                "value": 6
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_autovacuum"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "last_autoanalyze"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dateTimeAsIso"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "auto"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "hours_since_vacuum"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 33
+      },
+      "id": 11,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "hours_since_vacuum"
+          }
+        ]
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    schemaname,\n    relname as table_name,\n    last_autovacuum,\n    last_autoanalyze,\n    autovacuum_count,\n    autoanalyze_count,\n    ROUND(EXTRACT(EPOCH FROM (NOW() - last_autovacuum))/3600, 2) as hours_since_vacuum,\n    n_dead_tup as dead_tuples\nFROM statements_history.table_stats\nWHERE schemaname IN ('public', '_timescaledb_internal')\n  AND (relname LIKE '%sensor%' OR relname LIKE '%chunk')\n  AND created = (SELECT MAX(created) FROM statements_history.table_stats)\nORDER BY hours_since_vacuum DESC NULLS LAST\nLIMIT 20;",
+          "refId": "A"
+        }
+      ],
+      "title": "Autovacuum Activity",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Dead Tuples by Chunk** shows the absolute count of dead tuples in TimescaleDB chunks.\n\n**Concept**: Breaks down dead tuple accumulation by individual chunks:\n- Each chunk is a separate physical table\n- Newer chunks (currently receiving writes) will have more dead tuples\n- Older chunks (compressed/read-only) should have near-zero dead tuples\n- High dead tuple count triggers autovacuum\n\n**Why Monitor**:\n- Identify which chunks need vacuuming\n- Verify compression eliminates dead tuples in old chunks\n- Detect abnormal dead tuple patterns\n- Pinpoint chunks with high update/delete activity\n\n**Expected Pattern**:\n- Newest chunk (current write target): Highest dead tuple count\n- Chunks 5-15 minutes old: Moderate counts, pending compression\n- Chunks >15 minutes old: Should be compressed, near-zero dead tuples\n- Distribution should follow time-based pattern\n\n**Action Items**:\n- Old chunks with high dead tuples: Compression not working\n- All chunks with high counts: Autovacuum falling behind\n- Specific chunk stuck high: May need manual VACUUM\n\n**Compression Impact**: After compression policy runs (15 min), chunks are converted to columnstore format which eliminates dead tuples",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Dead Tuples",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 70,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    created as time,\n    relname as metric,\n    n_dead_tup as value\nFROM statements_history.table_stats\nWHERE schemaname = '_timescaledb_internal' \n  AND relname LIKE '%chunk%'\n  AND $__timeFilter(created)\nORDER BY created, n_dead_tup DESC;",
+          "refId": "A"
+        }
+      ],
+      "title": "Dead Tuples by Chunk (Top 15)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 49
+      },
+      "id": 105,
+      "panels": [],
+      "title": "Query Performance",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Slowest Queries** shows the queries with highest execution time from pg_stat_statements history.\n\n**Concept**: Uses historical pg_stat_statements data to analyze query performance:\n- Shows queries with highest total execution time\n- Tracks call counts and average execution time\n- Helps identify queries that need optimization\n\n**Why Monitor**:\n- Find queries consuming the most database time\n- Identify candidates for query optimization\n- Track query performance trends over time\n- Detect new slow queries\n\n**Expected Queries**:\n- Sensor measurement inserts: Should have low mean_exec_time\n- Aggregate queries: May have higher execution times\n- Background maintenance: Expected to have higher times\n\n**Action Items**:\n- High total_exec_time: Query runs frequently or is slow\n- High mean_exec_time: Query needs optimization (add indexes, rewrite)\n- Investigate with EXPLAIN ANALYZE for top offenders\n\n**Data Source**: Snapshots from primary pg_stat_statements, replicated to replica (15-second intervals)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 1
+              },
+              {
+                "color": "orange",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "duration_seconds"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-text"
+                }
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "state_duration_seconds"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "query_preview"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 400
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "id": 13,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "duration_seconds"
+          }
+        ]
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    q.rolname as user,\n    LEFT(q.query, 80) as query_preview,\n    s.calls,\n    ROUND((s.total_exec_time / 1000)::numeric, 2) as total_exec_seconds,\n    ROUND((s.total_exec_time / NULLIF(s.calls, 0) / 1000)::numeric, 4) as mean_exec_seconds,\n    s.rows,\n    s.shared_blks_hit + s.shared_blks_read as total_blocks\nFROM statements_history.statements s\nJOIN statements_history.queries q ON s.queryid = q.queryid AND s.datname = q.datname AND s.rolname = q.rolname\nWHERE s.created = (SELECT MAX(created) FROM statements_history.statements)\n  AND s.datname = 'iot'\nORDER BY s.total_exec_time DESC\nLIMIT 20;",
+          "refId": "A"
+        }
+      ],
+      "title": "Slowest Queries",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 59
+      },
+      "id": 106,
+      "panels": [],
+      "title": "Cluster I/O & WAL (from snapshots)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Shared Buffer Hit Rate** shows the percentage of data blocks found in PostgreSQL's shared buffer cache vs read from disk.\n\n**Concept**: This is calculated from cluster-wide pg_stat_statements aggregates:\n- shared_blks_hit: Blocks found in shared buffer cache\n- shared_blks_read: Blocks read from disk\n- Hit rate = hit / (hit + read) * 100\n\n**Why Monitor**:\n- Tracks cache efficiency over time\n- Helps identify periods of poor cache performance\n- Correlates with query performance changes\n\n**Expected Values**:\n- > 99%: Excellent\n- 95-99%: Good\n- < 95%: May need more shared_buffers\n\n**Data Source**: Cluster-wide snapshots every 15 seconds",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Hit Rate %",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "area"
+            }
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 90,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 95
+              },
+              {
+                "color": "green",
+                "value": 99
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 0,
+        "y": 60
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    created as time,\n    'Buffer Hit Rate' as metric,\n    CASE \n        WHEN (shared_blks_hit + shared_blks_read) > 0 \n        THEN ROUND(100.0 * shared_blks_hit / (shared_blks_hit + shared_blks_read), 2)\n        ELSE 100\n    END as value\nFROM statements_history.snapshots\nWHERE $__timeFilter(created)\nORDER BY created;",
+          "refId": "A"
+        }
+      ],
+      "title": "Shared Buffer Hit Rate Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**WAL Generation Rate** tracks how much Write-Ahead Log data is being generated over time.\n\n**Concept**: WAL (Write-Ahead Log) records all changes before they're written to data files:\n- Essential for crash recovery and replication\n- High WAL generation indicates heavy write activity\n- Measured in bytes per snapshot interval\n\n**Why Monitor**:\n- Understand write load patterns\n- Plan disk I/O capacity\n- Correlate with replication lag\n- Identify write-heavy periods\n\n**Expected Behavior**:\n- Should correlate with insert rate\n- Spikes during bulk operations\n- Higher during uncompressed chunk writes\n\n**Data Source**: Cluster-wide snapshots every 15 seconds",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "WAL Bytes",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 30,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 8,
+        "y": 60
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max",
+            "sum"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    created as time,\n    'WAL Bytes' as metric,\n    wal_bytes - LAG(wal_bytes) OVER (ORDER BY created) as value\nFROM statements_history.snapshots\nWHERE $__timeFilter(created)\nORDER BY created;",
+          "refId": "A"
+        }
+      ],
+      "title": "WAL Generation Rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Disk I/O Activity** shows read and write operations happening at the block level.\n\n**Concept**: Tracks physical I/O from pg_stat_kcache:\n- exec_reads: Bytes read from disk during query execution\n- exec_writes: Bytes written to disk during query execution\n- High I/O indicates cache misses or write-heavy workload\n\n**Why Monitor**:\n- Identify I/O bottlenecks\n- Correlate with slow query periods\n- Plan storage capacity\n- Detect unexpected I/O patterns\n\n**Expected Behavior**:\n- Reads should be low if cache hit rate is high\n- Writes correlate with insert rate and WAL\n- Spikes during compression or vacuum\n\n**Data Source**: Cluster-wide snapshots every 15 seconds",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Bytes",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "none",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Reads"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Writes"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 7,
+        "w": 8,
+        "x": 16,
+        "y": 60
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [
+            "mean",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    created as time,\n    'Reads' as metric,\n    exec_reads - LAG(exec_reads) OVER (ORDER BY created) as value\nFROM statements_history.snapshots\nWHERE $__timeFilter(created)\nORDER BY created;",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    created as time,\n    'Writes' as metric,\n    exec_writes - LAG(exec_writes) OVER (ORDER BY created) as value\nFROM statements_history.snapshots\nWHERE $__timeFilter(created)\nORDER BY created;",
+          "refId": "B"
+        }
+      ],
+      "title": "Disk I/O Activity (Reads vs Writes)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 67
+      },
+      "id": 107,
+      "panels": [],
+      "title": "Storage Growth (Hypertable Size History)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Hypertable Total Size Over Time** tracks storage growth for each TimescaleDB hypertable.\n\n**Concept**: Shows the total bytes (table + index + toast) used by each hypertable:\n- Includes all chunks (compressed and uncompressed)\n- Captured every 15 seconds from hypertable_detailed_size()\n- Accessed via postgres_fdw from the monitoring database\n\n**Why Monitor**:\n- Track storage growth trends\n- Validate retention policy is working (size should stabilize)\n- Plan storage capacity\n- Detect unexpected growth patterns\n\n**Expected Behavior**:\n- sensor_measurement: Should stabilize after retention window fills (30 min)\n- Other hypertables: Slow growth based on usage\n- Sudden drops indicate retention policy execution\n\n**Data Source**: Snapshots via FDW from iot database every 15 seconds",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "Total Size",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "opacity",
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 68
+      },
+      "id": 17,
+      "options": {
+        "legend": {
+          "calcs": [
+            "last",
+            "min",
+            "max"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "time_series",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    created as time,\n    hypertable_name as metric,\n    total_size as value\nFROM hypertables_size_history.detailed\nWHERE $__timeFilter(created)\nORDER BY created;",
+          "refId": "A"
+        }
+      ],
+      "title": "Hypertable Total Size Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Storage Breakdown by Component** shows how storage is distributed between table data, indexes, and TOAST.\n\n**Concept**: PostgreSQL stores data in different locations:\n- **Table bytes**: Main table data (heap)\n- **Index bytes**: B-tree and other indexes\n- **TOAST bytes**: Large values stored out-of-line\n\n**Why Monitor**:\n- Understand storage composition\n- Identify if indexes are too large\n- Detect TOAST bloat\n- Plan storage optimization strategies\n\n**Expected Ratios**:\n- Table: 60-80% of total\n- Index: 15-30% of total\n- TOAST: <10% typically\n\n**Data Source**: Latest snapshot from hypertable_detailed_size() via FDW",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "tooltip": false,
+              "viz": false,
+              "legend": false
+            }
+          },
+          "mappings": [],
+          "unit": "decbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 12,
+        "y": 68
+      },
+      "id": 18,
+      "options": {
+        "displayLabels": [
+          "name",
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true,
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    'Table Data' as component,\n    SUM(table_bytes) as value\nFROM hypertables_size_history.detailed\nWHERE created = (SELECT MAX(created) FROM hypertables_size_history.detailed)\nUNION ALL\nSELECT \n    'Indexes' as component,\n    SUM(index_bytes) as value\nFROM hypertables_size_history.detailed\nWHERE created = (SELECT MAX(created) FROM hypertables_size_history.detailed)\nUNION ALL\nSELECT \n    'TOAST' as component,\n    SUM(toast_bytes) as value\nFROM hypertables_size_history.detailed\nWHERE created = (SELECT MAX(created) FROM hypertables_size_history.detailed);",
+          "refId": "A"
+        }
+      ],
+      "title": "Storage Breakdown (All Hypertables)",
+      "type": "piechart"
+    },
+    {
+      "datasource": {
+        "type": "postgres",
+        "uid": "de9iten8jjqiof"
+      },
+      "description": "**Current Hypertable Sizes** shows the latest size information for each hypertable.\n\n**Concept**: Detailed breakdown of storage per hypertable:\n- Table bytes: Main data storage\n- Index bytes: Index storage\n- TOAST bytes: Large value storage\n- Total: Sum of all components\n\n**Why Monitor**:\n- Quick overview of current storage usage\n- Compare sizes between hypertables\n- Identify largest consumers\n\n**Data Source**: Latest snapshot from hypertable_detailed_size() via FDW",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "table_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "index_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "toast_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_size"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "decbytes"
+              },
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "mode": "gradient",
+                  "type": "gauge"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 18,
+        "y": 68
+      },
+      "id": 19,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": true
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "total_size"
+          }
+        ]
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "postgres",
+            "uid": "de9iten8jjqiof"
+          },
+          "editorMode": "code",
+          "format": "table",
+          "rawQuery": true,
+          "rawSql": "SELECT \n    hypertable_name,\n    table_bytes as table_size,\n    index_bytes as index_size,\n    toast_bytes as toast_size,\n    total_size\nFROM hypertables_size_history.detailed\nWHERE created = (SELECT MAX(created) FROM hypertables_size_history.detailed)\nORDER BY total_size DESC;",
+          "refId": "A"
+        }
+      ],
+      "title": "Current Hypertable Sizes",
+      "type": "table"
+    }
+  ],
+  "refresh": "5s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [
+    "iot",
+    "timescaledb",
+    "monitoring",
+    "performance"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "5s",
+      "10s",
+      "30s",
+      "1m",
+      "5m"
+    ]
+  },
+  "timezone": "browser",
+  "title": "IoT System Monitoring - Comprehensive",
+  "uid": "iot-system-monitoring",
+  "version": 1,
+  "weekStart": ""
+}
