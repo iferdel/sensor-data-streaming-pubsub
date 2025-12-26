@@ -14,13 +14,13 @@ var (
 		},
 	)
 
-	// metricsMeasurementsProcessed counts measurements by processing status
+	// metricsMeasurementsProcessed counts measurements by processing status and sensor
 	metricsMeasurementsProcessed = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "sensor_measurements_processed_total",
 			Help: "Total number of sensor measurements processed",
 		},
-		[]string{"status"}, // success, error
+		[]string{"status", "sensor_serial"}, // status: success/error, sensor_serial: sensor identifier
 	)
 
 	// metricsBatchSize tracks the distribution of batch sizes
@@ -41,12 +41,13 @@ var (
 		},
 	)
 
-	// metricsE2ELatency tracks time from measurement creation to processing complete
-	metricsE2ELatency = promauto.NewHistogram(
+	// metricsE2ELatency tracks time from measurement creation to processing complete per sensor
+	metricsE2ELatency = promauto.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Name:    "sensor_measurements_e2e_latency_seconds",
 			Help:    "Time from measurement creation to processing complete",
 			Buckets: prometheus.ExponentialBuckets(0.01, 2, 12), // 10ms to ~40s
 		},
+		[]string{"sensor_serial"},
 	)
 )

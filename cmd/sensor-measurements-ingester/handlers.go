@@ -29,21 +29,49 @@ func handlerMeasurementsWithCache(ctx context.Context, cache *sensorlogic.Sensor
 		metricsMessagesReceived.Inc()
 		metricsBatchSize.Observe(float64(len(m)))
 
+		// Count measurements and track oldest timestamp per sensor (single pass)
+		// Using oldest timestamp gives worst-case E2E latency per batch
+		type sensorStats struct {
+			count           int
+			oldestTimestamp time.Time
+		}
+		sensorData := make(map[string]*sensorStats)
+		for _, measurement := range m {
+			stats, exists := sensorData[measurement.SerialNumber]
+			if !exists {
+				sensorData[measurement.SerialNumber] = &sensorStats{
+					count:           1,
+					oldestTimestamp: measurement.Timestamp,
+				}
+			} else {
+				stats.count++
+				if measurement.Timestamp.Before(stats.oldestTimestamp) {
+					stats.oldestTimestamp = measurement.Timestamp
+				}
+			}
+		}
+
 		err := sensorlogic.HandleMeasurementsWithCache(ctx, cache, db, m)
 
 		metricsProcessingDuration.Observe(time.Since(start).Seconds())
 
-		for _, measurement := range m {
-			metricsE2ELatency.Observe(time.Since(measurement.Timestamp).Seconds())
+		// Record E2E latency once per sensor per batch (using oldest = worst case latency)
+		processingComplete := time.Now()
+		for serial, stats := range sensorData {
+			metricsE2ELatency.WithLabelValues(serial).Observe(processingComplete.Sub(stats.oldestTimestamp).Seconds())
 		}
 
 		if err != nil {
 			fmt.Printf("error writing sensor measurement instance: %v\n", err)
-			metricsMeasurementsProcessed.WithLabelValues("error").Add(float64(len(m)))
+			for serial, stats := range sensorData {
+				metricsMeasurementsProcessed.WithLabelValues("error", serial).Add(float64(stats.count))
+			}
 			return pubsub.NackRequeue
 		}
 
-		metricsMeasurementsProcessed.WithLabelValues("success").Add(float64(len(m)))
+		for serial, stats := range sensorData {
+			metricsMeasurementsProcessed.WithLabelValues("success", serial).Add(float64(stats.count))
+		}
 		return pubsub.Ack
 	}
 }
