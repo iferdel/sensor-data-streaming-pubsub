@@ -2,21 +2,6 @@
 
 ![ci test badge](https://github.com/iferdel/sensor-data-streaming-pubsub/actions/workflows/tests.yml/badge.svg)
 
-## TL;DR
-
-Real-time IoT sensor data streaming platform built with Go, RabbitMQ Streams, and TimescaleDB.
-
-```bash
-docker compose up -d          # Start everything
-open http://localhost:3000    # Grafana dashboards
-```
-
-**Stack:** Go 1.23 | RabbitMQ (MQTT + Streams) | TimescaleDB | Prometheus + Grafana
-
-**[Documentation →](./docs/README.md)**
-
----
-
 ## General Description
 
 This project implements an end-to-end real-time monitoring solution for IIoT devices, designed to measure parameters like acceleration (or others such as temperature, strain, or humidity) in mechanical equipment or civil structures, with real-time geospatial tracking.
