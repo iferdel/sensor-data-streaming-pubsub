@@ -74,7 +74,28 @@
   "graphTooltip": 1,
   "id": null,
   "iteration": 1659711545256,
-  "links": [],
+  "links": [
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": ["iot"],
+      "targetBlank": false,
+      "title": "IoT Dashboards",
+      "type": "dashboards"
+    },
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": ["rabbitmq-prometheus"],
+      "targetBlank": false,
+      "title": "RabbitMQ Dashboards",
+      "type": "dashboards"
+    }
+  ],
   "liveNow": false,
   "panels": [
     {

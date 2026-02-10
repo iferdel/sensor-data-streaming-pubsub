@@ -76,6 +76,26 @@
       "tooltip": "",
       "type": "link",
       "url": "https://www.rabbitmq.com/prometheus.html"
+    },
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": ["iot"],
+      "targetBlank": false,
+      "title": "IoT Dashboards",
+      "type": "dashboards"
+    },
+    {
+      "asDropdown": true,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": true,
+      "tags": ["rabbitmq-prometheus"],
+      "targetBlank": false,
+      "title": "RabbitMQ Dashboards",
+      "type": "dashboards"
     }
   ],
   "liveNow": false,
