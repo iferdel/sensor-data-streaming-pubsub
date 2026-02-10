@@ -62,6 +62,7 @@ type Repository[T Entity] interface {
 - [ ] Add geolocalization
 - [ ] Add target association
 - [ ] add stream graph into iot dashboard
+- [ ] https://github.com/timescale/pg-aiguide/blob/main/skills%2Fdesign-postgres-tables%2FSKILL.md
 - [ ] read replica of database so we can separate concerns of database for writing (this service) and reading (any other service)
 - [ ] select * from hypertable_compression_stats('sensor_measurement');
 - [ ] filter writes to disk and buffer flushes to only the measurement insert query + sensorid
